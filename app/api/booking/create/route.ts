@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { createAppointment } from "@/lib/appointments";
 import { buildBookingQuote, createBookingSchema } from "@/lib/booking";
 import { notifyOwnerOfBooking } from "@/lib/notifications";
 import { createSquareDepositCheckout } from "@/lib/square";
@@ -19,6 +20,15 @@ export async function POST(request: Request) {
 
   const quote = buildBookingQuote(parsed.data);
   const checkout = await createSquareDepositCheckout(quote);
+  const appointment = await createAppointment({
+    quote,
+    appointmentTime: parsed.data.appointmentTime,
+    customerName: parsed.data.customerName,
+    customerEmail: parsed.data.customerEmail,
+    customerPhone: parsed.data.customerPhone,
+    customerNotes: parsed.data.notes,
+    squareCheckoutUrl: checkout.checkoutUrl
+  });
   const notification = await notifyOwnerOfBooking({
     customerName: parsed.data.customerName,
     customerEmail: parsed.data.customerEmail,
@@ -28,6 +38,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     status: "pending_deposit",
+    appointment,
     quote,
     checkout,
     notification

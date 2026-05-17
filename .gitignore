@@ -4,6 +4,7 @@ node_modules
 out
 playwright-report
 test-results
+data/*.json
 next-dev.*.log
 *.log
 qa-*.png

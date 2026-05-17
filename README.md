@@ -15,6 +15,8 @@ Website design direction, booking UX, frontend implementation, backend integrati
 - Next.js App Router with TypeScript
 - Tailwind-style global CSS tokens without adding a UI kit
 - Square-ready backend routes for deposits and payment webhooks
+- Protected owner dashboard with signed HttpOnly session cookies
+- File-backed local appointment store for development and demos
 - Playwright for desktop/mobile booking-flow checks
 
 ## Tech Behind The Website
@@ -28,6 +30,17 @@ Website design direction, booking UX, frontend implementation, backend integrati
 - Playwright end-to-end checks
 - Responsive appointment-booking UI
 - Environment-based payment configuration
+- Owner appointment management APIs
+
+## Owner Dashboard
+
+Use the dummy login to test the protected backend locally:
+
+- URL: `/owner/login`
+- Email: `owner@alizstudio.test`
+- Password: `aliz-demo-2026`
+
+Appointments are seeded into `data/appointments.json` on first dashboard/API access. The repository is intentionally isolated in `lib/appointments.ts` so it can be replaced with Postgres, Supabase, Prisma, or another production database without changing the dashboard workflow.
 
 ## Local Setup
 

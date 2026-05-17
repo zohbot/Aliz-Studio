@@ -4,7 +4,8 @@ import { CalendarClock, Scissors } from "lucide-react";
 const navigation = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
-  { href: "/book", label: "Book Online" }
+  { href: "/book", label: "Book Online" },
+  { href: "/owner/login", label: "Owner" }
 ];
 
 export function SiteHeader() {

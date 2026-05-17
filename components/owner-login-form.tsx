@@ -1,0 +1,92 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import { LockKeyhole, LogIn } from "lucide-react";
+
+type OwnerLoginFormProps = {
+  demoEmail: string;
+  demoPassword: string;
+};
+
+export function OwnerLoginForm({ demoEmail, demoPassword }: OwnerLoginFormProps) {
+  const [email, setEmail] = useState(demoEmail);
+  const [password, setPassword] = useState(demoPassword);
+  const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    const response = await fetch("/api/owner/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ email, password })
+    });
+    const payload = await response.json();
+
+    setIsSubmitting(false);
+
+    if (!response.ok) {
+      setError(payload.error || "Could not sign in.");
+      return;
+    }
+
+    window.location.assign(payload.redirectTo || "/owner/dashboard");
+  }
+
+  return (
+    <form className="owner-login-card" onSubmit={handleSubmit}>
+      <div className="owner-login-card__icon" aria-hidden="true">
+        <LockKeyhole size={22} />
+      </div>
+      <div>
+        <p className="section-kicker">Owner access</p>
+        <h1>Appointment command center.</h1>
+        <p>
+          Use the seeded owner login to test the protected backend, appointment queue, deposit
+          tracking, and customer request workflow.
+        </p>
+      </div>
+
+      <label>
+        Email
+        <input
+          autoComplete="email"
+          name="email"
+          onChange={(event) => setEmail(event.target.value)}
+          type="email"
+          value={email}
+        />
+      </label>
+
+      <label>
+        Password
+        <input
+          autoComplete="current-password"
+          name="password"
+          onChange={(event) => setPassword(event.target.value)}
+          type="password"
+          value={password}
+        />
+      </label>
+
+      {error ? <p className="form-error">{error}</p> : null}
+
+      <button className="primary-action primary-action--wide" disabled={isSubmitting} type="submit">
+        <LogIn size={18} />
+        {isSubmitting ? "Signing in..." : "Sign in"}
+      </button>
+
+      <div className="demo-credentials" aria-label="Demo owner credentials">
+        <span>Demo email</span>
+        <strong>{demoEmail}</strong>
+        <span>Demo password</span>
+        <strong>{demoPassword}</strong>
+      </div>
+    </form>
+  );
+}

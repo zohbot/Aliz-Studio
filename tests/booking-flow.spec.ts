@@ -30,4 +30,23 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(continueButton).toBeEnabled();
     await expect(page.getByText("Square checkout-ready deposit handoff")).toBeVisible();
   });
+
+  test("owner can sign in and manage appointment status", async ({ page }) => {
+    await page.goto("/owner/dashboard");
+    await expect(page).toHaveURL(/\/owner\/login/);
+
+    await page.getByLabel("Email").fill("owner@alizstudio.test");
+    await page.getByLabel("Password").fill("aliz-demo-2026");
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await expect(page.getByRole("heading", { name: /manage bookings/i })).toBeVisible();
+    await expect(page.getByText("Marcus Reed")).toBeVisible();
+
+    const firstCard = page.locator(".appointment-card").first();
+    await firstCard.getByLabel("Appointment status").selectOption("completed");
+    await firstCard.getByRole("button", { name: "Save" }).click();
+
+    await expect(page.getByText("Appointment saved.")).toBeVisible();
+  });
 });

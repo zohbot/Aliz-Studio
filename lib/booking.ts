@@ -7,6 +7,7 @@ export const bookingQuoteSchema = z.object({
 });
 
 export const createBookingSchema = bookingQuoteSchema.extend({
+  appointmentTime: z.string().min(1),
   customerName: z.string().min(2),
   customerEmail: z.string().email(),
   customerPhone: z.string().min(7),
