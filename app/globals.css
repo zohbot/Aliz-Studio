@@ -614,6 +614,11 @@ p {
   transform: translateY(-1px);
 }
 
+.slot-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .service-option:hover::before,
 .slot-button:hover::before {
   left: 110%;
@@ -840,6 +845,11 @@ p {
   color: var(--gold);
 }
 
+.slot-button:disabled .slot-button__signal {
+  background: rgba(185, 104, 76, 0.12);
+  color: var(--clay-dark);
+}
+
 .time-note {
   border-top: 1px solid var(--line);
   font-size: 0.88rem;
@@ -903,6 +913,50 @@ p {
   padding: 12px;
 }
 
+.booking-customer-form {
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+}
+
+.booking-customer-form label {
+  color: var(--ink-soft);
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 900;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.booking-customer-form label span {
+  align-items: center;
+  display: inline-flex;
+  gap: 7px;
+}
+
+.booking-customer-form label svg {
+  color: var(--clay);
+  flex: 0 0 auto;
+}
+
+.booking-customer-form input,
+.booking-customer-form textarea {
+  background: var(--paper-strong);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--ink);
+  min-height: 46px;
+  padding: 11px 12px;
+  text-transform: none;
+  width: 100%;
+}
+
+.booking-customer-form textarea {
+  min-height: 92px;
+  resize: vertical;
+}
+
 .primary-action--wide {
   cursor: pointer;
   min-height: 54px;
@@ -939,6 +993,47 @@ p {
 
 .confirmation-panel svg {
   color: var(--moss);
+}
+
+.confirmation-details {
+  border-block: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  margin: 26px 0;
+  padding: 20px 0;
+  text-align: left;
+}
+
+.confirmation-details div {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(120px, 0.42fr) minmax(0, 1fr);
+}
+
+.confirmation-details dt {
+  align-items: center;
+  color: var(--ink-soft);
+  display: inline-flex;
+  font-weight: 850;
+  gap: 8px;
+}
+
+.confirmation-details dd {
+  font-weight: 900;
+  margin: 0;
+}
+
+.confirmation-reference {
+  background: rgba(29, 110, 116, 0.08);
+  border: 1px solid rgba(29, 110, 116, 0.18);
+  border-radius: var(--radius);
+  color: var(--teal);
+  font-size: 0.9rem;
+  font-weight: 800;
+  margin: 0 0 22px;
+  overflow-wrap: anywhere;
+  padding: 12px;
 }
 
 .package-hero {
@@ -1140,6 +1235,7 @@ p {
   margin-inline: auto;
   max-width: var(--max-width);
   padding-inline: 24px;
+  width: 100%;
 }
 
 .owner-login-shell {
@@ -1160,7 +1256,7 @@ p {
   gap: 18px;
   max-width: 560px;
   padding: 34px;
-  width: 100%;
+  width: min(100%, calc(100vw - 48px));
 }
 
 .owner-login-card__icon {
@@ -1536,11 +1632,18 @@ p {
 
   nav {
     flex-wrap: wrap;
-    justify-content: flex-start;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  nav a,
+  .secondary-action {
+    padding: 8px 10px;
   }
 
   h1 {
-    font-size: 3rem;
+    font-size: 2.85rem;
+    line-height: 0.96;
   }
 
   .hero-section,
@@ -1576,10 +1679,12 @@ p {
 
   .owner-login-card {
     padding: 24px;
+    width: min(100%, calc(100vw - 36px));
   }
 
   .owner-stat-grid,
-  .appointment-contact div {
+  .appointment-contact div,
+  .confirmation-details div {
     grid-template-columns: 1fr;
   }
 

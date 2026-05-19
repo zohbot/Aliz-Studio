@@ -1,12 +1,31 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarDays, ChevronLeft, ChevronRight, Clock, CreditCard, Scissors, Send, Sparkles } from "lucide-react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  CreditCard,
+  Mail,
+  MessageSquareText,
+  Phone,
+  Scissors,
+  Send,
+  Sparkles,
+  UserRound
+} from "lucide-react";
 import { getPreviewSlots } from "@/lib/availability";
 import { formatMoney, services } from "@/lib/services";
 
 type BookingConfiguratorProps = {
   initialServiceId?: string;
+};
+
+type AvailabilitySlot = {
+  label: string;
+  value: string;
+  isReserved?: boolean;
 };
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -69,6 +88,13 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
   const [serviceId, setServiceId] = useState(initialServiceId || services[0].id);
   const [selectedDate, setSelectedDate] = useState(() => toDateId(new Date()));
   const [selectedSlot, setSelectedSlot] = useState("");
+  const [slots, setSlots] = useState<AvailabilitySlot[]>(() => getPreviewSlots());
+  const [customerName, setCustomerName] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerNotes, setCustomerNotes] = useState("");
+  const [formMessage, setFormMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [visibleMonth, setVisibleMonth] = useState(() => {
     const today = new Date();
 
@@ -80,19 +106,82 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
     [serviceId]
   );
 
-  const slots = getPreviewSlots();
   const remainingBalance = Math.max(service.price - service.deposit, 0);
   const calendarDays = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
   const monthLabel = getMonthLabel(visibleMonth);
   const selectedDateLabel = getSelectedDateLabel(selectedDate);
+  const canSubmit =
+    Boolean(selectedDate && selectedSlot && customerName && customerEmail && customerPhone) && !isSubmitting;
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    async function loadAvailability() {
+      const response = await fetch(`/api/booking/availability?date=${selectedDate}`);
+      const payload = await response.json();
+
+      if (!isCurrent) {
+        return;
+      }
+
+      if (!response.ok) {
+        setSlots(getPreviewSlots());
+        return;
+      }
+
+      setSlots(payload.slots);
+
+      if (payload.slots.some((slot: AvailabilitySlot) => slot.value === selectedSlot && slot.isReserved)) {
+        setSelectedSlot("");
+      }
+    }
+
+    loadAvailability();
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [selectedDate, selectedSlot]);
 
   function moveMonth(direction: -1 | 1) {
     setVisibleMonth((current) => new Date(current.getFullYear(), current.getMonth() + direction, 1));
     setSelectedSlot("");
   }
 
+  async function handleBookingSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFormMessage("");
+    setIsSubmitting(true);
+
+    const response = await fetch("/api/booking/create", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        serviceId: service.id,
+        appointmentDate: selectedDate,
+        appointmentTime: selectedSlot,
+        customerName,
+        customerEmail,
+        customerPhone,
+        notes: customerNotes
+      })
+    });
+    const payload = await response.json();
+
+    setIsSubmitting(false);
+
+    if (!response.ok) {
+      setFormMessage(payload.error || "We could not reserve that appointment. Please try again.");
+      return;
+    }
+
+    window.location.assign(payload.checkout.checkoutUrl);
+  }
+
   return (
-    <section className="booking-shell" aria-label="Booking form">
+    <form className="booking-shell" aria-label="Booking form" onSubmit={handleBookingSubmit}>
       <div className="booking-panel booking-panel--services">
         <p className="section-kicker">Choose your service</p>
         <div className="service-picker" role="listbox" aria-label="Available services">
@@ -169,6 +258,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
             <button
               aria-pressed={selectedSlot === slot.value}
               className="slot-button"
+              disabled={slot.isReserved}
               key={slot.value}
               onClick={() => setSelectedSlot(slot.value)}
               type="button"
@@ -179,7 +269,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
               </span>
               <span className="slot-button__signal">
                 <Sparkles size={13} />
-                Open
+                {slot.isReserved ? "Reserved" : "Open"}
               </span>
             </button>
           ))}
@@ -213,20 +303,80 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
           </div>
         </dl>
 
+        <div className="booking-customer-form">
+          <p className="section-kicker">Your details</p>
+          <label>
+            <span>
+              <UserRound size={15} />
+              Full name
+            </span>
+            <input
+              autoComplete="name"
+              name="customerName"
+              onChange={(event) => setCustomerName(event.target.value)}
+              required
+              value={customerName}
+            />
+          </label>
+          <label>
+            <span>
+              <Mail size={15} />
+              Email
+            </span>
+            <input
+              autoComplete="email"
+              name="customerEmail"
+              onChange={(event) => setCustomerEmail(event.target.value)}
+              required
+              type="email"
+              value={customerEmail}
+            />
+          </label>
+          <label>
+            <span>
+              <Phone size={15} />
+              Phone
+            </span>
+            <input
+              autoComplete="tel"
+              name="customerPhone"
+              onChange={(event) => setCustomerPhone(event.target.value)}
+              required
+              type="tel"
+              value={customerPhone}
+            />
+          </label>
+          <label>
+            <span>
+              <MessageSquareText size={15} />
+              Notes
+            </span>
+            <textarea
+              maxLength={500}
+              name="customerNotes"
+              onChange={(event) => setCustomerNotes(event.target.value)}
+              placeholder="Haircut preferences, timing notes, or anything the owner should know."
+              value={customerNotes}
+            />
+          </label>
+        </div>
+
         <div className="square-note">
           <CreditCard size={18} />
           <span>Square checkout-ready deposit handoff</span>
         </div>
 
+        {formMessage ? <p className="form-error">{formMessage}</p> : null}
+
         <button
           className="primary-action primary-action--wide"
-          disabled={!selectedDate || !selectedSlot}
-          type="button"
+          disabled={!canSubmit}
+          type="submit"
         >
           <Send size={18} />
-          Continue to deposit
+          {isSubmitting ? "Reserving..." : "Continue to deposit"}
         </button>
       </aside>
-    </section>
+    </form>
   );
 }

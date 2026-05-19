@@ -1,6 +1,12 @@
 import { expect, test } from "@playwright/test";
+import { rm } from "fs/promises";
+import path from "path";
 
 test.describe("Aliz Studio booking foundation", () => {
+  test.beforeAll(async () => {
+    await rm(path.join(process.cwd(), "data", "appointments.json"), { force: true });
+  });
+
   test("home page exposes service menu and booking entry point", async ({ page }) => {
     await page.goto("/");
 
@@ -25,10 +31,18 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await expect(page.getByRole("heading", { name: "Deluxe Cut" })).toBeVisible();
     await page.getByRole("button", { name: "2:00 PM" }).click();
+    await page.getByLabel("Full name").fill("Jordan Price");
+    await page.getByLabel("Email").fill("jordan@example.com");
+    await page.getByLabel("Phone").fill("(555) 014-0199");
+    await page.getByLabel("Notes").fill("Low fade with a natural finish.");
 
     const continueButton = page.getByRole("button", { name: /continue to deposit/i });
     await expect(continueButton).toBeEnabled();
     await expect(page.getByText("Square checkout-ready deposit handoff")).toBeVisible();
+    await continueButton.click();
+
+    await expect(page).toHaveURL(/\/book\/confirmation/);
+    await expect(page.getByRole("heading", { name: /your spot is ready/i })).toBeVisible();
   });
 
   test("owner can sign in and manage appointment status", async ({ page }) => {

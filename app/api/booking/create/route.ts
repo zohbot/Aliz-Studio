@@ -20,15 +20,32 @@ export async function POST(request: Request) {
 
   const quote = buildBookingQuote(parsed.data);
   const checkout = await createSquareDepositCheckout(quote);
-  const appointment = await createAppointment({
-    quote,
-    appointmentTime: parsed.data.appointmentTime,
-    customerName: parsed.data.customerName,
-    customerEmail: parsed.data.customerEmail,
-    customerPhone: parsed.data.customerPhone,
-    customerNotes: parsed.data.notes,
-    squareCheckoutUrl: checkout.checkoutUrl
-  });
+  let appointment;
+
+  try {
+    appointment = await createAppointment({
+      quote,
+      appointmentTime: parsed.data.appointmentTime,
+      customerName: parsed.data.customerName,
+      customerEmail: parsed.data.customerEmail,
+      customerPhone: parsed.data.customerPhone,
+      customerNotes: parsed.data.notes,
+      squareCheckoutUrl: checkout.checkoutUrl
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unable to reserve appointment time."
+      },
+      { status: 409 }
+    );
+  }
+
+  const checkoutUrl = new URL(checkout.checkoutUrl);
+  checkoutUrl.searchParams.set("appointment", appointment.id);
+  checkoutUrl.searchParams.set("date", appointment.appointmentDate);
+  checkoutUrl.searchParams.set("time", appointment.appointmentTime);
+  checkout.checkoutUrl = checkoutUrl.toString();
   const notification = await notifyOwnerOfBooking({
     customerName: parsed.data.customerName,
     customerEmail: parsed.data.customerEmail,

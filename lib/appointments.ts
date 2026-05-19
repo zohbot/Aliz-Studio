@@ -168,6 +168,12 @@ export async function listAppointments() {
 }
 
 export async function createAppointment(input: CreateAppointmentInput) {
+  const isAvailable = await isAppointmentSlotAvailable(input.quote.appointmentDate, input.appointmentTime);
+
+  if (!isAvailable) {
+    throw new Error("That appointment time was just reserved. Please choose another slot.");
+  }
+
   const now = new Date().toISOString();
   const appointment: Appointment = {
     id: `apt_${randomUUID()}`,
@@ -195,6 +201,24 @@ export async function createAppointment(input: CreateAppointmentInput) {
   await writeAppointments([...appointments, appointment]);
 
   return appointment;
+}
+
+export async function getReservedTimesForDate(appointmentDate: string) {
+  const appointments = await listAppointments();
+
+  return appointments
+    .filter(
+      (appointment) =>
+        appointment.appointmentDate === appointmentDate &&
+        ["pending_deposit", "confirmed"].includes(appointment.status)
+    )
+    .map((appointment) => appointment.appointmentTime);
+}
+
+export async function isAppointmentSlotAvailable(appointmentDate: string, appointmentTime: string) {
+  const reservedTimes = await getReservedTimesForDate(appointmentDate);
+
+  return !reservedTimes.includes(appointmentTime);
 }
 
 export async function updateAppointment(appointmentId: string, patch: z.infer<typeof ownerAppointmentUpdateSchema>) {
