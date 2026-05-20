@@ -63,10 +63,14 @@ test.describe("Aliz Studio booking foundation", () => {
     const continueButton = page.getByRole("button", { name: /continue to deposit/i });
     await expect(continueButton).toBeEnabled();
     await expect(page.getByText("Mock Square checkout for deposit testing")).toBeVisible();
+    await expect(page.getByText("Visa").first()).toBeVisible();
+    await expect(page.getByText("Square Pay").first()).toBeVisible();
     await continueButton.click();
 
     await expect(page).toHaveURL(/\/checkout/);
     await expect(page.getByRole("heading", { name: /reserve your appointment/i })).toBeVisible();
+    await expect(page.getByText("Cash App")).toBeVisible();
+    await expect(page.getByText("American Express")).toBeVisible();
     await page.getByLabel("Card number").fill("4242 4242 4242 4242");
     await page.getByLabel("Expiration").fill("12/30");
     await page.getByLabel("CVC").fill("123");

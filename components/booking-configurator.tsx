@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { getPreviewSlots } from "@/lib/availability";
 import { formatMoney, services } from "@/lib/services";
+import { PaymentMethodLogos } from "@/components/payment-method-logos";
 
 type BookingConfiguratorProps = {
   initialServiceId?: string;
@@ -365,6 +366,8 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
           <CreditCard size={18} />
           <span>Mock Square checkout for deposit testing</span>
         </div>
+
+        <PaymentMethodLogos compact />
 
         {formMessage ? <p className="form-error">{formMessage}</p> : null}
 

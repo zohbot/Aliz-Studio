@@ -922,6 +922,98 @@ p {
   padding: 12px;
 }
 
+.payment-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 4px;
+}
+
+.payment-methods--compact {
+  margin: -2px 0 0;
+}
+
+.payment-logo {
+  align-items: center;
+  background: var(--paper-strong);
+  border: 1px solid rgba(222, 210, 182, 0.9);
+  border-radius: 6px;
+  box-shadow: 0 8px 18px rgba(42, 32, 26, 0.06);
+  color: var(--ink);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 950;
+  gap: 6px;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  min-height: 34px;
+  min-width: 74px;
+  padding: 7px 9px;
+  text-transform: uppercase;
+}
+
+.payment-methods--compact .payment-logo {
+  flex: 1 1 82px;
+  min-width: 0;
+}
+
+.payment-logo--visa {
+  color: #173a8f;
+  font-style: italic;
+}
+
+.payment-logo--mastercard {
+  color: #1d1b1a;
+  text-transform: lowercase;
+}
+
+.payment-logo__mark {
+  background:
+    radial-gradient(circle at 38% 50%, #eb001b 0 36%, transparent 37%),
+    radial-gradient(circle at 62% 50%, #f79e1b 0 36%, transparent 37%);
+  height: 18px;
+  width: 32px;
+}
+
+.payment-logo--discover {
+  background:
+    linear-gradient(90deg, rgba(255, 253, 248, 0.96), rgba(255, 171, 64, 0.24)),
+    var(--paper-strong);
+  color: #1d1b1a;
+}
+
+.payment-logo--amex {
+  background: #1f6fb7;
+  border-color: #1f6fb7;
+  color: #fffdf8;
+  font-size: 0.66rem;
+}
+
+.payment-logo--cashapp {
+  background: #0bbf64;
+  border-color: #0bbf64;
+  color: #fffdf8;
+}
+
+.payment-logo--zelle {
+  background: #6d1ed4;
+  border-color: #6d1ed4;
+  color: #fffdf8;
+}
+
+.payment-logo--square {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper-strong);
+}
+
+.payment-logo__square {
+  border: 2px solid currentColor;
+  border-radius: 4px;
+  height: 13px;
+  width: 13px;
+}
+
 .booking-customer-form {
   border-top: 1px solid var(--line);
   display: grid;

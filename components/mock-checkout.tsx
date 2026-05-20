@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Appointment } from "@/lib/appointments";
 import { formatMoney } from "@/lib/services";
+import { PaymentMethodLogos } from "@/components/payment-method-logos";
 
 type MockCheckoutProps = {
   appointment: Appointment;
@@ -127,6 +128,7 @@ export function MockCheckout({ appointment }: MockCheckoutProps) {
             This mock checkout simulates the Square step without charging a real card. Use any test
             card number, such as 4242 4242 4242 4242.
           </p>
+          <PaymentMethodLogos />
 
           <div className="checkout-progress" aria-label="Checkout progress">
             <span data-active="true">
