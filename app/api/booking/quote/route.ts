@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
+import { parseJsonRequest } from "@/lib/api-security";
 import { bookingQuoteSchema, buildBookingQuote } from "@/lib/booking";
 
 export async function POST(request: Request) {
-  const payload = await request.json();
-  const parsed = bookingQuoteSchema.safeParse(payload);
+  const json = await parseJsonRequest(request);
+
+  if (!json.ok) {
+    return json.response;
+  }
+
+  const parsed = bookingQuoteSchema.safeParse(json.data);
 
   if (!parsed.success) {
     return NextResponse.json(

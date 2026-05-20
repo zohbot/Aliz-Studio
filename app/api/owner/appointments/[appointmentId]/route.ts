@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getOwnerSession } from "@/lib/admin-auth";
+import { assertSameOriginRequest, parseJsonRequest } from "@/lib/api-security";
 import { ownerAppointmentUpdateSchema, updateAppointment } from "@/lib/appointments";
 
 type RouteContext = {
@@ -9,13 +10,25 @@ type RouteContext = {
 };
 
 export async function PATCH(request: Request, context: RouteContext) {
+  const originError = assertSameOriginRequest(request);
+
+  if (originError) {
+    return originError;
+  }
+
   const session = await getOwnerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
 
-  const parsed = ownerAppointmentUpdateSchema.safeParse(await request.json());
+  const json = await parseJsonRequest(request);
+
+  if (!json.ok) {
+    return json.response;
+  }
+
+  const parsed = ownerAppointmentUpdateSchema.safeParse(json.data);
 
   if (!parsed.success) {
     return NextResponse.json(

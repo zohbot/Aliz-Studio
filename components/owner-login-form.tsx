@@ -6,11 +6,12 @@ import { LockKeyhole, LogIn } from "lucide-react";
 type OwnerLoginFormProps = {
   demoEmail: string;
   demoPassword: string;
+  showDemoCredentials: boolean;
 };
 
-export function OwnerLoginForm({ demoEmail, demoPassword }: OwnerLoginFormProps) {
-  const [email, setEmail] = useState(demoEmail);
-  const [password, setPassword] = useState(demoPassword);
+export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }: OwnerLoginFormProps) {
+  const [email, setEmail] = useState(showDemoCredentials ? demoEmail : "");
+  const [password, setPassword] = useState(showDemoCredentials ? demoPassword : "");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -81,12 +82,14 @@ export function OwnerLoginForm({ demoEmail, demoPassword }: OwnerLoginFormProps)
         {isSubmitting ? "Signing in..." : "Sign in"}
       </button>
 
-      <div className="demo-credentials" aria-label="Demo owner credentials">
-        <span>Demo email</span>
-        <strong>{demoEmail}</strong>
-        <span>Demo password</span>
-        <strong>{demoPassword}</strong>
-      </div>
+      {showDemoCredentials ? (
+        <div className="demo-credentials" aria-label="Demo owner credentials">
+          <span>Demo email</span>
+          <strong>{demoEmail}</strong>
+          <span>Demo password</span>
+          <strong>{demoPassword}</strong>
+        </div>
+      ) : null}
     </form>
   );
 }

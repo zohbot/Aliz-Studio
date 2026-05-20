@@ -363,7 +363,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
 
         <div className="square-note">
           <CreditCard size={18} />
-          <span>Square checkout-ready deposit handoff</span>
+          <span>Mock Square checkout for deposit testing</span>
         </div>
 
         {formMessage ? <p className="form-error">{formMessage}</p> : null}

@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getReservedTimesForDate } from "@/lib/appointments";
 import { getPreviewSlots } from "@/lib/availability";
+import { appointmentDateSchema } from "@/lib/booking";
 
 const availabilitySchema = z.object({
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+  date: appointmentDateSchema
 });
 
 export async function GET(request: Request) {

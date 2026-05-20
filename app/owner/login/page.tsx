@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { OwnerLoginForm } from "@/components/owner-login-form";
-import { getOwnerCredentials, getOwnerSession } from "@/lib/admin-auth";
+import { getOwnerCredentials, getOwnerSession, shouldShowDemoOwnerCredentials } from "@/lib/admin-auth";
 
 export const metadata: Metadata = {
   title: "Owner Login"
@@ -18,7 +18,11 @@ export default async function OwnerLoginPage() {
 
   return (
     <section className="owner-login-shell">
-      <OwnerLoginForm demoEmail={credentials.email} demoPassword={credentials.password} />
+      <OwnerLoginForm
+        demoEmail={credentials.email}
+        demoPassword={credentials.password}
+        showDemoCredentials={shouldShowDemoOwnerCredentials()}
+      />
     </section>
   );
 }

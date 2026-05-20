@@ -16,6 +16,28 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.getByRole("heading", { name: "Deluxe Cut" })).toBeVisible();
   });
 
+  test("security headers and booking API validation are in place", async ({ request }) => {
+    const ownerLogin = await request.get("/owner/login");
+
+    expect(ownerLogin.headers()["x-frame-options"]).toBe("DENY");
+    expect(ownerLogin.headers()["x-content-type-options"]).toBe("nosniff");
+    expect(ownerLogin.headers()["referrer-policy"]).toBe("strict-origin-when-cross-origin");
+    expect(ownerLogin.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
+
+    const invalidBooking = await request.post("/api/booking/create", {
+      data: {
+        serviceId: "deluxe-cut",
+        appointmentDate: "2000-01-01",
+        appointmentTime: "9:00 PM",
+        customerName: "Jordan Price",
+        customerEmail: "jordan@example.com",
+        customerPhone: "(555) 014-0199"
+      }
+    });
+
+    expect(invalidBooking.status()).toBe(400);
+  });
+
   test("package card opens a richer selected-package page", async ({ page }) => {
     await page.goto("/");
 
@@ -26,11 +48,13 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.getByRole("link", { name: /Pick date and time/i })).toBeVisible();
   });
 
-  test("customer can select a service, date, and slot before Square handoff", async ({ page }) => {
+  test("customer can select a service, date, slot, and complete mock checkout", async ({ page }) => {
+    const slotLabel = test.info().project.name.includes("mobile") ? "3:30 PM" : "2:00 PM";
+
     await page.goto("/book?service=deluxe-cut");
 
     await expect(page.getByRole("heading", { name: "Deluxe Cut" })).toBeVisible();
-    await page.getByRole("button", { name: "2:00 PM" }).click();
+    await page.getByRole("button", { name: slotLabel }).click();
     await page.getByLabel("Full name").fill("Jordan Price");
     await page.getByLabel("Email").fill("jordan@example.com");
     await page.getByLabel("Phone").fill("(555) 014-0199");
@@ -38,11 +62,20 @@ test.describe("Aliz Studio booking foundation", () => {
 
     const continueButton = page.getByRole("button", { name: /continue to deposit/i });
     await expect(continueButton).toBeEnabled();
-    await expect(page.getByText("Square checkout-ready deposit handoff")).toBeVisible();
+    await expect(page.getByText("Mock Square checkout for deposit testing")).toBeVisible();
     await continueButton.click();
 
+    await expect(page).toHaveURL(/\/checkout/);
+    await expect(page.getByRole("heading", { name: /reserve your appointment/i })).toBeVisible();
+    await page.getByLabel("Card number").fill("4242 4242 4242 4242");
+    await page.getByLabel("Expiration").fill("12/30");
+    await page.getByLabel("CVC").fill("123");
+    await page.getByLabel("ZIP code").fill("07030");
+    await page.getByRole("button", { name: /pay \$15 deposit/i }).click();
+
     await expect(page).toHaveURL(/\/book\/confirmation/);
-    await expect(page.getByRole("heading", { name: /your spot is ready/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /your appointment is confirmed/i })).toBeVisible();
+    await expect(page.getByText(/mock deposit has been recorded/i)).toBeVisible();
   });
 
   test("owner can sign in and manage appointment status", async ({ page }) => {

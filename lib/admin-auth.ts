@@ -18,17 +18,45 @@ type OwnerCredentials = {
 };
 
 const eightHoursInSeconds = 60 * 60 * 8;
+const defaultOwnerEmail = "owner@alizstudio.test";
+const defaultOwnerPassword = "aliz-demo-2026";
+const defaultSessionSecret = "development-only-aliz-studio-session-secret";
+
+function isStrictProductionRuntime() {
+  return process.env.VERCEL_ENV === "production" || process.env.ALIZ_REQUIRE_PRODUCTION_SECRETS === "true";
+}
+
+function assertSafeProductionAuth() {
+  if (!isStrictProductionRuntime()) {
+    return;
+  }
+
+  const hasUnsafeEmail = !process.env.OWNER_EMAIL || process.env.OWNER_EMAIL === defaultOwnerEmail;
+  const hasUnsafePassword = !process.env.OWNER_PASSWORD || process.env.OWNER_PASSWORD === defaultOwnerPassword;
+  const hasUnsafeSecret =
+    !process.env.OWNER_SESSION_SECRET || process.env.OWNER_SESSION_SECRET === defaultSessionSecret;
+
+  if (hasUnsafeEmail || hasUnsafePassword || hasUnsafeSecret) {
+    throw new Error(
+      "Production owner auth requires OWNER_EMAIL, OWNER_PASSWORD, and OWNER_SESSION_SECRET overrides."
+    );
+  }
+}
 
 export function getOwnerCredentials(): OwnerCredentials {
+  assertSafeProductionAuth();
+
   return {
-    email: process.env.OWNER_EMAIL || "owner@alizstudio.test",
-    password: process.env.OWNER_PASSWORD || "aliz-demo-2026",
+    email: process.env.OWNER_EMAIL || defaultOwnerEmail,
+    password: process.env.OWNER_PASSWORD || defaultOwnerPassword,
     name: process.env.OWNER_NAME || "Aliz Studio Owner"
   };
 }
 
 function getSessionSecret() {
-  return process.env.OWNER_SESSION_SECRET || "development-only-aliz-studio-session-secret";
+  assertSafeProductionAuth();
+
+  return process.env.OWNER_SESSION_SECRET || defaultSessionSecret;
 }
 
 function base64UrlEncode(value: string) {
@@ -48,6 +76,16 @@ function signaturesMatch(expected: string, actual: string) {
   const actualBuffer = Buffer.from(actual);
 
   return expectedBuffer.length === actualBuffer.length && timingSafeEqual(expectedBuffer, actualBuffer);
+}
+
+function stringsMatch(left: string, right: string) {
+  const leftBuffer = Buffer.from(left);
+  const rightBuffer = Buffer.from(right);
+  const maxLength = Math.max(leftBuffer.length, rightBuffer.length);
+  const paddedLeft = Buffer.concat([leftBuffer, Buffer.alloc(maxLength - leftBuffer.length)]);
+  const paddedRight = Buffer.concat([rightBuffer, Buffer.alloc(maxLength - rightBuffer.length)]);
+
+  return leftBuffer.length === rightBuffer.length && timingSafeEqual(paddedLeft, paddedRight);
 }
 
 export function createOwnerSessionToken(credentials: OwnerCredentials = getOwnerCredentials()) {
@@ -105,6 +143,12 @@ export function getOwnerCookieOptions() {
 
 export function isValidOwnerLogin(email: string, password: string) {
   const credentials = getOwnerCredentials();
+  const normalizedEmail = email.trim().toLowerCase();
+  const expectedEmail = credentials.email.toLowerCase();
 
-  return email.trim().toLowerCase() === credentials.email.toLowerCase() && password === credentials.password;
+  return stringsMatch(normalizedEmail, expectedEmail) && stringsMatch(password, credentials.password);
+}
+
+export function shouldShowDemoOwnerCredentials() {
+  return !isStrictProductionRuntime() && process.env.NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS !== "false";
 }

@@ -1,12 +1,18 @@
 import { NextResponse } from "next/server";
-import { createAppointment } from "@/lib/appointments";
+import { parseJsonRequest } from "@/lib/api-security";
+import { createAppointment, setAppointmentCheckoutUrl } from "@/lib/appointments";
 import { buildBookingQuote, createBookingSchema } from "@/lib/booking";
 import { notifyOwnerOfBooking } from "@/lib/notifications";
 import { createSquareDepositCheckout } from "@/lib/square";
 
 export async function POST(request: Request) {
-  const payload = await request.json();
-  const parsed = createBookingSchema.safeParse(payload);
+  const json = await parseJsonRequest(request);
+
+  if (!json.ok) {
+    return json.response;
+  }
+
+  const parsed = createBookingSchema.safeParse(json.data);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -41,11 +47,12 @@ export async function POST(request: Request) {
     );
   }
 
-  const checkoutUrl = new URL(checkout.checkoutUrl);
+  const checkoutUrl = new URL(checkout.checkoutUrl, request.url);
   checkoutUrl.searchParams.set("appointment", appointment.id);
   checkoutUrl.searchParams.set("date", appointment.appointmentDate);
   checkoutUrl.searchParams.set("time", appointment.appointmentTime);
-  checkout.checkoutUrl = checkoutUrl.toString();
+  checkout.checkoutUrl = `${checkoutUrl.pathname}${checkoutUrl.search}`;
+  appointment = (await setAppointmentCheckoutUrl(appointment.id, checkout.checkoutUrl)) || appointment;
   const notification = await notifyOwnerOfBooking({
     customerName: parsed.data.customerName,
     customerEmail: parsed.data.customerEmail,

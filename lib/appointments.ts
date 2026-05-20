@@ -58,6 +58,18 @@ export type CreateAppointmentInput = {
 
 const dataDirectory = path.join(process.cwd(), "data");
 const appointmentsFile = path.join(dataDirectory, "appointments.json");
+let appointmentMutationQueue = Promise.resolve();
+
+function runAppointmentMutation<T>(operation: () => Promise<T>) {
+  const result = appointmentMutationQueue.then(operation, operation);
+
+  appointmentMutationQueue = result.then(
+    () => undefined,
+    () => undefined
+  );
+
+  return result;
+}
 
 function toDateId(offsetDays: number) {
   const date = new Date();
@@ -167,40 +179,48 @@ export async function listAppointments() {
   });
 }
 
-export async function createAppointment(input: CreateAppointmentInput) {
-  const isAvailable = await isAppointmentSlotAvailable(input.quote.appointmentDate, input.appointmentTime);
-
-  if (!isAvailable) {
-    throw new Error("That appointment time was just reserved. Please choose another slot.");
-  }
-
-  const now = new Date().toISOString();
-  const appointment: Appointment = {
-    id: `apt_${randomUUID()}`,
-    serviceId: input.quote.serviceId,
-    serviceName: input.quote.serviceName,
-    appointmentDate: input.quote.appointmentDate,
-    appointmentTime: input.appointmentTime,
-    durationMinutes: input.quote.durationMinutes,
-    price: input.quote.price,
-    deposit: input.quote.deposit,
-    amountDueAtVisit: input.quote.amountDueAtVisit,
-    customerName: input.customerName,
-    customerEmail: input.customerEmail,
-    customerPhone: input.customerPhone,
-    customerNotes: input.customerNotes,
-    status: "pending_deposit",
-    paymentStatus: "pending",
-    notificationChannels: ["email", "sms"],
-    squareCheckoutUrl: input.squareCheckoutUrl,
-    createdAt: now,
-    updatedAt: now
-  };
+export async function getAppointmentById(appointmentId: string) {
   const appointments = await listAppointments();
 
-  await writeAppointments([...appointments, appointment]);
+  return appointments.find((appointment) => appointment.id === appointmentId) || null;
+}
 
-  return appointment;
+export async function createAppointment(input: CreateAppointmentInput) {
+  return runAppointmentMutation(async () => {
+    const isAvailable = await isAppointmentSlotAvailable(input.quote.appointmentDate, input.appointmentTime);
+
+    if (!isAvailable) {
+      throw new Error("That appointment time was just reserved. Please choose another slot.");
+    }
+
+    const now = new Date().toISOString();
+    const appointment: Appointment = {
+      id: `apt_${randomUUID()}`,
+      serviceId: input.quote.serviceId,
+      serviceName: input.quote.serviceName,
+      appointmentDate: input.quote.appointmentDate,
+      appointmentTime: input.appointmentTime,
+      durationMinutes: input.quote.durationMinutes,
+      price: input.quote.price,
+      deposit: input.quote.deposit,
+      amountDueAtVisit: input.quote.amountDueAtVisit,
+      customerName: input.customerName,
+      customerEmail: input.customerEmail,
+      customerPhone: input.customerPhone,
+      customerNotes: input.customerNotes,
+      status: "pending_deposit",
+      paymentStatus: "pending",
+      notificationChannels: ["email", "sms"],
+      squareCheckoutUrl: input.squareCheckoutUrl,
+      createdAt: now,
+      updatedAt: now
+    };
+    const appointments = await listAppointments();
+
+    await writeAppointments([...appointments, appointment]);
+
+    return appointment;
+  });
 }
 
 export async function getReservedTimesForDate(appointmentDate: string) {
@@ -222,25 +242,100 @@ export async function isAppointmentSlotAvailable(appointmentDate: string, appoin
 }
 
 export async function updateAppointment(appointmentId: string, patch: z.infer<typeof ownerAppointmentUpdateSchema>) {
-  const appointments = await listAppointments();
-  const index = appointments.findIndex((appointment) => appointment.id === appointmentId);
+  return runAppointmentMutation(async () => {
+    const appointments = await listAppointments();
+    const index = appointments.findIndex((appointment) => appointment.id === appointmentId);
 
-  if (index === -1) {
-    return null;
-  }
+    if (index === -1) {
+      return null;
+    }
 
-  const updated: Appointment = {
-    ...appointments[index],
-    ...patch,
-    updatedAt: new Date().toISOString()
-  };
-  const nextAppointments = appointments.map((appointment, appointmentIndex) =>
-    appointmentIndex === index ? updated : appointment
-  );
+    const updated: Appointment = {
+      ...appointments[index],
+      ...patch,
+      updatedAt: new Date().toISOString()
+    };
+    const nextAppointments = appointments.map((appointment, appointmentIndex) =>
+      appointmentIndex === index ? updated : appointment
+    );
 
-  await writeAppointments(nextAppointments);
+    await writeAppointments(nextAppointments);
 
-  return updated;
+    return updated;
+  });
+}
+
+export async function setAppointmentCheckoutUrl(appointmentId: string, squareCheckoutUrl: string) {
+  return runAppointmentMutation(async () => {
+    const appointments = await listAppointments();
+    const index = appointments.findIndex((appointment) => appointment.id === appointmentId);
+
+    if (index === -1) {
+      return null;
+    }
+
+    const updated: Appointment = {
+      ...appointments[index],
+      squareCheckoutUrl,
+      updatedAt: new Date().toISOString()
+    };
+    const nextAppointments = appointments.map((appointment, appointmentIndex) =>
+      appointmentIndex === index ? updated : appointment
+    );
+
+    await writeAppointments(nextAppointments);
+
+    return updated;
+  });
+}
+
+function appendOwnerNote(existingNote: string | undefined, nextNote: string) {
+  const mergedNote = existingNote ? `${existingNote}\n${nextNote}` : nextNote;
+
+  return mergedNote.slice(-800);
+}
+
+export async function completeAppointmentDeposit(input: {
+  appointmentId: string;
+  cardholderName: string;
+  cardLastFour: string;
+}) {
+  return runAppointmentMutation(async () => {
+    const appointments = await listAppointments();
+    const index = appointments.findIndex((appointment) => appointment.id === input.appointmentId);
+
+    if (index === -1) {
+      return null;
+    }
+
+    const appointment = appointments[index];
+
+    if (appointment.paymentStatus === "paid") {
+      return appointment;
+    }
+
+    if (!["pending_deposit", "confirmed"].includes(appointment.status)) {
+      throw new Error("Appointment cannot accept a deposit in its current state.");
+    }
+
+    const updated: Appointment = {
+      ...appointment,
+      status: "confirmed",
+      paymentStatus: "paid",
+      ownerNotes: appendOwnerNote(
+        appointment.ownerNotes,
+        `Mock checkout: ${input.cardholderName} paid deposit with card ending ${input.cardLastFour}.`
+      ),
+      updatedAt: new Date().toISOString()
+    };
+    const nextAppointments = appointments.map((currentAppointment, appointmentIndex) =>
+      appointmentIndex === index ? updated : currentAppointment
+    );
+
+    await writeAppointments(nextAppointments);
+
+    return updated;
+  });
 }
 
 export async function getAppointmentStats() {

@@ -45,7 +45,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
 
   return (
     <>
-      <section className="package-hero">
+      <section className="package-hero" data-service-id={service.id}>
         <div className="package-hero__media">
           <Image
             alt={`${service.name} hairstyle preview`}
