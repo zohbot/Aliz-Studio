@@ -185,10 +185,10 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
     <form className="booking-shell" aria-label="Booking form" onSubmit={handleBookingSubmit}>
       <div className="booking-panel booking-panel--services">
         <p className="section-kicker">Choose your service</p>
-        <div className="service-picker" role="listbox" aria-label="Available services">
+        <div className="service-picker" role="group" aria-label="Available services">
           {services.map((item) => (
             <button
-              aria-selected={item.id === serviceId}
+              aria-pressed={item.id === serviceId}
               className="service-option"
               key={item.id}
               onClick={() => {

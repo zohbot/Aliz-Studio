@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   BadgeCheck,
@@ -49,12 +49,7 @@ function formatExpiry(value: string) {
 export function MockCheckout({ appointment }: MockCheckoutProps) {
   const router = useRouter();
   const [message, setMessage] = useState("");
-  const [isReady, setIsReady] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    setIsReady(true);
-  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -213,13 +208,9 @@ export function MockCheckout({ appointment }: MockCheckoutProps) {
 
             {message ? <p className="form-error">{message}</p> : null}
 
-            <button className="primary-action primary-action--wide" disabled={!isReady || isSubmitting} type="submit">
+            <button className="primary-action primary-action--wide" disabled={isSubmitting} type="submit">
               <LockKeyhole size={18} />
-              {!isReady
-                ? "Preparing checkout..."
-                : isSubmitting
-                  ? "Processing..."
-                  : `Pay ${formatMoney(appointment.deposit)} deposit`}
+              {isSubmitting ? "Processing..." : `Pay ${formatMoney(appointment.deposit)} deposit`}
             </button>
           </form>
         </div>

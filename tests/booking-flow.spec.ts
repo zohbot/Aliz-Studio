@@ -130,13 +130,14 @@ test.describe("Aliz Studio booking foundation", () => {
     const setCookieHeader = response
       .headersArray()
       .find((header) => header.name.toLowerCase() === "set-cookie")?.value;
+    const normalizedSetCookieHeader = setCookieHeader?.toLowerCase() ?? "";
 
     expect(response.status()).toBe(200);
     expect(setCookieHeader).toBeTruthy();
-    expect(setCookieHeader).toContain("aliz_owner_session=");
-    expect(setCookieHeader).toContain("HttpOnly");
-    expect(setCookieHeader).toContain("Path=/");
-    expect(setCookieHeader).toContain("SameSite=Strict");
+    expect(normalizedSetCookieHeader).toContain("aliz_owner_session=");
+    expect(normalizedSetCookieHeader).toContain("httponly");
+    expect(normalizedSetCookieHeader).toContain("path=/");
+    expect(normalizedSetCookieHeader).toContain("samesite=strict");
 
     await request.post("/api/owner/auth/logout", {
       headers: {

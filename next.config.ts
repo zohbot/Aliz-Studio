@@ -16,6 +16,8 @@ const explicitOrigins = (process.env.NEXT_PUBLIC_DEV_ORIGINS ?? "")
   .map((entry) => entry.trim())
   .filter(Boolean);
 
+const nextDistDir = isDevelopment ? ".next-dev" : process.env.NEXT_DIST_DIR || ".next";
+
 const allowedDevOrigins = [...new Set(["127.0.0.1", "localhost", ...networkIpList, ...explicitOrigins])];
 
 const contentSecurityPolicy = [
@@ -78,6 +80,7 @@ const noStoreHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  distDir: nextDistDir,
   ...(isDevelopment ? { allowedDevOrigins } : {}),
   async headers() {
     return [
