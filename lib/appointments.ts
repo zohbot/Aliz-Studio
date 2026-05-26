@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { mkdir, readFile, rename, writeFile } from "fs/promises";
+import { copyFile, mkdir, readFile, rename, unlink, writeFile } from "fs/promises";
 import path from "path";
 import { z } from "zod";
 import type { BookingQuote } from "@/lib/booking";
@@ -45,6 +45,31 @@ export type Appointment = {
   createdAt: string;
   updatedAt: string;
 };
+
+const appointmentSchema = z.object({
+  id: z.string().min(8),
+  serviceId: z.string().min(1),
+  serviceName: z.string().min(1),
+  appointmentDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  appointmentTime: z.string(),
+  durationMinutes: z.number().int().positive(),
+  price: z.number().nonnegative(),
+  deposit: z.number().nonnegative(),
+  amountDueAtVisit: z.number().nonnegative(),
+  customerName: z.string().min(2),
+  customerEmail: z.string().email(),
+  customerPhone: z.string().min(7),
+  customerNotes: z.string().max(500).optional(),
+  ownerNotes: z.string().max(800).optional(),
+  status: appointmentStatusSchema,
+  paymentStatus: paymentStatusSchema,
+  notificationChannels: z.array(z.string()),
+  squareCheckoutUrl: z.string().max(1_024).regex(/^(\/|https?:\/\/)/).optional(),
+  createdAt: z.string(),
+  updatedAt: z.string()
+});
+
+const appointmentListSchema = z.array(appointmentSchema.strict());
 
 export type CreateAppointmentInput = {
   quote: BookingQuote;
@@ -158,20 +183,57 @@ async function ensureAppointmentsFile() {
 }
 
 async function writeAppointments(appointments: Appointment[]) {
-  await mkdir(dataDirectory, { recursive: true });
-
+  const data = `${JSON.stringify(appointments, null, 2)}\n`;
   const temporaryFile = `${appointmentsFile}.${randomUUID()}.tmp`;
-  await writeFile(temporaryFile, `${JSON.stringify(appointments, null, 2)}\n`, "utf8");
-  await rename(temporaryFile, appointmentsFile);
+  await mkdir(dataDirectory, { recursive: true });
+  await writeFile(temporaryFile, data, "utf8");
+
+  let attempts = 0;
+  const maxAttempts = 4;
+
+  while (attempts < maxAttempts) {
+    attempts += 1;
+    try {
+      await rename(temporaryFile, appointmentsFile);
+      return;
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+
+      if (code === "EPERM" || code === "EACCES") {
+        await new Promise((resolve) => setTimeout(resolve, attempts * 50));
+        continue;
+      }
+
+      break;
+    }
+  }
+
+  try {
+    await copyFile(temporaryFile, appointmentsFile);
+  } finally {
+    await unlink(temporaryFile).catch(() => {});
+  }
 }
 
 export async function listAppointments() {
   await ensureAppointmentsFile();
 
   const raw = await readFile(appointmentsFile, "utf8");
-  const parsed = z.array(z.custom<Appointment>()).parse(JSON.parse(raw));
+  const candidate = JSON.parse(raw);
+  const parsed = appointmentListSchema.safeParse(candidate);
 
-  return parsed.sort((left, right) => {
+  if (!parsed.success) {
+    await writeAppointments(buildSeedAppointments());
+
+    return buildSeedAppointments().sort((left, right) => {
+      const leftTime = `${left.appointmentDate} ${left.appointmentTime}`;
+      const rightTime = `${right.appointmentDate} ${right.appointmentTime}`;
+
+      return leftTime.localeCompare(rightTime);
+    });
+  }
+
+  return parsed.data.sort((left, right) => {
     const leftTime = `${left.appointmentDate} ${left.appointmentTime}`;
     const rightTime = `${right.appointmentDate} ${right.appointmentTime}`;
 

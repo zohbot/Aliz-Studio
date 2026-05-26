@@ -36,6 +36,18 @@ test.describe("Aliz Studio booking foundation", () => {
     });
 
     expect(invalidBooking.status()).toBe(400);
+
+    const nonJsonBooking = await request.post("/api/booking/quote", {
+      headers: {
+        "content-type": "text/plain"
+      },
+      data: JSON.stringify({
+        serviceId: "deluxe-cut",
+        appointmentDate: "2030-01-01"
+      })
+    });
+
+    expect(nonJsonBooking.status()).toBe(415);
   });
 
   test("package card opens a richer selected-package page", async ({ page }) => {
@@ -99,5 +111,65 @@ test.describe("Aliz Studio booking foundation", () => {
     await firstCard.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("Appointment saved.")).toBeVisible();
+  });
+
+  test("owner session cookie is issued with strict attributes", async ({ request }) => {
+    const email = process.env.OWNER_EMAIL || "owner@alizstudio.test";
+    const password = process.env.OWNER_PASSWORD || "local-owner-password-for-tests";
+
+    const response = await request.post("/api/owner/auth/login", {
+      headers: {
+        "content-type": "application/json"
+      },
+      data: {
+        email,
+        password
+      }
+    });
+
+    const setCookieHeader = response
+      .headersArray()
+      .find((header) => header.name.toLowerCase() === "set-cookie")?.value;
+
+    expect(response.status()).toBe(200);
+    expect(setCookieHeader).toBeTruthy();
+    expect(setCookieHeader).toContain("aliz_owner_session=");
+    expect(setCookieHeader).toContain("HttpOnly");
+    expect(setCookieHeader).toContain("Path=/");
+    expect(setCookieHeader).toContain("SameSite=Strict");
+
+    await request.post("/api/owner/auth/logout", {
+      headers: {
+        "content-type": "application/json"
+      }
+    });
+  });
+
+  test("square webhook behavior is safe in current environment", async ({ request }) => {
+    const webhookResponse = await request.post("/api/square/webhook", {
+      headers: {
+        "content-type": "application/json"
+      },
+      data: JSON.stringify({
+        type: "payment.updated",
+        data: { id: "evt_123" }
+      })
+    });
+    const webhookPayload = await webhookResponse.json();
+    const shouldVerify = process.env.NODE_ENV === "production" || process.env.SQUARE_WEBHOOK_VERIFY === "true";
+
+    if (shouldVerify) {
+      expect(webhookResponse.status()).toBe(401);
+      expect(webhookPayload.error).toBe("Missing Square webhook signature header.");
+    } else {
+      expect(webhookResponse.status()).toBe(200);
+      expect(webhookPayload).toEqual(
+        expect.objectContaining({
+          received: true,
+          verified: false,
+          action: "square_webhook_stub"
+        })
+      );
+    }
   });
 });

@@ -4,6 +4,7 @@ import { createAppointment, setAppointmentCheckoutUrl } from "@/lib/appointments
 import { buildBookingQuote, createBookingSchema } from "@/lib/booking";
 import { notifyOwnerOfBooking } from "@/lib/notifications";
 import { createSquareDepositCheckout } from "@/lib/square";
+import { consumeRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const json = await parseJsonRequest(request);
@@ -25,6 +26,21 @@ export async function POST(request: Request) {
   }
 
   const quote = buildBookingQuote(parsed.data);
+
+  const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
+  const bookingKey = `booking-create:${ipAddress}`;
+  const rateLimit = consumeRateLimit(bookingKey, 10, 60 * 1000);
+
+  if (!rateLimit.allowed) {
+    const response = NextResponse.json(
+      { error: "Too many booking requests. Please wait a moment and try again." },
+      { status: 429 }
+    );
+
+    response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
+    return response;
+  }
+
   const checkout = await createSquareDepositCheckout(quote);
   let appointment;
 

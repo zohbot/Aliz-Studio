@@ -1,11 +1,51 @@
 import { NextResponse } from "next/server";
 
 const defaultMaxJsonBytes = 8_000;
+const isJsonContentType = (contentType: string | null) => {
+  const normalized = normalizeContentType(contentType);
+
+  return normalized === "application/json" || normalized.endsWith("+json");
+};
+
+function normalizeContentType(contentType: string | null) {
+  if (!contentType) {
+    return "";
+  }
+
+  return contentType.split(";")[0]?.trim().toLowerCase() ?? "";
+}
 
 export async function parseJsonRequest(request: Request, maxBytes = defaultMaxJsonBytes) {
-  const contentLength = Number(request.headers.get("content-length") || 0);
+  if (!isJsonContentType(request.headers.get("content-type"))) {
+    return {
+      ok: false as const,
+      response: NextResponse.json(
+        { error: "Request content-type must be application/json." },
+        { status: 415 }
+      )
+    };
+  }
+
+  const contentLengthHeader = request.headers.get("content-length");
+  const contentLength = Number(contentLengthHeader);
+
+  if (contentLengthHeader && (!Number.isFinite(contentLength) || contentLength < 0)) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error: "Invalid content-length header." }, { status: 400 })
+    };
+  }
 
   if (contentLength > maxBytes) {
+    return {
+      ok: false as const,
+      response: NextResponse.json({ error: "Request body is too large." }, { status: 413 })
+    };
+  }
+
+  const body = await request.text();
+
+  if (body.length > maxBytes) {
     return {
       ok: false as const,
       response: NextResponse.json({ error: "Request body is too large." }, { status: 413 })
@@ -15,7 +55,7 @@ export async function parseJsonRequest(request: Request, maxBytes = defaultMaxJs
   try {
     return {
       ok: true as const,
-      data: await request.json()
+      data: JSON.parse(body)
     };
   } catch {
     return {

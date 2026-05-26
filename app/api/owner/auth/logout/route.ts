@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { assertSameOriginRequest } from "@/lib/api-security";
-import { ownerSessionCookieName } from "@/lib/admin-auth";
+import { getOwnerCookieOptions, ownerSessionCookieName } from "@/lib/admin-auth";
 
 export async function POST(request: Request) {
   const originError = assertSameOriginRequest(request);
@@ -15,10 +15,8 @@ export async function POST(request: Request) {
   });
 
   response.cookies.set(ownerSessionCookieName, "", {
-    httpOnly: true,
-    maxAge: 0,
-    path: "/",
-    sameSite: "lax"
+    ...getOwnerCookieOptions(),
+    maxAge: 0
   });
 
   return response;

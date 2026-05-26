@@ -159,7 +159,7 @@ export function getOwnerCookieOptions() {
     httpOnly: true,
     maxAge: eightHoursInSeconds,
     path: "/",
-    sameSite: "lax" as const,
+    sameSite: "strict" as const,
     secure: process.env.NODE_ENV === "production"
   };
 }

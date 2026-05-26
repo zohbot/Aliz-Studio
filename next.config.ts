@@ -1,6 +1,23 @@
 import type { NextConfig } from "next";
+import os from "node:os";
 
 const isDevelopment = process.env.NODE_ENV !== "production";
+
+const networkIpList = Object.values(os.networkInterfaces())
+  .flatMap((entryList) => entryList ?? [])
+  .filter(
+    (entry): entry is os.NetworkInterfaceInfoIPv4 =>
+    Boolean(entry && entry.address && entry.family === "IPv4" && !entry.internal)
+  )
+  .map((entry) => entry.address);
+
+const explicitOrigins = (process.env.NEXT_PUBLIC_DEV_ORIGINS ?? "")
+  .split(",")
+  .map((entry) => entry.trim())
+  .filter(Boolean);
+
+const allowedDevOrigins = [...new Set(["127.0.0.1", "localhost", ...networkIpList, ...explicitOrigins])];
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""}`,
@@ -61,7 +78,7 @@ const noStoreHeaders = [
 ];
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  ...(isDevelopment ? { allowedDevOrigins } : {}),
   async headers() {
     return [
       {

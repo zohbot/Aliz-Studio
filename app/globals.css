@@ -935,83 +935,52 @@ p {
 
 .payment-logo {
   align-items: center;
-  background: var(--paper-strong);
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(247, 241, 232, 0.92)),
+    var(--paper-strong);
   border: 1px solid rgba(222, 210, 182, 0.9);
   border-radius: 6px;
   box-shadow: 0 8px 18px rgba(42, 32, 26, 0.06);
   color: var(--ink);
   display: inline-flex;
-  font-size: 0.72rem;
-  font-weight: 950;
-  gap: 6px;
+  font-size: 0.68rem;
+  font-weight: 900;
+  gap: 7px;
   justify-content: center;
-  letter-spacing: 0.02em;
-  min-height: 34px;
-  min-width: 74px;
-  padding: 7px 9px;
+  letter-spacing: 0;
+  min-height: 40px;
+  min-width: 102px;
+  padding: 8px 9px;
   text-transform: uppercase;
 }
 
 .payment-methods--compact .payment-logo {
-  flex: 1 1 82px;
+  flex: 1 1 92px;
   min-width: 0;
 }
 
-.payment-logo--visa {
-  color: #173a8f;
-  font-style: italic;
-}
-
-.payment-logo--mastercard {
-  color: #1d1b1a;
-  text-transform: lowercase;
-}
-
-.payment-logo__mark {
-  background:
-    radial-gradient(circle at 38% 50%, #eb001b 0 36%, transparent 37%),
-    radial-gradient(circle at 62% 50%, #f79e1b 0 36%, transparent 37%);
+.payment-logo__icon {
+  color: var(--payment-brand-color);
+  fill: currentColor;
+  flex: 0 0 auto;
   height: 18px;
-  width: 32px;
+  max-width: 38px;
+  width: 30px;
 }
 
-.payment-logo--discover {
-  background:
-    linear-gradient(90deg, rgba(255, 253, 248, 0.96), rgba(255, 171, 64, 0.24)),
-    var(--paper-strong);
-  color: #1d1b1a;
+.payment-logo--visa .payment-logo__icon,
+.payment-logo--discover .payment-logo__icon,
+.payment-logo--amex .payment-logo__icon {
+  width: 42px;
 }
 
-.payment-logo--amex {
-  background: #1f6fb7;
-  border-color: #1f6fb7;
-  color: #fffdf8;
-  font-size: 0.66rem;
+.payment-logo__text {
+  line-height: 1.05;
+  min-width: 0;
 }
 
-.payment-logo--cashapp {
-  background: #0bbf64;
-  border-color: #0bbf64;
-  color: #fffdf8;
-}
-
-.payment-logo--zelle {
-  background: #6d1ed4;
-  border-color: #6d1ed4;
-  color: #fffdf8;
-}
-
-.payment-logo--square {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--paper-strong);
-}
-
-.payment-logo__square {
-  border: 2px solid currentColor;
-  border-radius: 4px;
-  height: 13px;
-  width: 13px;
+.payment-methods--compact .payment-logo__text {
+  font-size: 0.62rem;
 }
 
 .booking-customer-form {
