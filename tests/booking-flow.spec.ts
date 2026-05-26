@@ -86,8 +86,8 @@ test.describe("Aliz Studio booking foundation", () => {
     await page.goto("/owner/dashboard");
     await expect(page).toHaveURL(/\/owner\/login/);
 
-    await page.getByLabel("Email").fill("owner@alizstudio.test");
-    await page.getByLabel("Password").fill("aliz-demo-2026");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password").fill(process.env.OWNER_PASSWORD || "local-owner-password-for-tests");
     await page.getByRole("button", { name: /sign in/i }).click();
 
     await expect(page).toHaveURL(/\/owner\/dashboard/);

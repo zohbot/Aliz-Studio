@@ -2,13 +2,13 @@
 
 Full-site rebuild for Aliz Studio, a by-appointment barbershop. The foundation is built around a polished public site, a guided booking flow, mock Square-style deposit checkout, owner notifications, and a protected owner dashboard.
 
-For website/template inquiries, booking-flow builds, or customer customization, visit [SYHTEK](https://syhtek.com).
+For website/template inquiries, booking-flow builds, or customer customization, visit [World Softwares](https://worldsoftwares.com).
 
 ## Buyer / Customer Notes
 
 This project demonstrates a full-service local business website with premium visual direction, service packaging, a guided booking flow, mock checkout, and Square-ready deposit architecture. It is suitable as a template foundation for barbershops, salons, appointment-only studios, and local service providers.
 
-Website design direction, booking UX, frontend implementation, backend integration planning, and presentation by [SYHTEK](https://syhtek.com).
+Website design direction, booking UX, frontend implementation, backend integration planning, and presentation by [SYHTEK](https://worldsoftwares.com).
 
 ## Stack
 
@@ -36,11 +36,14 @@ Website design direction, booking UX, frontend implementation, backend integrati
 
 ## Owner Dashboard
 
-Use the dummy login to test the protected backend locally:
+Configure owner credentials in `.env.local` before testing the protected backend:
 
 - URL: `/owner/login`
-- Email: `owner@alizstudio.test`
-- Password: `aliz-demo-2026`
+- `OWNER_EMAIL`
+- `OWNER_PASSWORD`
+- `OWNER_SESSION_SECRET`
+
+For a local-only demo, set `ALIZ_ALLOW_LOCAL_DEMO_AUTH=true` and choose your own local password and session secret. Do not commit real credentials.
 
 Appointments are seeded into `data/appointments.json` on first dashboard/API access. The repository is intentionally isolated in `lib/appointments.ts` so it can be replaced with Postgres, Supabase, Prisma, or another production database without changing the dashboard workflow.
 
@@ -62,6 +65,31 @@ Appointments are seeded into `data/appointments.json` on first dashboard/API acc
 ```bash
 npm install
 npm run dev
+```
+
+For LAN testing (phone / other devices on the same network):
+
+```bash
+npm run dev:lan
+```
+
+Tailscale access is now supported directly on the same host because Next.js now whitelists discovered local interface IPs automatically in dev mode.
+Use the current Tailscale IP from your desktop (example format: `100.x.x.x`) and open:
+
+```bash
+http://100.x.x.x:3000
+```
+
+If you still get a connection error:
+
+1. Close any old Next.js instance and restart `npm run dev:lan`.
+2. Confirm port `3000` is listening with `netstat -ano | Select-String \":3000\"`.
+3. Confirm the URL uses the Tailscale IP, not a stale DNS alias.
+
+For strict local loopback testing only:
+
+```bash
+npm run dev:local
 ```
 
 ## Verification

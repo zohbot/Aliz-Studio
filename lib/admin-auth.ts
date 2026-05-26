@@ -18,45 +18,68 @@ type OwnerCredentials = {
 };
 
 const eightHoursInSeconds = 60 * 60 * 8;
-const defaultOwnerEmail = "owner@alizstudio.test";
-const defaultOwnerPassword = "aliz-demo-2026";
-const defaultSessionSecret = "development-only-aliz-studio-session-secret";
+const localDemoOwnerEmail = "owner@alizstudio.test";
+const localDemoOwnerName = "Aliz Studio Owner";
+
+type OwnerAuthConfig = OwnerCredentials & {
+  sessionSecret: string;
+};
 
 function isStrictProductionRuntime() {
-  return process.env.VERCEL_ENV === "production" || process.env.ALIZ_REQUIRE_PRODUCTION_SECRETS === "true";
+  return (
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production" ||
+    process.env.ALIZ_REQUIRE_PRODUCTION_SECRETS === "true"
+  );
 }
 
-function assertSafeProductionAuth() {
-  if (!isStrictProductionRuntime()) {
-    return;
+function isLocalDemoAuthAllowed() {
+  return process.env.NODE_ENV !== "production" && process.env.ALIZ_ALLOW_LOCAL_DEMO_AUTH === "true";
+}
+
+function getOwnerAuthConfig(): OwnerAuthConfig {
+  const allowLocalDemo = isLocalDemoAuthAllowed();
+
+  return {
+    email: process.env.OWNER_EMAIL || (allowLocalDemo ? localDemoOwnerEmail : ""),
+    password: process.env.OWNER_PASSWORD || "",
+    name: process.env.OWNER_NAME || (allowLocalDemo ? localDemoOwnerName : "Owner"),
+    sessionSecret: process.env.OWNER_SESSION_SECRET || ""
+  };
+}
+
+function assertSafeOwnerAuth(config: OwnerAuthConfig) {
+  const hasMissingConfig = !config.email || !config.password || !config.sessionSecret;
+
+  if (hasMissingConfig) {
+    throw new Error(
+      "Owner auth requires OWNER_EMAIL, OWNER_PASSWORD, and OWNER_SESSION_SECRET. For local-only demos, set ALIZ_ALLOW_LOCAL_DEMO_AUTH=true and still choose a local OWNER_PASSWORD and OWNER_SESSION_SECRET."
+    );
   }
 
-  const hasUnsafeEmail = !process.env.OWNER_EMAIL || process.env.OWNER_EMAIL === defaultOwnerEmail;
-  const hasUnsafePassword = !process.env.OWNER_PASSWORD || process.env.OWNER_PASSWORD === defaultOwnerPassword;
-  const hasUnsafeSecret =
-    !process.env.OWNER_SESSION_SECRET || process.env.OWNER_SESSION_SECRET === defaultSessionSecret;
-
-  if (hasUnsafeEmail || hasUnsafePassword || hasUnsafeSecret) {
+  if (isStrictProductionRuntime() && process.env.ALIZ_ALLOW_LOCAL_DEMO_AUTH === "true") {
     throw new Error(
-      "Production owner auth requires OWNER_EMAIL, OWNER_PASSWORD, and OWNER_SESSION_SECRET overrides."
+      "ALIZ_ALLOW_LOCAL_DEMO_AUTH must not be enabled in production. Configure private owner credentials instead."
     );
   }
 }
 
 export function getOwnerCredentials(): OwnerCredentials {
-  assertSafeProductionAuth();
+  const config = getOwnerAuthConfig();
+  assertSafeOwnerAuth(config);
 
   return {
-    email: process.env.OWNER_EMAIL || defaultOwnerEmail,
-    password: process.env.OWNER_PASSWORD || defaultOwnerPassword,
-    name: process.env.OWNER_NAME || "Aliz Studio Owner"
+    email: config.email,
+    password: config.password,
+    name: config.name
   };
 }
 
 function getSessionSecret() {
-  assertSafeProductionAuth();
+  const config = getOwnerAuthConfig();
+  assertSafeOwnerAuth(config);
 
-  return process.env.OWNER_SESSION_SECRET || defaultSessionSecret;
+  return config.sessionSecret;
 }
 
 function base64UrlEncode(value: string) {
@@ -150,5 +173,5 @@ export function isValidOwnerLogin(email: string, password: string) {
 }
 
 export function shouldShowDemoOwnerCredentials() {
-  return !isStrictProductionRuntime() && process.env.NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS !== "false";
+  return isLocalDemoAuthAllowed() && process.env.NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS === "true";
 }

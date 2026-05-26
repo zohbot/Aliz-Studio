@@ -7,7 +7,7 @@ export function SiteFooter() {
         <strong>Aliz Studio</strong>
         <p>
           Snip. Shave. Shine. Booked appointments only. Website design, booking UX, and implementation by{" "}
-          <a href="https://syhtek.com" rel="noreferrer" target="_blank">
+          <a href="https://worldsoftwares.com" rel="noreferrer" target="_blank">
             SYHTEK
           </a>
           .
@@ -16,7 +16,7 @@ export function SiteFooter() {
       <div className="footer-links">
         <Link href="/about">About</Link>
         <Link href="/book">Book Online</Link>
-        <a href="https://syhtek.com" rel="noreferrer" target="_blank">
+        <a href="https://worldsoftwares.com" rel="noreferrer" target="_blank">
           Inquiries
         </a>
       </div>

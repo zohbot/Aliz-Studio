@@ -1,5 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
+process.env.ALIZ_ALLOW_LOCAL_DEMO_AUTH ??= "true";
+process.env.NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS ??= "true";
+process.env.OWNER_EMAIL ??= "owner@alizstudio.test";
+process.env.OWNER_PASSWORD ??= "local-owner-password-for-tests";
+process.env.OWNER_NAME ??= "Aliz Studio Owner";
+process.env.OWNER_SESSION_SECRET ??= "local-playwright-owner-session-secret-change-me";
+
 const edgeExecutablePath =
   process.platform === "win32" ? "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe" : undefined;
 

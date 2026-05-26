@@ -48,8 +48,8 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
         <p className="section-kicker">Owner access</p>
         <h1>Appointment command center.</h1>
         <p>
-          Use the seeded owner login to test the protected backend, appointment queue, deposit
-          tracking, and customer request workflow.
+          Sign in with configured owner credentials to review bookings, deposit tracking, and
+          customer request workflow.
         </p>
       </div>
 
