@@ -82,7 +82,7 @@ export default async function ServicePage({ params }: ServicePageProps) {
               <CalendarClock size={18} />
               Pick date and time
             </Link>
-            <Link className="secondary-action" href="/">
+            <Link className="secondary-action" href="/packages">
               View all packages
             </Link>
           </div>

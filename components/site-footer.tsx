@@ -33,6 +33,7 @@ export function SiteFooter() {
       </div>
       <div className="footer-links">
         <Link href="/about">About</Link>
+        <Link href="/packages">Packages</Link>
         <Link href="/book">Book Online</Link>
         <a href="https://worldsoftwares.com" rel="noreferrer" target="_blank">
           Inquiries

@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-05-30 - Public Packages Page And Navigation
+
+Scope: public package-marketing and navigation polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, owner workflow, or persistence behavior was changed.
+
+Completed:
+
+- Added a dedicated `/packages` public route with a hero, signature Deluxe Cut feature, full package comparison cards, booking confidence section, and direct booking CTAs.
+- Added Packages to the header navigation and footer links, and pointed service-detail "View all packages" actions to `/packages`.
+- Kept `lib/services.ts` as the source of truth for package IDs, prices, durations, deposits, and images; added `lib/package-copy.ts` for richer static customer-facing copy.
+- Styled the packages page for both the light theme and premium black-and-gold night theme with responsive card layouts and no route behavior changes.
+- Added Playwright coverage for package navigation, all seven package cards, booking CTA routing, night-theme package-card styling, and mobile overflow.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 78/78 Playwright tests.
+
+Notes:
+
+- Package booking links use the existing `/book?service=` preselection behavior. No service editing, real payments, Supabase, or production persistence was added.
+- While validating, an existing owner-dashboard edge case surfaced where an immediate Save after changing appointment status could submit the stale pre-change appointment object. The owner board now keeps a tiny client-side draft ref so Save uses the latest selected status/payment/note values.
+
 ## 2026-05-30 - Public CTA And Appointment Detail Drawer Premium Polish
 
 Scope: targeted public About-page cards/CTA and owner appointment detail drawer polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, booking flow, owner mutation behavior, or persistence behavior was changed.

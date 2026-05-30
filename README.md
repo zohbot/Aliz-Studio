@@ -6,7 +6,7 @@ For website/template inquiries, booking-flow builds, or customer customization, 
 
 ## Buyer / Customer Notes
 
-This project demonstrates a full-service local business website with premium visual direction, service packaging, a guided booking flow, mock checkout, and Square-ready deposit architecture. It is suitable as a template foundation for barbershops, salons, appointment-only studios, and local service providers.
+This project demonstrates a full-service local business website with premium visual direction, a dedicated package comparison page, a guided booking flow, mock checkout, and Square-ready deposit architecture. It is suitable as a template foundation for barbershops, salons, appointment-only studios, and local service providers.
 
 Website design direction, booking UX, frontend implementation, backend integration planning, and presentation by [SYHTEK](https://worldsoftwares.com).
 
@@ -107,6 +107,10 @@ Logo, mark, app icon, and manifest asset usage is documented in [docs/BRAND_ASSE
 ## Theme System
 
 Aliz Studio supports the original polished light theme and an optional black-and-gold night theme. The compact header theme toggle persists the visitor choice in `localStorage` under `aliz-theme`, and `app/layout.tsx` applies the stored value early to reduce theme flash. Light remains the default when no preference is stored. Image-backed service cards, booking selections, form focus states, and mock payment cards use dedicated tokens so the night theme stays readable without default blue browser styling.
+
+## Public Packages
+
+The public `/packages` route compares all barbering packages with richer customer-facing descriptions, best-for guidance, inclusions, price, duration, deposit, and direct booking CTAs. Price, duration, deposit, service IDs, and images continue to come from `lib/services.ts`; the expanded marketing copy lives in `lib/package-copy.ts`.
 
 ## PWA Install
 

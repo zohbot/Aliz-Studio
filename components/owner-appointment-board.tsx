@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CalendarClock,
@@ -84,6 +84,9 @@ function getPaymentSummary(appointment: Appointment) {
 
 export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentBoardProps) {
   const router = useRouter();
+  const appointmentDraftsRef = useRef(
+    new Map(initialAppointments.map((appointment) => [appointment.id, appointment]))
+  );
   const [appointments, setAppointments] = useState(initialAppointments);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
@@ -115,6 +118,14 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
     appointmentId: string,
     patch: Partial<Pick<Appointment, "status" | "paymentStatus" | "ownerNotes">>
   ) {
+    const currentDraft =
+      appointmentDraftsRef.current.get(appointmentId) ||
+      appointments.find((appointment) => appointment.id === appointmentId);
+
+    if (currentDraft) {
+      appointmentDraftsRef.current.set(appointmentId, { ...currentDraft, ...patch });
+    }
+
     setAppointments((current) =>
       current.map((appointment) =>
         appointment.id === appointmentId ? { ...appointment, ...patch } : appointment
@@ -123,6 +134,8 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
   }
 
   async function saveAppointment(appointment: Appointment) {
+    const appointmentDraft = appointmentDraftsRef.current.get(appointment.id) || appointment;
+
     setSavingId(appointment.id);
     setMessage("");
 
@@ -132,9 +145,9 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        status: appointment.status,
-        paymentStatus: appointment.paymentStatus,
-        ownerNotes: appointment.ownerNotes || ""
+        status: appointmentDraft.status,
+        paymentStatus: appointmentDraft.paymentStatus,
+        ownerNotes: appointmentDraft.ownerNotes || ""
       })
     });
     const payload = await response.json();
@@ -146,6 +159,7 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
       return;
     }
 
+    appointmentDraftsRef.current.set(appointment.id, payload.appointment);
     updateLocalAppointment(appointment.id, payload.appointment);
     setMessage("Appointment saved.");
     router.refresh();

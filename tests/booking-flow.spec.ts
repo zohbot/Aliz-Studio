@@ -184,10 +184,11 @@ test.describe("Aliz Studio booking foundation", () => {
 
     const ownerSeedCard = page.locator(".appointment-card").filter({ hasText: targetCustomer }).first();
     await ownerSeedCard.getByLabel("Appointment status").selectOption("completed");
-    await expect(ownerSeedCard.locator(".status-badge")).toHaveText("Completed");
+    await expect(ownerSeedCard.getByLabel("Appointment status")).toHaveValue("completed");
     await ownerSeedCard.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("Appointment saved.")).toBeVisible();
+    await expect(ownerSeedCard.locator(".status-badge")).toHaveText("Completed");
   });
 
   test("owner can open appointment detail and save status notes", async ({ page, request }) => {
@@ -1026,6 +1027,7 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await expect(page.getByRole("link", { name: "Home", exact: true })).toHaveAttribute("href", "/");
     await expect(page.getByRole("link", { name: "About" }).first()).toHaveAttribute("href", "/about");
+    await expect(page.getByRole("link", { name: "Packages" }).first()).toHaveAttribute("href", "/packages");
     await expect(page.getByRole("link", { name: "Book Online" }).first()).toHaveAttribute("href", "/book");
     await expect(page.getByRole("link", { name: "Reserve" })).toHaveAttribute("href", "/book");
     await expect(page.getByRole("link", { name: "Owner" })).toHaveAttribute("href", "/owner/login");
@@ -1036,6 +1038,9 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await page.goto("/about");
     await expect(page.getByRole("heading", { name: /modern barbering/i })).toBeVisible();
+
+    await page.goto("/packages");
+    await expect(page.getByRole("heading", { name: /choose the cut that fits the moment/i })).toBeVisible();
 
     await page.goto("/book");
     await expect(page.getByText("Select one package to update the summary")).toBeVisible();
@@ -1109,9 +1114,68 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page).toHaveURL(/\/book/);
   });
 
+  test("packages page compares every package and routes into booking", async ({ page }) => {
+    const expectedPackages = [
+      "Basic Cut",
+      "Plus Cut",
+      "Deluxe Cut",
+      "Kids Cut",
+      "Shape Up",
+      "Beard Trim",
+      "Eyebrows"
+    ];
+
+    await page.goto("/");
+    await page.getByRole("banner").getByRole("link", { name: "Packages" }).click();
+    await expect(page).toHaveURL(/\/packages/);
+    await expect(page.getByRole("heading", { name: /choose the cut that fits the moment/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /book a package/i })).toHaveAttribute("href", "/book");
+    await expect(page.getByRole("link", { name: /compare packages/i })).toHaveAttribute(
+      "href",
+      "#compare-packages"
+    );
+    await expect(page.getByText(/mock deposit language until production payments are connected/i)).toBeVisible();
+
+    const packageCards = page.locator(".package-card");
+    await expect(packageCards).toHaveCount(7);
+
+    for (const packageName of expectedPackages) {
+      const card = packageCards.filter({ hasText: packageName }).first();
+
+      await expect(card).toBeVisible();
+      await expect(card.getByRole("heading", { name: packageName })).toBeVisible();
+      await expect(card.getByText("Price")).toBeVisible();
+      await expect(card.getByText("Duration")).toBeVisible();
+      await expect(card.getByText("Deposit")).toBeVisible();
+      await expect(card.getByText("Best for")).toBeVisible();
+      await expect(card.getByText("Includes")).toBeVisible();
+      await expect(card.getByRole("link", { name: /^Book / })).toHaveAttribute("href", /\/book\?service=/);
+      await expect(card.getByRole("link", { name: "View details" })).toHaveAttribute("href", /\/services\//);
+    }
+
+    const deluxeCard = packageCards.filter({ hasText: "Deluxe Cut" }).first();
+    await expect(deluxeCard.locator(".package-card__badge")).toHaveText("Signature");
+
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+    await page.reload();
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    const cardBackground = await deluxeCard.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const cardBorder = await deluxeCard.evaluate((element) => getComputedStyle(element).borderTopColor);
+
+    expect(parseRgbColor(cardBackground).red, "night package cards should stay dark").toBeLessThanOrEqual(35);
+    expectNotBrowserBlue(cardBorder, "night package card border");
+
+    await deluxeCard.getByRole("link", { name: "Book Deluxe" }).click();
+    await expect(page).toHaveURL(/\/book\?service=deluxe-cut/);
+    await expect(page.getByRole("heading", { name: "Deluxe Cut" })).toBeVisible();
+  });
+
   test("mobile public routes do not create horizontal overflow", async ({ page }) => {
     const widths = [320, 375, 390, 414, 430];
-    const routes = ["/", "/about", "/book", "/services/basic-cut", "/owner/login"];
+    const routes = ["/", "/about", "/packages", "/book", "/services/basic-cut", "/owner/login"];
 
     for (const width of widths) {
       await page.setViewportSize({ width, height: 900 });

@@ -29,6 +29,7 @@
 - Keep the desktop booking shell roomy enough for a wide center date/time area; available time slots should not return to a cramped narrow column.
 - Keep About-page story cards on their dedicated smaller heading scale so "Appointment First" does not inherit oversized page-heading typography again.
 - Keep owner appointment detail drawer stat/contact/note panels on the refined card treatment when adding future admin fields.
+- Keep `/packages` as the public package comparison destination; if services become owner-editable, move the richer package copy behind the future service repository instead of duplicating prices or durations.
 - Add service-worker/offline PWA behavior only after booking freshness requirements are decided.
 - Keep booking copy explicit that the current deposit step is demo/mock-only until Square live checkout is implemented.
 - Keep form validation aligned with the current US-only phone requirement unless the business expands beyond that assumption.

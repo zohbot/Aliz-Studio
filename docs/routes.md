@@ -22,6 +22,15 @@ This document captures the current Aliz Studio routes before production scheduli
 - Known limitations: Static marketing content only.
 - Future production direction: Keep static unless the owner needs editable content later.
 
+### `/packages`
+
+- Purpose: Public package comparison page with richer service descriptions, price, duration, deposit, best-for guidance, inclusions, and booking CTAs.
+- Current data source: Static services from `lib/services.ts` for price/duration/deposit/images plus marketing copy from `lib/package-copy.ts`.
+- Auth requirement: None.
+- Readiness: Demo-ready.
+- Known limitations: Static service catalog and static package copy; deep-linked booking selection uses current `/book?service=` behavior.
+- Future production direction: Source active services and owner-editable package copy from Supabase or a service repository while preserving deterministic local/demo seed data.
+
 ### `/book`
 
 - Purpose: Customer booking UI for selecting service, date, time, and customer details.
