@@ -679,6 +679,73 @@ test.describe("Aliz Studio booking foundation", () => {
     expectReadableImageCardTextColor(selectedSlotTextColor, "selected slot text");
   });
 
+  test("desktop booking layout gives time slots generous room", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+    await page.setViewportSize({ width: 1365, height: 920 });
+    await page.goto("/book?service=deluxe-cut");
+
+    const shellBox = await page.locator(".booking-shell").boundingBox();
+    const timePanelBox = await page.locator(".booking-panel--times").boundingBox();
+    const summaryBox = await page.locator(".booking-summary").boundingBox();
+    const renderedSlotColumns = await page
+      .locator(".slot-list")
+      .evaluate((element) => getComputedStyle(element).gridTemplateColumns.split(" ").filter(Boolean).length);
+    const slotMetrics = await page.locator(".slot-button:not(:disabled)").evaluateAll((buttons) =>
+      buttons.map((button) => {
+        const rect = button.getBoundingClientRect();
+        const styles = getComputedStyle(button);
+
+        return {
+          borderColor: styles.borderTopColor,
+          height: rect.height,
+          width: rect.width
+        };
+      })
+    );
+    const overflow = await page.evaluate(() => {
+      const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+      return documentWidth - window.innerWidth;
+    });
+
+    if (!shellBox || !timePanelBox || !summaryBox) {
+      throw new Error("Booking layout regions should be visible on desktop");
+    }
+
+    expect(shellBox.width, "desktop booking shell should use the available viewport").toBeGreaterThanOrEqual(
+      1260
+    );
+    expect(timePanelBox.width, "time selection panel should no longer be a narrow side column").toBeGreaterThanOrEqual(
+      520
+    );
+    expect(summaryBox.x, "summary should remain the right-hand rail on desktop").toBeGreaterThan(timePanelBox.x);
+    expect(renderedSlotColumns, "desktop time slots should render in a roomy two-column grid").toBeGreaterThanOrEqual(
+      2
+    );
+    expect(slotMetrics.length).toBeGreaterThan(0);
+    expect(
+      Math.min(...slotMetrics.map((metric) => metric.width)),
+      "each desktop time slot should remain readable"
+    ).toBeGreaterThanOrEqual(240);
+    expect(
+      Math.min(...slotMetrics.map((metric) => metric.height)),
+      "time slots should keep comfortable tap/click height"
+    ).toBeGreaterThanOrEqual(68);
+    expect(overflow, "desktop booking layout should not overflow horizontally").toBeLessThanOrEqual(1);
+
+    const openSlot = page.locator(".slot-button:not(:disabled)").first();
+    await openSlot.click();
+    const selectedSlotBorder = await openSlot.evaluate((element) => getComputedStyle(element).borderTopColor);
+
+    expectNotBrowserBlue(selectedSlotBorder, "desktop selected slot border");
+    expect(
+      parseRgbColor(selectedSlotBorder).red,
+      "desktop selected slot should keep the warm gold selection treatment"
+    ).toBeGreaterThanOrEqual(180);
+  });
+
   test("night theme keeps mock payment cards and booking helper text readable", async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("aliz-theme", "night");
@@ -813,6 +880,11 @@ test.describe("Aliz Studio booking foundation", () => {
     await page.getByRole("button", { name: "View details" }).first().click();
 
     const detail = page.getByRole("dialog");
+    const detailStatusBadge = detail.locator(".status-badge").first();
+
+    await expect(detail).toBeVisible();
+    await expect(detailStatusBadge).toBeVisible();
+
     const badgeColor = await detail
       .locator(".status-badge")
       .first()
@@ -824,7 +896,6 @@ test.describe("Aliz Studio booking foundation", () => {
       return documentWidth - window.innerWidth;
     });
 
-    await expect(detail).toBeVisible();
     await expect(detail.getByText(/demo\/mock deposit record only/i)).toBeVisible();
     expectReadableImageCardTextColor(badgeColor, "night appointment detail status badge");
     expect(parseRgbColor(drawerBackground).red, "night detail drawer should stay dark").toBeLessThanOrEqual(

@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-05-30 - Premium Booking Layout Visual Refinement
+
+Scope: targeted `/book` layout and visual polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, owner dashboard flow, or persistence behavior was changed.
+
+Completed:
+
+- Reworked the desktop booking shell into a more spacious three-zone composition: services on the left, date and time stacked in a larger center area, and the summary/customer form on the right.
+- Expanded the booking shell width on desktop so the page uses available viewport space instead of squeezing the time panel into a narrow side column.
+- Made available time slots a roomy two-column grid on tablet/desktop with larger touch/click targets and more comfortable text spacing.
+- Kept mobile booking content single-column and preserved the existing no-horizontal-overflow behavior at small widths.
+- Added a subtle shared booking-shell backdrop so the booking panels read as one connected premium workspace without changing the booking flow.
+- Added Playwright coverage for the 1365px desktop booking layout, slot width/height readability, night-theme selection styling, and horizontal overflow.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 74/74 Playwright tests.
+
+Notes:
+
+- Booking behavior, mock deposit copy, current API shapes, and theme persistence remain unchanged.
+
 ## 2026-05-30 - Admin Appointment Detail And Status Workflow
 
 Scope: demo-safe owner appointment management only. No Supabase runtime, real payment capture, real notifications, multi-user auth, DNS, Vercel setting, secret, env value, or durable production persistence was changed.

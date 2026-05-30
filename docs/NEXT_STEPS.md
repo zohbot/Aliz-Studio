@@ -26,6 +26,7 @@
 - Keep booking selections, tap highlights, form focus states, and mock payment cards tied to the theme interaction/payment tokens so browser-default blue and washed-out night surfaces do not return.
 - Keep mock payment tiles on explicit dark/gold night overrides so they do not regress into bright white blocks inside the booking summary.
 - Keep the mobile header compact on booking pages; verify only one theme-appropriate logo variant is visible after any header or logo changes.
+- Keep the desktop booking shell roomy enough for a wide center date/time area; available time slots should not return to a cramped narrow column.
 - Add service-worker/offline PWA behavior only after booking freshness requirements are decided.
 - Keep booking copy explicit that the current deposit step is demo/mock-only until Square live checkout is implemented.
 - Keep form validation aligned with the current US-only phone requirement unless the business expands beyond that assumption.
