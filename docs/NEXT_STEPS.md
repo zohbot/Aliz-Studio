@@ -24,6 +24,7 @@
 - Re-check both light and night themes when making future UI changes; light remains the default and the night toggle persists locally as `aliz-theme`.
 - Keep image-backed service/menu card text tied to the dedicated image-card tokens so night-mode titles, prices, durations, and CTAs remain readable over photography.
 - Keep booking selections, tap highlights, form focus states, and mock payment cards tied to the theme interaction/payment tokens so browser-default blue and washed-out night surfaces do not return.
+- Keep mock payment tiles on explicit dark/gold night overrides so they do not regress into bright white blocks inside the booking summary.
 - Add service-worker/offline PWA behavior only after booking freshness requirements are decided.
 - Keep booking copy explicit that the current deposit step is demo/mock-only until Square live checkout is implemented.
 - Keep form validation aligned with the current US-only phone requirement unless the business expands beyond that assumption.

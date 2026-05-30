@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-05-30 - Night Theme Mock Payment Tile Contrast Fix
+
+Scope: targeted night-theme polish for mock payment method tiles and nearby disabled continue-button state. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Added a stronger dark payment-card surface token and explicit night-mode payment tile override.
+- Kept payment method labels readable with warm off-white text and gold icons/borders.
+- Added subtle rounded hover/pressed treatment to payment method tiles without making them look like real payment buttons.
+- Reviewed and polished the disabled `Continue to mock deposit` button state in night mode so it reads as intentionally unavailable.
+- Strengthened Playwright coverage so all mock payment tile labels are visible and the tile background, gradient, icon, border, helper text, placeholder, and disabled CTA styles are checked.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 62/62 Playwright tests.
+
+Notes:
+
+- Mock payment behavior remains demo-only and unchanged.
+
 ## 2026-05-30 - Night Theme Booking Interaction Polish
 
 Scope: targeted night-theme polish for booking controls, form focus states, and mock payment option cards. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.

@@ -493,10 +493,21 @@ test.describe("Aliz Studio booking foundation", () => {
     await page.setViewportSize({ width: 390, height: 900 });
     await page.goto("/book?service=deluxe-cut");
 
+    const expectedPaymentLabels = [
+      "Credit or debit",
+      "Mobile wallet mock",
+      "Google Pay style mock",
+      "Apple Pay style mock",
+      "Square-style demo",
+      "Manual deposit placeholder"
+    ];
     const creditCardLogo = page.locator(".payment-logo").filter({ hasText: "Credit or debit" }).first();
     const paymentTextColor = await creditCardLogo.evaluate((element) => getComputedStyle(element).color);
     const paymentBackground = await creditCardLogo.evaluate(
       (element) => getComputedStyle(element).backgroundColor
+    );
+    const paymentBackgroundImage = await creditCardLogo.evaluate(
+      (element) => getComputedStyle(element).backgroundImage
     );
     const paymentBorder = await creditCardLogo.evaluate((element) => getComputedStyle(element).borderTopColor);
     const paymentIconColor = await creditCardLogo
@@ -508,6 +519,20 @@ test.describe("Aliz Studio booking foundation", () => {
     const notesPlaceholderColor = await page
       .getByLabel("Notes")
       .evaluate((element) => getComputedStyle(element, "::placeholder").color);
+    const disabledContinueButton = page.getByRole("button", { name: /continue to mock deposit/i });
+    const disabledButtonColor = await disabledContinueButton.evaluate(
+      (element) => getComputedStyle(element).color
+    );
+    const disabledButtonBackground = await disabledContinueButton.evaluate(
+      (element) => getComputedStyle(element).backgroundColor
+    );
+
+    for (const label of expectedPaymentLabels) {
+      const tile = page.locator(".payment-logo").filter({ hasText: label }).first();
+
+      await expect(tile).toBeVisible();
+      await expect(tile.locator(".payment-logo__text")).toBeVisible();
+    }
 
     expectReadableImageCardTextColor(paymentTextColor, "payment card text");
     expectReadableImageCardTextColor(paymentIconColor, "payment card icon");
@@ -516,7 +541,15 @@ test.describe("Aliz Studio booking foundation", () => {
     expect(parseRgbColor(paymentBackground).red, "payment card background should stay dark").toBeLessThanOrEqual(
       35
     );
+    expect(paymentBackgroundImage, "payment card should have the dark/gold tile gradient").toContain(
+      "linear-gradient"
+    );
     expectNotBrowserBlue(paymentBorder, "payment card border");
+    expectReadableImageCardTextColor(disabledButtonColor, "disabled continue button text");
+    expect(
+      parseRgbColor(disabledButtonBackground).red,
+      "disabled continue button background should stay dark in night theme"
+    ).toBeLessThanOrEqual(35);
   });
 
   test("night theme keeps key mobile routes free of horizontal overflow", async ({ page }) => {
