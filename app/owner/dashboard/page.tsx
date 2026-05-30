@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { OwnerAppointmentBoard } from "@/components/owner-appointment-board";
+import { OwnerSessionActions } from "@/components/owner-session-actions";
 import { getOwnerSession } from "@/lib/admin-auth";
 import { getAppointmentStats, listAppointments } from "@/lib/appointments";
 import type { Appointment } from "@/lib/domain";
@@ -37,13 +38,13 @@ export default async function OwnerDashboardPage() {
     [appointments, stats] = await Promise.all([listAppointments(), getAppointmentStats()]);
   } catch {
     dashboardError =
-      "Appointment storage is temporarily unavailable. Owner access is active, but booking records cannot be loaded right now.";
+      "Temporary demo storage is unavailable. Owner access is active, but booking records cannot be loaded right now.";
   }
 
   return (
     <>
       <section className="owner-dashboard-hero">
-        <div>
+        <div className="owner-dashboard-hero__copy">
           <p className="section-kicker">Owner dashboard</p>
           <h1>Manage bookings, deposits, and the day ahead.</h1>
           <p>
@@ -52,12 +53,16 @@ export default async function OwnerDashboardPage() {
             database and notification provider.
           </p>
         </div>
+        <OwnerSessionActions ownerName={session.name} />
       </section>
 
       {dashboardError ? (
         <section className="owner-dashboard-alert" role="alert">
-          <strong>Dashboard opened in safe mode.</strong>
+          <strong>Owner access is active.</strong>
           <p>{dashboardError}</p>
+          <a className="secondary-action" href="/owner/dashboard">
+            Retry dashboard
+          </a>
         </section>
       ) : null}
 

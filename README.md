@@ -45,9 +45,11 @@ Configure owner credentials in `.env.local` before testing the protected backend
 
 Owner email is compared case-insensitively and tolerates accidental surrounding whitespace or wrapping quotes. Owner password is intentionally exact-match; enter it without surrounding quotes or spaces unless those characters are part of the intended password.
 
+When an owner session is already active, `/owner/login` redirects to `/owner/dashboard` by design. Use the dashboard `Log out` action to clear the session and return to the credential form.
+
 For a local-only demo, set `ALIZ_ALLOW_LOCAL_DEMO_AUTH=true` and choose your own local password and session secret. Do not commit real credentials.
 
-Appointments are seeded into `data/appointments.json` on first dashboard/API access. The repository is intentionally isolated in `lib/appointments.ts` so it can be replaced with Postgres, Supabase, Prisma, or another production database without changing the dashboard workflow.
+Appointments are seeded into `data/appointments.json` on first local dashboard/API access. On Vercel, the file-backed repository uses ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
 
 ## Security / Operations Notes
 

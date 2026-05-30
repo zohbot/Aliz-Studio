@@ -7,10 +7,16 @@ import { Eye, EyeOff, LogIn } from "lucide-react";
 type OwnerLoginFormProps = {
   demoEmail: string;
   demoPassword: string;
+  statusMessage: string;
   showDemoCredentials: boolean;
 };
 
-export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }: OwnerLoginFormProps) {
+export function OwnerLoginForm({
+  demoEmail,
+  demoPassword,
+  statusMessage,
+  showDemoCredentials
+}: OwnerLoginFormProps) {
   const [email, setEmail] = useState(showDemoCredentials ? demoEmail : "");
   const [password, setPassword] = useState(showDemoCredentials ? demoPassword : "");
   const [error, setError] = useState("");
@@ -98,6 +104,7 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
       </div>
 
       {error ? <p className="form-error">{error}</p> : null}
+      {statusMessage ? <p className="form-status">{statusMessage}</p> : null}
 
       <button className="primary-action primary-action--wide" disabled={isSubmitting} type="submit">
         <LogIn size={18} />

@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   title: "Owner Login"
 };
 
-export default async function OwnerLoginPage() {
+type OwnerLoginPageProps = {
+  searchParams?: Promise<{
+    loggedOut?: string;
+  }>;
+};
+
+export default async function OwnerLoginPage({ searchParams }: OwnerLoginPageProps) {
   const session = await getOwnerSession();
 
   if (session) {
@@ -17,12 +23,14 @@ export default async function OwnerLoginPage() {
   }
 
   const credentials = getOwnerCredentials();
+  const params = await searchParams;
 
   return (
     <section className="owner-login-shell">
       <OwnerLoginForm
         demoEmail={credentials.email}
         demoPassword={credentials.password}
+        statusMessage={params?.loggedOut ? "You have been logged out. Sign in again to continue." : ""}
         showDemoCredentials={shouldShowDemoOwnerCredentials()}
       />
     </section>

@@ -24,9 +24,11 @@ Allowed `ALIZ_DATA_BACKEND` values:
 
 - `file`: default runtime backend. Uses `data/appointments.json` through the proven file-backed implementation.
 - `demo`: optional in-memory adapter backed by deterministic seed data.
-- `supabase`: future backend. Currently a skeleton that throws a clear server-side error if selected.
+- `supabase`: future backend. Currently a skeleton and intentionally disabled unless `ALIZ_ENABLE_SUPABASE_REPOSITORY=true`.
 
-Do not expose `ALIZ_DATA_BACKEND`, Supabase service role keys, or repository configuration to browser code.
+Do not expose `ALIZ_DATA_BACKEND`, `ALIZ_ENABLE_SUPABASE_REPOSITORY`, Supabase service role keys, or repository configuration to browser code.
+
+If `ALIZ_DATA_BACKEND=supabase` is set before the adapter is implemented, the factory falls back to `file` unless `ALIZ_ENABLE_SUPABASE_REPOSITORY=true`. This protects staging/demo deployments from accidentally selecting the not-yet-implemented Supabase skeleton.
 
 ## AppointmentRepository Methods
 
@@ -72,7 +74,7 @@ The demo adapter is not the default backend.
 
 The Supabase adapter is a skeleton in this task. It does not import `@supabase/supabase-js`, does not read credentials, and does not connect to a live project.
 
-If `ALIZ_DATA_BACKEND=supabase` is selected now, appointment operations fail closed with a clear server-side error. A future task should implement it against the schema in `supabase/migrations/0001_create_aliz_studio_core_schema.sql`.
+If `ALIZ_DATA_BACKEND=supabase` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=true` are both selected now, appointment operations fail closed with a clear server-side error. A future task should implement it against the schema in `supabase/migrations/0001_create_aliz_studio_core_schema.sql`.
 
 Expected future mapping:
 

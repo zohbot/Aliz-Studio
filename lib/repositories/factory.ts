@@ -10,12 +10,23 @@ import type { AppointmentRepository, RepositoryBackend } from "@/lib/repositorie
 let cachedAppointmentRepository: AppointmentRepository | null = null;
 let cachedBackend: RepositoryBackend | null = null;
 
-export function resolveRepositoryBackend(value = process.env.ALIZ_DATA_BACKEND): RepositoryBackend {
+function isSupabaseRepositoryEnabled(env: NodeJS.ProcessEnv = process.env) {
+  return env.ALIZ_ENABLE_SUPABASE_REPOSITORY === "true";
+}
+
+export function resolveRepositoryBackend(
+  value = process.env.ALIZ_DATA_BACKEND,
+  env: NodeJS.ProcessEnv = process.env
+): RepositoryBackend {
   if (!value) {
     return "file";
   }
 
   const normalizedValue = value.trim().toLowerCase();
+
+  if (normalizedValue === "supabase" && !isSupabaseRepositoryEnabled(env)) {
+    return "file";
+  }
 
   if (REPOSITORY_BACKENDS.includes(normalizedValue as RepositoryBackend)) {
     return normalizedValue as RepositoryBackend;

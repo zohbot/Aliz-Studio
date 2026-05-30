@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { readdir, readFile, rm } from "fs/promises";
 import path from "path";
 import { resolveFileAppointmentStoragePaths } from "../lib/repositories/file-appointment-repository";
+import { resolveRepositoryBackend } from "../lib/repositories/factory";
 
 async function listFiles(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true });
@@ -35,6 +36,13 @@ test.describe("Aliz Studio booking foundation", () => {
 
     expect(vercelPaths.dataDirectory).toBe("/tmp/aliz-studio-appointments");
     expect(vercelPaths.appointmentsFile).toBe("/tmp/aliz-studio-appointments/appointments.json");
+  });
+
+  test("inactive Supabase repository setting falls back to file backend", () => {
+    expect(resolveRepositoryBackend("supabase", {})).toBe("file");
+    expect(resolveRepositoryBackend("supabase", { ALIZ_ENABLE_SUPABASE_REPOSITORY: "true" })).toBe(
+      "supabase"
+    );
   });
 
   test("home page exposes service menu and booking entry point", async ({ page }) => {
@@ -137,6 +145,9 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page).toHaveURL(/\/owner\/dashboard/);
     await expect(page.getByRole("heading", { name: /manage bookings/i })).toBeVisible();
     await expect(page.getByRole("region", { name: "Appointment statistics" })).toBeVisible();
+    await expect(page.getByRole("complementary", { name: "Owner session" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await expect(page.getByText("Temporary demo storage is unavailable")).toHaveCount(0);
     await expect(page.getByText("Marcus Reed")).toBeVisible();
 
     const ownerSeedCard = page.locator(".appointment-card").filter({ hasText: "Marcus Reed" }).first();
@@ -156,6 +167,39 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await expect(page).toHaveURL(/\/owner\/login/);
     await expect(page.getByText("Invalid owner login. Check the owner email and password.")).toBeVisible();
+  });
+
+  test("owner login shows credential fields when there is no active session", async ({ page }) => {
+    await page.context().clearCookies();
+    await page.goto("/owner/login");
+
+    await expect(page.getByLabel("Email")).toBeVisible();
+    await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+    await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
+  });
+
+  test("owner can log out and dashboard requires login again", async ({ page }) => {
+    await page.goto("/owner/login");
+
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await page.goto("/owner/login");
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+
+    await page.getByRole("button", { name: "Log out" }).click();
+
+    await expect(page).toHaveURL(/\/owner\/login/);
+    await expect(page.getByText("You have been logged out. Sign in again to continue.")).toBeVisible();
+    await expect(page.getByLabel("Password", { exact: true })).toBeVisible();
+
+    await page.goto("/owner/dashboard");
+
+    await expect(page).toHaveURL(/\/owner\/login/);
   });
 
   test("owner login password visibility toggle is accessible", async ({ page }) => {
@@ -454,6 +498,34 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await expect(page.getByRole("heading", { name: /appointment command center/i })).toBeVisible();
     expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test("owner dashboard logout is visible across mobile widths", async ({ page }) => {
+    const widths = [320, 375, 390, 414, 430];
+
+    await page.goto("/owner/login");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto("/owner/dashboard");
+
+      const overflow = await page.evaluate(() => {
+        const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+        return documentWidth - window.innerWidth;
+      });
+
+      await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+      expect(overflow, `owner dashboard at ${width}px should not overflow horizontally`).toBeLessThanOrEqual(
+        1
+      );
+    }
   });
 
   test("booking validation rejects non-US phone lengths clearly", async ({ page }) => {

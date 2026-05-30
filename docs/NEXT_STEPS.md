@@ -11,7 +11,9 @@
 - Enter owner env values as raw text in Vercel, without wrapping quotes. `OWNER_PASSWORD` remains exact-match, so accidental spaces or quotes will become part of the password.
 - Redeploy after changing Vercel env vars; existing deployments do not automatically pick up new values.
 - Keep `ALIZ_DATA_BACKEND=file` until the Supabase adapter is intentionally enabled in a later task.
+- Keep `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase appointment repository is implemented. This prevents an accidental `ALIZ_DATA_BACKEND=supabase` value from breaking the staging demo.
 - Treat live appointment data as temporary while the app remains file-backed on Vercel/serverless; the file backend uses ephemeral temp storage in that environment.
+- If `/owner/login` redirects straight to `/owner/dashboard`, that means a valid owner session is still active. Use the visible dashboard `Log out` action before testing the credential form again.
 - Re-run public navigation, booking, mock checkout, confirmation, owner login, and owner dashboard checks after the staging owner variables are set.
 
 ## Polish Follow-Ups
@@ -26,6 +28,7 @@
 ## Deferred Production Work
 
 - Move appointment persistence from the file-backed repository to Supabase only after repository adapters and transactional booking flows are ready.
+- Implement and test the Supabase repository before setting `ALIZ_ENABLE_SUPABASE_REPOSITORY=true`.
 - Add owner-managed blocked times/days before using the booking backend for real customer scheduling.
 - Add Square hosted checkout and webhook reconciliation before collecting real deposits.
 - Add owner notifications only after provider responses and notification logs are wired.

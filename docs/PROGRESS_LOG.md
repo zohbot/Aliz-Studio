@@ -1,5 +1,30 @@
 # Progress Log
 
+## 2026-05-30 - Owner Session UX And Storage Fallback Follow-Up
+
+Scope: owner dashboard session clarity and demo storage reliability only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Confirmed that an active owner session intentionally redirects `/owner/login` to `/owner/dashboard`; this is expected protected-route behavior, not a credential form bypass.
+- Added a visible owner session panel and `Log out` action to the dashboard so testers can clearly end the current session before retesting credentials.
+- Added logout feedback on `/owner/login` after the session is cleared.
+- Hardened repository backend selection so an accidental `ALIZ_DATA_BACKEND=supabase` value falls back to the file backend unless `ALIZ_ENABLE_SUPABASE_REPOSITORY=true` is explicitly set.
+- Documented the staging expectation that Supabase repository activation remains disabled until the adapter is implemented.
+- Added Playwright coverage for active-session redirect behavior, logout, dashboard session controls on mobile, and Supabase backend fallback.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 50/50 Playwright tests.
+
+Notes:
+
+- A read-only live availability check before this sprint returned storage-unavailable JSON, which points to a runtime repository/storage configuration problem rather than an owner credential mismatch.
+- Live dashboard safe-mode status still requires post-deploy confirmation with private owner credentials.
+
 ## 2026-05-30 - Corrective Valid Login And Logo Sprint
 
 Scope: owner valid-login success path, transparent app-used brand assets, owner login polish, and handoff packaging. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
