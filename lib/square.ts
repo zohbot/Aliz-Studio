@@ -1,10 +1,6 @@
-import type { BookingQuote } from "@/lib/booking";
+import type { BookingQuote, SquareCheckoutReference } from "@/lib/domain";
 
-export type SquareCheckoutResult = {
-  checkoutUrl: string;
-  provider: "square";
-  mode: "stub" | "live";
-};
+export type SquareCheckoutResult = SquareCheckoutReference;
 
 export async function createSquareDepositCheckout(quote: BookingQuote): Promise<SquareCheckoutResult> {
   const sandboxUrl = new URL("/checkout", "https://alizstudio.local");

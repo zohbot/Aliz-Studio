@@ -59,6 +59,7 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
           autoComplete="email"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
+          required
           type="email"
           value={email}
         />
@@ -70,6 +71,7 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
           autoComplete="current-password"
           name="password"
           onChange={(event) => setPassword(event.target.value)}
+          required
           type="password"
           value={password}
         />

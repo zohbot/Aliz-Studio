@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getOwnerSession } from "@/lib/admin-auth";
 import { assertSameOriginRequest, parseJsonRequest } from "@/lib/api-security";
-import { ownerAppointmentUpdateSchema, updateAppointment } from "@/lib/appointments";
+import { updateAppointment } from "@/lib/appointments";
+import { ownerAppointmentUpdateSchema } from "@/lib/domain";
 
 type RouteContext = {
   params: Promise<{

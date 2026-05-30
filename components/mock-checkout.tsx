@@ -11,7 +11,7 @@ import {
   ShieldCheck,
   Sparkles
 } from "lucide-react";
-import type { Appointment } from "@/lib/appointments";
+import type { Appointment } from "@/lib/domain";
 import { formatMoney } from "@/lib/services";
 import { PaymentMethodLogos } from "@/components/payment-method-logos";
 
@@ -117,8 +117,8 @@ export function MockCheckout({ appointment }: MockCheckoutProps) {
         </div>
 
         <div className="checkout-card">
-          <p className="section-kicker">Secure deposit</p>
-          <h1>Reserve your appointment with a deposit.</h1>
+          <p className="section-kicker">Demo deposit</p>
+          <h1>Reserve your appointment with a mock deposit.</h1>
           <p>
             This mock checkout simulates the Square step without charging a real card. Use any test
             card number, such as 4242 4242 4242 4242.
@@ -210,7 +210,7 @@ export function MockCheckout({ appointment }: MockCheckoutProps) {
 
             <button className="primary-action primary-action--wide" disabled={isSubmitting} type="submit">
               <LockKeyhole size={18} />
-              {isSubmitting ? "Processing..." : `Pay ${formatMoney(appointment.deposit)} deposit`}
+              {isSubmitting ? "Processing..." : `Record mock ${formatMoney(appointment.deposit)} deposit`}
             </button>
           </form>
         </div>
@@ -256,7 +256,7 @@ export function MockCheckout({ appointment }: MockCheckoutProps) {
           <BadgeCheck size={20} />
           <div>
             <strong>Deposit holds the time slot.</strong>
-            <p>The owner dashboard updates to paid and confirmed after this mock payment.</p>
+            <p>The owner dashboard updates to paid and confirmed after this demo-only mock payment.</p>
           </div>
         </div>
       </aside>

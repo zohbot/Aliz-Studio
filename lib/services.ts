@@ -1,17 +1,6 @@
-export type Service = {
-  id: string;
-  name: string;
-  shortName: string;
-  price: number;
-  durationMinutes: number;
-  deposit: number;
-  description: string;
-  detail: string;
-  image: string;
-  accent: string;
-  styleNote: string;
-  inclusions: string[];
-};
+import type { Service } from "@/lib/domain";
+
+export type { Service, ServiceCategory, ServiceDurationMinutes, ServiceId } from "@/lib/domain";
 
 export const services: Service[] = [
   {

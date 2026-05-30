@@ -1,11 +1,6 @@
-import type { BookingQuote } from "@/lib/booking";
+import type { BookingNotification } from "@/lib/domain";
 
-export type BookingNotification = {
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  quote: BookingQuote;
-};
+export type { BookingNotification, NotificationChannel, NotificationLog, NotificationStatus } from "@/lib/domain";
 
 export async function notifyOwnerOfBooking(notification: BookingNotification) {
   // Future integration point: Resend for email and Twilio for SMS.

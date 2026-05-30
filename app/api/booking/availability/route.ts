@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getReservedTimesForDate } from "@/lib/appointments";
 import { getPreviewSlots } from "@/lib/availability";
-import { appointmentDateSchema } from "@/lib/booking";
+import { appointmentDateSchema } from "@/lib/domain";
 
 const availabilitySchema = z.object({
   date: appointmentDateSchema

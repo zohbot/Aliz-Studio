@@ -92,9 +92,26 @@ For strict local loopback testing only:
 npm run dev:local
 ```
 
+## Deployment
+
+Staging deployment notes for Vercel and the `aliz.zohbot.net` Cloudflare DNS setup live in [docs/deployment.md](docs/deployment.md).
+
+## Brand Assets
+
+Logo, mark, app icon, and manifest asset usage is documented in [docs/BRAND_ASSETS.md](docs/BRAND_ASSETS.md). The current assets are normalized copies of the generated Aliz Studio exports and can be replaced in place with production exports using the same filenames.
+
+## PWA Install
+
+Aliz Studio includes a lightweight install card backed by `app/manifest.ts`. Chrome, Edge, and Android browsers can use the native install prompt when available; iOS Safari receives manual Share then Add to Home Screen instructions. No push notifications, service worker cache, or offline booking behavior is enabled yet.
+
+## Live QA
+
+Live QA notes, completed polish items, and current production-readiness limits are tracked in [docs/PROGRESS_LOG.md](docs/PROGRESS_LOG.md). Follow-up work is tracked in [docs/NEXT_STEPS.md](docs/NEXT_STEPS.md).
+
 ## Verification
 
 ```bash
+npm run lint
 npm run build
 npm run test:e2e
 ```

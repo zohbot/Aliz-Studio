@@ -1,11 +1,11 @@
-export type AppointmentSlot = {
-  label: string;
-  value: string;
-};
+import { DAILY_TIMES } from "@/lib/domain";
+import type { AvailabilitySlot } from "@/lib/domain";
 
-export const dailyTimes = ["10:00 AM", "11:00 AM", "12:30 PM", "2:00 PM", "3:30 PM", "5:00 PM"];
+export type AppointmentSlot = AvailabilitySlot;
 
-export function getPreviewSlots(): AppointmentSlot[] {
+export const dailyTimes = DAILY_TIMES;
+
+export function getPreviewSlots(): AvailabilitySlot[] {
   return dailyTimes.map((time) => ({
     label: time,
     value: time

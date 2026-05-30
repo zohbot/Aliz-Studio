@@ -43,7 +43,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
       <h1>{paid ? "Your appointment is confirmed." : "Your spot is ready for deposit."}</h1>
       <p>
         {paid
-          ? "Your mock deposit has been recorded, and the owner dashboard now shows this appointment as paid and confirmed."
+          ? "Your demo-only mock deposit has been recorded, and the owner dashboard now shows this appointment as paid and confirmed."
           : "Your appointment request is now in the owner dashboard. In production, Square will collect the deposit here and the webhook will mark the appointment paid automatically."}
       </p>
 

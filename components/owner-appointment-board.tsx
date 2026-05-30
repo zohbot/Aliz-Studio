@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CalendarClock, CheckCircle2, CircleDollarSign, LogOut, Save, Search } from "lucide-react";
-import type { Appointment, AppointmentStatus, PaymentStatus } from "@/lib/appointments";
+import type { Appointment, AppointmentStatus, PaymentStatus } from "@/lib/domain";
 import { formatMoney } from "@/lib/services";
 
 type OwnerAppointmentBoardProps = {

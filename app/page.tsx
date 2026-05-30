@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { CalendarClock, CheckCircle2, ShieldCheck } from "lucide-react";
 import { ServiceGrid } from "@/components/service-grid";
+import { PwaInstallCard } from "@/components/pwa-install-card";
 
 const principles = [
   "Appointments paced around the cut, not a waiting room.",
@@ -77,6 +78,8 @@ export default function Home() {
           ))}
         </div>
       </section>
+
+      <PwaInstallCard />
     </>
   );
 }

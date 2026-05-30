@@ -18,15 +18,10 @@ import {
 import { getPreviewSlots } from "@/lib/availability";
 import { formatMoney, services } from "@/lib/services";
 import { PaymentMethodLogos } from "@/components/payment-method-logos";
+import type { AvailabilitySlot } from "@/lib/domain";
 
 type BookingConfiguratorProps = {
   initialServiceId?: string;
-};
-
-type AvailabilitySlot = {
-  label: string;
-  value: string;
-  isReserved?: boolean;
 };
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -83,6 +78,24 @@ function getSelectedDateLabel(dateId: string) {
     month: "long",
     day: "numeric"
   }).format(date);
+}
+
+function hasTenPhoneDigits(phone: string) {
+  return phone.replace(/\D/g, "").length === 10;
+}
+
+function formatUsPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+
+  if (digits.length <= 3) {
+    return digits;
+  }
+
+  if (digits.length <= 6) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  }
+
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
 export function BookingConfigurator({ initialServiceId }: BookingConfiguratorProps) {
@@ -152,6 +165,12 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
   async function handleBookingSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setFormMessage("");
+
+    if (!hasTenPhoneDigits(customerPhone)) {
+      setFormMessage("Enter a 10-digit US phone number.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     const response = await fetch("/api/booking/create", {
@@ -185,6 +204,9 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
     <form className="booking-shell" aria-label="Booking form" onSubmit={handleBookingSubmit}>
       <div className="booking-panel booking-panel--services">
         <p className="section-kicker">Choose your service</p>
+        <p className="booking-panel__hint">
+          Select one package to update the summary, price, duration, and deposit.
+        </p>
         <div className="service-picker" role="group" aria-label="Available services">
           {services.map((item) => (
             <button
@@ -296,7 +318,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
           </div>
           <div>
             <dt>Deposit due now</dt>
-            <dd>{formatMoney(service.deposit)}</dd>
+            <dd>{formatMoney(service.deposit)} mock</dd>
           </div>
           <div>
             <dt>Due at visit</dt>
@@ -312,7 +334,9 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
               Full name
             </span>
             <input
+              autoCapitalize="words"
               autoComplete="name"
+              autoCorrect="on"
               name="customerName"
               onChange={(event) => setCustomerName(event.target.value)}
               required
@@ -339,13 +363,16 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
               Phone
             </span>
             <input
+              aria-describedby="booking-phone-help"
               autoComplete="tel"
+              inputMode="tel"
               name="customerPhone"
-              onChange={(event) => setCustomerPhone(event.target.value)}
+              onChange={(event) => setCustomerPhone(formatUsPhone(event.target.value))}
               required
               type="tel"
               value={customerPhone}
             />
+            <small id="booking-phone-help">Use a 10-digit US number. We will format it for you.</small>
           </label>
           <label>
             <span>
@@ -364,7 +391,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
 
         <div className="square-note">
           <CreditCard size={18} />
-          <span>Mock Square checkout for deposit testing</span>
+          <span>Mock Square checkout for demo testing. No real card will be charged.</span>
         </div>
 
         <PaymentMethodLogos compact />
@@ -377,7 +404,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
           type="submit"
         >
           <Send size={18} />
-          {isSubmitting ? "Reserving..." : "Continue to deposit"}
+          {isSubmitting ? "Reserving..." : "Continue to mock deposit"}
         </button>
       </aside>
     </form>

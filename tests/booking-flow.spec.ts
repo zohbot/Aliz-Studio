@@ -1,6 +1,19 @@
 import { expect, test } from "@playwright/test";
-import { rm } from "fs/promises";
+import { readdir, readFile, rm } from "fs/promises";
 import path from "path";
+
+async function listFiles(root: string): Promise<string[]> {
+  const entries = await readdir(root, { withFileTypes: true });
+  const files = await Promise.all(
+    entries.map((entry) => {
+      const entryPath = path.join(root, entry.name);
+
+      return entry.isDirectory() ? listFiles(entryPath) : [entryPath];
+    })
+  );
+
+  return files.flat();
+}
 
 test.describe("Aliz Studio booking foundation", () => {
   test.beforeAll(async () => {
@@ -72,26 +85,26 @@ test.describe("Aliz Studio booking foundation", () => {
     await page.getByLabel("Phone").fill("(555) 014-0199");
     await page.getByLabel("Notes").fill("Low fade with a natural finish.");
 
-    const continueButton = page.getByRole("button", { name: /continue to deposit/i });
+    const continueButton = page.getByRole("button", { name: /continue to mock deposit/i });
     await expect(continueButton).toBeEnabled();
-    await expect(page.getByText("Mock Square checkout for deposit testing")).toBeVisible();
-    await expect(page.getByText("Visa").first()).toBeVisible();
-    await expect(page.getByText("Square Pay").first()).toBeVisible();
+    await expect(page.getByText(/No real card will be charged/i)).toBeVisible();
+    await expect(page.getByText("Credit or debit").first()).toBeVisible();
+    await expect(page.getByText("Square-style demo").first()).toBeVisible();
     await continueButton.click();
 
     await expect(page).toHaveURL(/\/checkout/);
     await expect(page.getByRole("heading", { name: /reserve your appointment/i })).toBeVisible();
-    await expect(page.getByText("Cash App")).toBeVisible();
-    await expect(page.getByText("American Express")).toBeVisible();
+    await expect(page.getByText("Apple Pay style mock")).toBeVisible();
+    await expect(page.getByText("Google Pay style mock")).toBeVisible();
     await page.getByLabel("Card number").fill("4242 4242 4242 4242");
     await page.getByLabel("Expiration").fill("12/30");
     await page.getByLabel("CVC").fill("123");
     await page.getByLabel("ZIP code").fill("07030");
-    await page.getByRole("button", { name: /pay \$15 deposit/i }).click();
+    await page.getByRole("button", { name: /record mock \$15 deposit/i }).click();
 
     await expect(page).toHaveURL(/\/book\/confirmation/);
     await expect(page.getByRole("heading", { name: /your appointment is confirmed/i })).toBeVisible();
-    await expect(page.getByText(/mock deposit has been recorded/i)).toBeVisible();
+    await expect(page.getByText(/demo-only mock deposit has been recorded/i)).toBeVisible();
   });
 
   test("owner can sign in and manage appointment status", async ({ page }) => {
@@ -172,5 +185,217 @@ test.describe("Aliz Studio booking foundation", () => {
         })
       );
     }
+  });
+
+  test("brand assets, app icons, and manifest are wired", async ({ page, request }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("banner").getByRole("link", { name: "Aliz Studio home" })).toBeVisible();
+    await expect(page.locator(".brand-mark img:visible").first()).toBeVisible();
+
+    const manifestResponse = await request.get("/manifest.webmanifest");
+    expect(manifestResponse.status()).toBe(200);
+
+    const manifest = await manifestResponse.json();
+    expect(manifest).toEqual(
+      expect.objectContaining({
+        name: "Aliz Studio",
+        short_name: "Aliz",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#f7f3ec",
+        theme_color: "#11100f"
+      })
+    );
+    expect(manifest.icons).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ src: "/icons/icon-192.png", sizes: "192x192" }),
+        expect.objectContaining({ src: "/icons/icon-512.png", sizes: "512x512" })
+      ])
+    );
+
+    for (const assetPath of [
+      "/icon.svg",
+      "/brand/aliz-studio-logo-dark.png",
+      "/brand/aliz-studio-logo-light.png",
+      "/brand/aliz-mark-dark.png",
+      "/brand/aliz-mark-light.png",
+      "/brand/aliz-studio-logo-dark.svg",
+      "/brand/aliz-studio-logo-light.svg",
+      "/brand/aliz-mark-dark.svg",
+      "/brand/aliz-mark-light.svg",
+      "/icons/icon-192.png",
+      "/icons/icon-512.png",
+      "/icons/apple-touch-icon.png"
+    ]) {
+      const response = await request.get(assetPath);
+
+      expect(response.status(), `${assetPath} should be available`).toBe(200);
+    }
+  });
+
+  test("generated source asset names are archived and not referenced by app code", async ({ page }) => {
+    const publicRootNames = await readdir(path.join(process.cwd(), "public"));
+    const sourceNames = await readdir(path.join(process.cwd(), "public", "brand", "source"));
+    const codeFiles = (
+      await Promise.all(
+        ["app", "components", "lib"].map((folder) => listFiles(path.join(process.cwd(), folder)))
+      )
+    ).flat();
+
+    expect(publicRootNames.filter((name) => name.startsWith("ChatGPT Image"))).toEqual([]);
+    expect(sourceNames).toEqual(
+      expect.arrayContaining(["aliz-studio-source-01.png", "aliz-mark-source-01.png"])
+    );
+
+    for (const sourceName of sourceNames) {
+      expect(sourceName).toMatch(/^aliz-(studio|mark)-source-\d{2}\.png$/);
+    }
+
+    for (const filePath of codeFiles) {
+      const content = await readFile(filePath, "utf8");
+
+      expect(content, `${filePath} should not reference messy generated source names`).not.toContain(
+        "ChatGPT Image"
+      );
+    }
+
+    await page.goto("/");
+    await expect(page.getByText(/ChatGPT Image/i)).toHaveCount(0);
+  });
+
+  test("install app card is visible in normal browser mode", async ({ page }) => {
+    await page.goto("/");
+
+    const installCard = page.getByRole("region", { name: "Install Aliz Studio app" });
+
+    await expect(installCard).toBeVisible();
+    await expect(installCard.getByRole("heading", { name: /keep aliz studio one tap away/i })).toBeVisible();
+    await expect(installCard.getByText(/No real payments or notifications are enabled/i)).toBeVisible();
+  });
+
+  test("install app card is hidden in standalone display mode", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.matchMedia = ((query: string) => ({
+        matches: query === "(display-mode: standalone)",
+        media: query,
+        onchange: null,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false
+      })) as typeof window.matchMedia;
+      Object.defineProperty(navigator, "standalone", {
+        configurable: true,
+        value: true
+      });
+    });
+
+    await page.goto("/");
+
+    await expect(page.getByRole("region", { name: "Install Aliz Studio app" })).toHaveCount(0);
+  });
+
+  test("install app card shows iOS manual add-to-home-screen instructions", async ({ browser }) => {
+    const context = await browser.newContext({
+      baseURL: "http://127.0.0.1:3000",
+      hasTouch: true,
+      isMobile: true,
+      userAgent:
+        "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+      viewport: { width: 390, height: 844 }
+    });
+    const page = await context.newPage();
+
+    await page.goto("/");
+
+    const installCard = page.getByRole("region", { name: "Install Aliz Studio app" });
+
+    await expect(installCard).toBeVisible();
+    await expect(installCard.getByText(/Tap the browser Share button/i)).toBeVisible();
+    await expect(installCard.getByText(/Choose Add to Home Screen/i)).toBeVisible();
+
+    await context.close();
+  });
+
+  test("public routes and footer inquiry links are reachable", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("link", { name: "Home", exact: true })).toHaveAttribute("href", "/");
+    await expect(page.getByRole("link", { name: "About" }).first()).toHaveAttribute("href", "/about");
+    await expect(page.getByRole("link", { name: "Book Online" }).first()).toHaveAttribute("href", "/book");
+    await expect(page.getByRole("link", { name: "Reserve" })).toHaveAttribute("href", "/book");
+    await expect(page.getByRole("link", { name: "Owner" })).toHaveAttribute("href", "/owner/login");
+    await expect(page.getByRole("link", { name: "Inquiries" })).toHaveAttribute(
+      "href",
+      "https://worldsoftwares.com"
+    );
+
+    await page.goto("/about");
+    await expect(page.getByRole("heading", { name: /modern barbering/i })).toBeVisible();
+
+    await page.goto("/book");
+    await expect(page.getByText("Select one package to update the summary")).toBeVisible();
+
+    await page.goto("/owner/login");
+    await expect(page.getByRole("heading", { name: /appointment command center/i })).toBeVisible();
+  });
+
+  test("mobile public routes do not create horizontal overflow", async ({ page }) => {
+    const widths = [320, 375, 390, 414, 430];
+    const routes = ["/", "/about", "/book", "/services/basic-cut", "/owner/login"];
+
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+
+      for (const route of routes) {
+        await page.goto(route);
+
+        const overflow = await page.evaluate(() => {
+          const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+          return documentWidth - window.innerWidth;
+        });
+
+        expect(overflow, `${route} at ${width}px should not overflow horizontally`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  test("booking validation rejects non-US phone lengths clearly", async ({ page }) => {
+    await page.goto("/book?service=basic-cut");
+
+    await page.getByRole("button", { name: "12:30 PM" }).click();
+    await page.getByLabel("Full name").fill("Jordan Price");
+    await page.getByLabel("Email").fill("jordan@example.com");
+    await page.getByLabel("Phone").fill("555123");
+    await page.getByRole("button", { name: /continue to mock deposit/i }).click();
+
+    await expect(page.getByText("Enter a 10-digit US phone number.")).toBeVisible();
+    await expect(page).toHaveURL(/\/book/);
+  });
+
+  test("booking form fields expose mobile-friendly attributes and strip phone letters", async ({ page }) => {
+    await page.goto("/book?service=basic-cut");
+
+    const nameInput = page.getByLabel("Full name");
+    await expect(nameInput).toHaveAttribute("autocomplete", "name");
+    await expect(nameInput).toHaveAttribute("autocapitalize", "words");
+    await expect(nameInput).toHaveAttribute("autocorrect", "on");
+
+    const emailInput = page.getByLabel("Email");
+    await expect(emailInput).toHaveAttribute("type", "email");
+    await expect(emailInput).toHaveAttribute("autocomplete", "email");
+
+    const phoneInput = page.getByLabel("Phone");
+    await expect(phoneInput).toHaveAttribute("type", "tel");
+    await expect(phoneInput).toHaveAttribute("inputmode", "tel");
+    await expect(phoneInput).toHaveAttribute("autocomplete", "tel");
+
+    await phoneInput.fill("abc555xyz0140199");
+
+    await expect(phoneInput).toHaveValue("(555) 014-0199");
+    await expect(page.getByText("No real card will be charged.")).toBeVisible();
   });
 });
