@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-05-30 - Public CTA And Appointment Detail Drawer Premium Polish
+
+Scope: targeted public About-page cards/CTA and owner appointment detail drawer polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, booking flow, owner mutation behavior, or persistence behavior was changed.
+
+Completed:
+
+- Reduced public story-card heading scale so "Studio Feel", "Appointment First", and "Local Trust" stay balanced instead of inheriting oversized page-heading typography.
+- Reworked the About-page CTA into a framed premium section with a readable pill-style "Book Online" action and arrow icon.
+- Polished the owner appointment detail drawer with a larger premium surface, refined header panel, price/duration cluster, stat cards, contact cards, note cards, themed control panel, and stronger footer actions.
+- Kept all appointment detail status/payment/owner-note mutation behavior unchanged.
+- Added Playwright coverage for public card/CTA sizing and navigation, richer drawer content, drawer stat-card rendering, and night-mode drawer card surfaces.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 76/76 Playwright tests.
+
+Notes:
+
+- No new logo/icon assets were provided in this sprint, so existing transparent normalized brand assets remain unchanged.
+
 ## 2026-05-30 - Premium Booking Layout Visual Refinement
 
 Scope: targeted `/book` layout and visual polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, owner dashboard flow, or persistence behavior was changed.

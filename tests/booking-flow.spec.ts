@@ -224,8 +224,8 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await expect(appointmentCard).toBeVisible();
     await expect(appointmentCard.locator(".status-badge")).toHaveText("Pending deposit");
-    await page.getByRole("button", { name: "View details" }).last().scrollIntoViewIfNeeded();
-    await page.getByRole("button", { name: "View details" }).last().click();
+    await appointmentCard.getByRole("button", { name: "View details" }).scrollIntoViewIfNeeded();
+    await appointmentCard.getByRole("button", { name: "View details" }).click();
 
     const detail = page.locator(".appointment-detail-drawer");
 
@@ -236,6 +236,13 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(detail.getByText("(555) 014-0222")).toBeVisible();
     await expect(detail.getByText(/Mock deposit pending/i)).toBeVisible();
     await expect(detail.getByText(/demo\/mock deposit record only/i)).toBeVisible();
+    await expect(detail.getByText("Date and time")).toBeVisible();
+    await expect(detail.locator(".appointment-detail-stat").filter({ hasText: "Mock deposit" })).toBeVisible();
+    await expect(detail.getByText("Last updated")).toBeVisible();
+    await expect(detail.getByText("Appointment ID")).toBeVisible();
+    await expect(detail.locator(".appointment-detail-stat")).toHaveCount(3);
+    await expect(detail.getByRole("button", { name: "Close", exact: true })).toBeVisible();
+    await expect(detail.getByRole("button", { name: "Save detail changes" })).toBeVisible();
 
     await detail.getByLabel("Appointment status").selectOption("no_show");
     await detail.getByLabel("Owner notes").fill(ownerNote);
@@ -245,7 +252,7 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(detail.locator(".status-badge")).toHaveText("No show");
 
     await detail.getByRole("button", { name: "Close", exact: true }).click();
-    await page.getByRole("button", { name: "View details" }).last().click();
+    await appointmentCard.getByRole("button", { name: "View details" }).click();
     await expect(page.locator(".appointment-detail-drawer").getByLabel("Owner notes")).toHaveValue(ownerNote);
   });
 
@@ -877,19 +884,36 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page).toHaveURL(/\/owner\/dashboard/);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
 
-    await page.getByRole("button", { name: "View details" }).first().click();
+    const firstAppointmentCard = page.locator(".appointment-card").first();
+
+    await expect(firstAppointmentCard).toBeVisible();
+    await firstAppointmentCard.getByRole("button", { name: "View details" }).scrollIntoViewIfNeeded();
+    await firstAppointmentCard.getByRole("button", { name: "View details" }).click();
 
     const detail = page.getByRole("dialog");
     const detailStatusBadge = detail.locator(".status-badge").first();
 
     await expect(detail).toBeVisible();
     await expect(detailStatusBadge).toBeVisible();
+    await expect(detail.locator(".appointment-detail-stat")).toHaveCount(3);
 
     const badgeColor = await detail
       .locator(".status-badge")
       .first()
       .evaluate((element) => getComputedStyle(element).color);
     const drawerBackground = await detail.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const statBackground = await detail
+      .locator(".appointment-detail-stat")
+      .first()
+      .evaluate((element) => getComputedStyle(element).backgroundColor);
+    const contactCardBackground = await detail
+      .locator(".appointment-detail-list div")
+      .first()
+      .evaluate((element) => getComputedStyle(element).backgroundColor);
+    const noteCardBorder = await detail
+      .locator(".appointment-detail-note-grid article")
+      .first()
+      .evaluate((element) => getComputedStyle(element).borderTopColor);
     const overflow = await page.evaluate(() => {
       const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
 
@@ -901,6 +925,14 @@ test.describe("Aliz Studio booking foundation", () => {
     expect(parseRgbColor(drawerBackground).red, "night detail drawer should stay dark").toBeLessThanOrEqual(
       35
     );
+    expect(parseRgbColor(statBackground).red, "night detail stat card should stay dark").toBeLessThanOrEqual(
+      35
+    );
+    expect(
+      parseRgbColor(contactCardBackground).red,
+      "night detail contact card should stay dark"
+    ).toBeLessThanOrEqual(35);
+    expectNotBrowserBlue(noteCardBorder, "night detail note card border");
     expect(overflow, "night appointment detail should not overflow horizontally").toBeLessThanOrEqual(1);
   });
 
@@ -1010,6 +1042,71 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await page.goto("/owner/login");
     await expect(page.getByRole("heading", { name: /appointment command center/i })).toBeVisible();
+  });
+
+  test("about page cards and booking CTA stay balanced across themes", async ({ page }) => {
+    await page.setViewportSize({ width: 1365, height: 900 });
+    await page.goto("/about");
+
+    const appointmentCard = page.locator(".story-grid article").filter({ hasText: "Appointment First" });
+    const appointmentHeading = page.getByRole("heading", { name: "Appointment First" });
+    const cta = page.locator(".cta-band__action");
+    const headingBox = await appointmentHeading.boundingBox();
+    const cardBox = await appointmentCard.boundingBox();
+    const ctaBox = await cta.boundingBox();
+    const headingFontSize = await appointmentHeading.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).fontSize)
+    );
+
+    if (!headingBox || !cardBox || !ctaBox) {
+      throw new Error("About card and CTA should be measurable");
+    }
+
+    await expect(appointmentHeading).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/book");
+    expect(headingBox.width, "Appointment First heading should stay inside its card").toBeLessThanOrEqual(
+      cardBox.width - 24
+    );
+    expect(headingFontSize, "story card headings should not inherit oversized page h2 styling").toBeLessThanOrEqual(
+      38
+    );
+    expect(ctaBox.width, "Book Online CTA should read as a premium pill, not a tiny circle").toBeGreaterThan(
+      ctaBox.height * 2.4
+    );
+
+    await page.evaluate(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+      document.documentElement.dataset.theme = "night";
+      document.documentElement.style.colorScheme = "dark";
+    });
+    const nightCtaBackground = await cta.evaluate((element) => getComputedStyle(element).backgroundImage);
+
+    expect(nightCtaBackground).toContain("linear-gradient");
+
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.reload();
+
+    const mobileOverflow = await page.evaluate(() => {
+      const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+      return documentWidth - window.innerWidth;
+    });
+    const mobileCtaBox = await cta.boundingBox();
+
+    if (!mobileCtaBox) {
+      throw new Error("Mobile CTA should be measurable");
+    }
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await expect(appointmentHeading).toBeVisible();
+    await expect(cta).toBeVisible();
+    expect(mobileOverflow, "about page CTA/cards should not overflow on mobile").toBeLessThanOrEqual(1);
+    expect(mobileCtaBox.width, "mobile CTA should keep a comfortable full-width touch target").toBeGreaterThan(
+      300
+    );
+
+    await cta.click();
+    await expect(page).toHaveURL(/\/book/);
   });
 
   test("mobile public routes do not create horizontal overflow", async ({ page }) => {

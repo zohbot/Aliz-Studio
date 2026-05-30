@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays, MapPin, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarDays, MapPin, Sparkles } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About"
@@ -29,7 +29,7 @@ export default function AboutPage() {
         </article>
         <article>
           <CalendarDays size={24} />
-          <h2>Appointments First</h2>
+          <h2>Appointment First</h2>
           <p>
             No walk-in assumptions. The booking experience will guide every customer toward an
             available slot and protect that slot with a deposit.
@@ -50,8 +50,9 @@ export default function AboutPage() {
           <p className="section-kicker">Ready when they are</p>
           <h2>Give customers a clear path from service to deposit.</h2>
         </div>
-        <Link className="primary-action" href="/book">
-          Book Online
+        <Link className="primary-action cta-band__action" href="/book">
+          <span>Book Online</span>
+          <ArrowRight size={18} />
         </Link>
       </section>
     </>

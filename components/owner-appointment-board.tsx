@@ -4,9 +4,12 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   CalendarClock,
+  CalendarPlus,
   CheckCircle2,
   CircleDollarSign,
   Clock3,
+  CreditCard,
+  Hash,
   LogOut,
   Mail,
   NotebookText,
@@ -361,18 +364,35 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
             </div>
 
             <div className="appointment-detail-pill-grid" aria-label="Appointment summary">
-              <span>
-                <CalendarClock size={16} />
-                {formatDate(selectedAppointment.appointmentDate)} at {selectedAppointment.appointmentTime}
-              </span>
-              <span>
-                <CircleDollarSign size={16} />
-                {getPaymentSummary(selectedAppointment)}
-              </span>
-              <span>
-                <Clock3 size={16} />
-                Updated {formatTimestamp(selectedAppointment.updatedAt)}
-              </span>
+              <article className="appointment-detail-stat">
+                <span className="appointment-detail-stat__icon">
+                  <CalendarClock size={16} />
+                </span>
+                <div>
+                  <p>Date and time</p>
+                  <strong>
+                    {formatDate(selectedAppointment.appointmentDate)} at {selectedAppointment.appointmentTime}
+                  </strong>
+                </div>
+              </article>
+              <article className="appointment-detail-stat">
+                <span className="appointment-detail-stat__icon">
+                  <CircleDollarSign size={16} />
+                </span>
+                <div>
+                  <p>Mock deposit</p>
+                  <strong>{getPaymentSummary(selectedAppointment)}</strong>
+                </div>
+              </article>
+              <article className="appointment-detail-stat">
+                <span className="appointment-detail-stat__icon">
+                  <Clock3 size={16} />
+                </span>
+                <div>
+                  <p>Last updated</p>
+                  <strong>{formatTimestamp(selectedAppointment.updatedAt)}</strong>
+                </div>
+              </article>
             </div>
 
             <dl className="appointment-detail-list">
@@ -391,22 +411,34 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
                 <dd>{selectedAppointment.customerEmail || "Not provided"}</dd>
               </div>
               <div>
-                <dt>Created</dt>
+                <dt>
+                  <CalendarPlus size={15} />
+                  Created
+                </dt>
                 <dd>{formatTimestamp(selectedAppointment.createdAt)}</dd>
               </div>
               <div>
-                <dt>Appointment ID</dt>
+                <dt>
+                  <Hash size={15} />
+                  Appointment ID
+                </dt>
                 <dd>{selectedAppointment.id}</dd>
               </div>
             </dl>
 
             <div className="appointment-detail-note-grid">
               <article>
-                <span>Customer notes</span>
+                <span>
+                  <NotebookText size={15} />
+                  Customer notes
+                </span>
                 <p>{selectedAppointment.customerNotes || "No customer notes were provided."}</p>
               </article>
               <article>
-                <span>Payment note</span>
+                <span>
+                  <CreditCard size={15} />
+                  Payment note
+                </span>
                 <p>
                   This is a demo/mock deposit record only. Do not treat it as a real card charge until
                   production Square reconciliation is connected.
