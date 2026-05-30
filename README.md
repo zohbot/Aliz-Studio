@@ -106,7 +106,7 @@ Logo, mark, app icon, and manifest asset usage is documented in [docs/BRAND_ASSE
 
 ## Theme System
 
-Aliz Studio supports the original polished light theme and an optional black-and-gold night theme. The compact header theme toggle persists the visitor choice in `localStorage` under `aliz-theme`, and `app/layout.tsx` applies the stored value early to reduce theme flash. Light remains the default when no preference is stored. Image-backed service cards, booking selections, form focus states, and mock payment cards use dedicated tokens so the night theme stays readable without default blue browser styling.
+Aliz Studio supports the original polished light theme and an optional black-and-gold night theme. The compact header theme toggle persists the visitor choice in `localStorage` under `aliz-theme`, and `app/layout.tsx` applies the stored value early to reduce theme flash. Light remains the default when no preference is stored. Image-backed service cards, booking selections, form focus states, mock payment cards, owner detail controls, and footer links use dedicated tokens so the night theme stays readable without default blue browser styling. The app uses a pure system font stack with antialiased rendering for a smoother desktop feel.
 
 ## Public Packages
 

@@ -30,6 +30,7 @@
 - Keep About-page story cards on their dedicated smaller heading scale so "Appointment First" does not inherit oversized page-heading typography again.
 - Keep owner appointment detail drawer stat/contact/note panels on the refined card treatment when adding future admin fields.
 - Keep `/packages` as the public package comparison destination; if services become owner-editable, move the richer package copy behind the future service repository instead of duplicating prices or durations.
+- Keep the owner appointment detail drawer and footer aligned with the refined premium surface system when adding future admin fields or footer links.
 - Add service-worker/offline PWA behavior only after booking freshness requirements are decided.
 - Keep booking copy explicit that the current deposit step is demo/mock-only until Square live checkout is implemented.
 - Keep form validation aligned with the current US-only phone requirement unless the business expands beyond that assumption.

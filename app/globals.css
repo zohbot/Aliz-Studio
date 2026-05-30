@@ -51,7 +51,7 @@
     linear-gradient(135deg, rgba(216, 168, 77, 0.18), transparent 46%);
   --radius: 8px;
   --max-width: 1180px;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 :root[data-theme="night"] {
@@ -116,8 +116,11 @@
 
 html {
   -webkit-tap-highlight-color: var(--tap-highlight);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   accent-color: var(--gold);
   scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
 }
 
 body {
@@ -367,8 +370,9 @@ p {
 h1,
 h2 {
   font-family: var(--font-sans);
-  font-weight: 850;
+  font-weight: 820;
   letter-spacing: 0;
+  text-wrap: balance;
 }
 
 h1 {
@@ -2250,30 +2254,107 @@ p {
 }
 
 .site-footer {
-  align-items: center;
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: space-between;
-  padding-block: 30px 38px;
+  align-items: end;
+  background:
+    linear-gradient(135deg, rgba(212, 175, 55, 0.12), transparent 42%),
+    rgba(255, 253, 248, 0.66);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) + 6px);
+  box-shadow: var(--soft-shadow);
+  display: grid;
+  gap: 28px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  margin-bottom: 28px;
+  margin-top: 18px;
+  overflow: hidden;
+  padding-block: 30px;
+  position: relative;
+}
+
+.site-footer::before {
+  background: linear-gradient(90deg, var(--gold), transparent 42%);
+  content: "";
+  height: 2px;
+  inset: 0 24px auto;
+  opacity: 0.7;
+  position: absolute;
+}
+
+.site-footer__brand {
+  display: grid;
+  gap: 10px;
+  max-width: 620px;
 }
 
 .footer-brand {
   display: inline-flex;
-  margin-bottom: 10px;
+  width: fit-content;
 }
 
 .footer-brand img {
-  height: 60px;
-  width: 180px;
+  height: 58px;
+  width: 174px;
 }
 
 .site-footer p {
   margin-bottom: 0;
 }
 
+.site-footer__tagline {
+  color: var(--ink);
+  font-size: 1.02rem;
+  font-weight: 820;
+}
+
+.site-footer__credit {
+  font-size: 0.92rem;
+  max-width: 560px;
+}
+
+.site-footer__credit a {
+  color: var(--clay-dark);
+  font-weight: 850;
+}
+
 .footer-links {
+  align-items: center;
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  max-width: 480px;
+}
+
+.footer-links span {
+  color: var(--ink-soft);
+  flex-basis: 100%;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-align: right;
+  text-transform: uppercase;
+}
+
+.footer-links a {
+  background: rgba(255, 253, 248, 0.54);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  font-weight: 780;
+  padding: 9px 12px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.footer-links a:hover {
+  background: var(--paper-strong);
+  border-color: rgba(212, 175, 55, 0.36);
+  color: var(--ink);
+  transform: translateY(-1px);
 }
 
 .owner-login-shell,
@@ -2742,29 +2823,34 @@ p {
 
 .appointment-detail-backdrop {
   align-items: stretch;
-  background: rgba(17, 16, 15, 0.46);
+  backdrop-filter: blur(18px) saturate(1.08);
+  background:
+    radial-gradient(circle at 76% 18%, rgba(212, 175, 55, 0.16), transparent 32%),
+    rgba(17, 16, 15, 0.38);
   display: flex;
   inset: 0;
   justify-content: flex-end;
-  padding: 14px;
+  padding: 18px;
   position: fixed;
   z-index: 80;
 }
 
 .appointment-detail-drawer {
   background:
-    linear-gradient(135deg, rgba(216, 168, 77, 0.14), transparent 38%),
-    radial-gradient(circle at 92% 2%, rgba(255, 253, 248, 0.82), transparent 30%),
-    rgba(255, 253, 248, 0.96);
-  border: 1px solid var(--line);
-  border-radius: calc(var(--radius) + 4px);
-  box-shadow: 0 26px 90px rgba(42, 32, 26, 0.28);
+    radial-gradient(circle at 92% 0%, rgba(255, 253, 248, 0.9), transparent 28%),
+    linear-gradient(145deg, rgba(216, 168, 77, 0.13), rgba(255, 253, 248, 0.5) 44%, rgba(241, 232, 219, 0.92)),
+    rgba(247, 241, 231, 0.96);
+  border: 1px solid rgba(255, 253, 248, 0.62);
+  border-radius: 18px;
+  box-shadow:
+    0 34px 120px rgba(17, 16, 15, 0.32),
+    inset 0 1px 0 rgba(255, 253, 248, 0.76);
   display: grid;
-  gap: 16px;
-  max-width: 760px;
+  gap: 18px;
+  max-width: 820px;
   overflow: auto;
-  padding: clamp(20px, 2.4vw, 30px);
-  width: min(100%, 760px);
+  padding: clamp(22px, 2.4vw, 34px);
+  width: min(100%, 820px);
 }
 
 .appointment-detail-drawer__topline,
@@ -2778,35 +2864,44 @@ p {
 
 .appointment-detail-drawer__close {
   align-items: center;
-  background: rgba(255, 253, 248, 0.76);
-  border: 1px solid var(--line);
+  background: rgba(255, 253, 248, 0.68);
+  border: 1px solid rgba(34, 28, 20, 0.08);
   border-radius: 999px;
   color: var(--ink);
   cursor: pointer;
   display: inline-flex;
-  height: 40px;
+  height: 42px;
   justify-content: center;
-  width: 40px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+  width: 42px;
 }
 
 .appointment-detail-drawer__close:hover {
   background: var(--paper-strong);
   border-color: rgba(212, 175, 55, 0.38);
+  box-shadow: 0 12px 28px rgba(42, 32, 26, 0.12);
+  transform: translateY(-1px);
 }
 
 .appointment-detail-drawer__header {
   align-items: stretch;
   background:
-    linear-gradient(135deg, rgba(255, 253, 248, 0.86), rgba(245, 238, 226, 0.62)),
-    rgba(255, 253, 248, 0.72);
-  border: 1px solid rgba(222, 211, 198, 0.84);
-  border-radius: var(--radius);
-  padding: clamp(16px, 2vw, 22px);
+    linear-gradient(135deg, rgba(255, 253, 248, 0.88), rgba(247, 241, 231, 0.64)),
+    rgba(255, 253, 248, 0.58);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.68);
+  padding: clamp(18px, 2vw, 26px);
 }
 
 .appointment-detail-drawer__header h2 {
-  font-size: clamp(2.25rem, 5vw, 4.35rem);
-  line-height: 1;
+  font-size: clamp(2.15rem, 4vw, 3.85rem);
+  font-weight: 780;
+  line-height: 0.98;
   margin-bottom: 8px;
 }
 
@@ -2817,13 +2912,14 @@ p {
 .appointment-detail-drawer__price {
   align-content: center;
   background:
-    linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 253, 248, 0.74)),
-    rgba(255, 253, 248, 0.72);
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  border-radius: var(--radius);
+    linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(255, 253, 248, 0.82)),
+    rgba(255, 253, 248, 0.66);
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.6);
   display: grid;
   min-width: 158px;
-  padding: 14px 16px;
+  padding: 16px 18px;
   text-align: right;
 }
 
@@ -2833,7 +2929,8 @@ p {
 }
 
 .appointment-detail-drawer__price strong {
-  font-size: 2rem;
+  font-size: 1.95rem;
+  font-weight: 850;
 }
 
 .appointment-detail-drawer__price span {
@@ -2850,33 +2947,35 @@ p {
 .appointment-detail-stat {
   align-items: center;
   background:
-    linear-gradient(135deg, rgba(255, 253, 248, 0.9), rgba(244, 238, 229, 0.68)),
-    rgba(255, 253, 248, 0.72);
-  border: 1px solid rgba(222, 211, 198, 0.82);
-  border-radius: var(--radius);
+    linear-gradient(135deg, rgba(255, 253, 248, 0.82), rgba(244, 238, 229, 0.62)),
+    rgba(255, 253, 248, 0.6);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.5);
   display: grid;
   gap: 10px;
   grid-template-columns: auto minmax(0, 1fr);
-  min-height: 86px;
-  padding: 14px;
+  min-height: 96px;
+  padding: 16px;
 }
 
 .appointment-detail-stat__icon {
   align-items: center;
-  background: rgba(212, 175, 55, 0.13);
-  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 253, 248, 0.42));
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 999px;
   color: var(--clay);
   display: inline-flex;
-  height: 34px;
+  height: 38px;
   justify-content: center;
-  width: 34px;
+  width: 38px;
 }
 
 .appointment-detail-stat p {
   color: var(--ink-soft);
   font-size: 0.72rem;
   font-weight: 900;
+  letter-spacing: 0.06em;
   margin: 0 0 5px;
   text-transform: uppercase;
 }
@@ -2884,7 +2983,8 @@ p {
 .appointment-detail-stat strong {
   color: var(--ink);
   display: block;
-  font-size: 0.95rem;
+  font-size: 0.96rem;
+  font-weight: 760;
   line-height: 1.28;
 }
 
@@ -2903,13 +3003,13 @@ p {
 }
 
 .appointment-detail-list div {
-  background: rgba(255, 253, 248, 0.68);
-  border: 1px solid rgba(222, 211, 198, 0.76);
-  border-radius: var(--radius);
+  background: rgba(255, 253, 248, 0.58);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
   display: grid;
   gap: 7px;
   min-width: 0;
-  padding: 14px;
+  padding: 15px;
 }
 
 .appointment-detail-list dt {
@@ -2919,11 +3019,13 @@ p {
   font-size: 0.78rem;
   font-weight: 900;
   gap: 6px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .appointment-detail-list dd {
-  font-weight: 750;
+  color: var(--ink);
+  font-weight: 720;
   margin: 0;
   overflow-wrap: anywhere;
 }
@@ -2936,13 +3038,13 @@ p {
 
 .appointment-detail-note-grid article {
   background:
-    linear-gradient(135deg, rgba(255, 253, 248, 0.84), rgba(244, 238, 229, 0.62)),
-    rgba(255, 253, 248, 0.72);
-  border: 1px solid rgba(222, 211, 198, 0.78);
-  border-radius: var(--radius);
+    linear-gradient(135deg, rgba(255, 253, 248, 0.78), rgba(244, 238, 229, 0.58)),
+    rgba(255, 253, 248, 0.56);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
   display: grid;
   gap: 10px;
-  padding: 16px;
+  padding: 18px;
 }
 
 .appointment-detail-note-grid span {
@@ -2952,35 +3054,63 @@ p {
   font-size: 0.76rem;
   font-weight: 900;
   gap: 7px;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .appointment-detail-note-grid p {
-  line-height: 1.55;
+  line-height: 1.62;
   margin: 0;
 }
 
 .appointment-controls--detail {
-  background: rgba(255, 253, 248, 0.54);
-  border: 1px solid rgba(222, 211, 198, 0.76);
-  border-radius: var(--radius);
-  padding: 14px;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.72), rgba(244, 238, 229, 0.5)),
+    rgba(255, 253, 248, 0.52);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
+  padding: 16px;
 }
 
 .appointment-controls--detail select,
 .appointment-controls--detail textarea {
-  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.56);
+}
+
+.appointment-controls--detail select {
+  appearance: none;
+  background-image:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(244, 238, 229, 0.86)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%238e6826' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position:
+    0 0,
+    right 14px center;
+  background-repeat: no-repeat;
+  background-size:
+    auto,
+    18px;
+  min-height: 52px;
+  padding-right: 44px;
+}
+
+.appointment-controls--detail select:focus,
+.appointment-controls--detail textarea:focus {
+  background-color: var(--input-focus-bg);
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
 }
 
 .appointment-detail-drawer__actions {
   border-top: 1px solid var(--line);
+  gap: 12px;
   justify-content: flex-end;
-  padding-top: 16px;
+  padding-top: 18px;
 }
 
 .appointment-detail-drawer__actions .primary-action,
 .appointment-detail-drawer__actions .secondary-action {
-  min-height: 46px;
+  min-height: 48px;
+  padding-inline: 18px;
 }
 
 :root[data-theme="night"] .site-header {
@@ -3277,7 +3407,20 @@ p {
 }
 
 :root[data-theme="night"] .appointment-detail-backdrop {
-  background: rgba(0, 0, 0, 0.68);
+  background:
+    radial-gradient(circle at 78% 18%, rgba(226, 192, 107, 0.12), transparent 34%),
+    rgba(0, 0, 0, 0.72);
+}
+
+:root[data-theme="night"] .appointment-detail-drawer {
+  background:
+    radial-gradient(circle at 92% 0%, rgba(226, 192, 107, 0.1), transparent 28%),
+    linear-gradient(145deg, rgba(226, 192, 107, 0.1), rgba(18, 18, 18, 0.86) 45%, rgba(8, 8, 8, 0.96)),
+    #0b0b0b;
+  border-color: rgba(226, 192, 107, 0.22);
+  box-shadow:
+    0 34px 120px rgba(0, 0, 0, 0.66),
+    inset 0 1px 0 rgba(226, 192, 107, 0.1);
 }
 
 :root[data-theme="night"] .appointment-detail-drawer__close {
@@ -3289,6 +3432,12 @@ p {
 :root[data-theme="night"] .appointment-detail-drawer__close:hover {
   background: rgba(226, 192, 107, 0.1);
   border-color: rgba(226, 192, 107, 0.34);
+}
+
+:root[data-theme="night"] .appointment-controls--detail select {
+  background-image:
+    linear-gradient(135deg, rgba(245, 241, 232, 0.035), rgba(11, 11, 11, 0.22)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23e2c06b' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
 :root[data-theme="night"] .appointment-detail-list {
@@ -3314,7 +3463,22 @@ p {
 }
 
 :root[data-theme="night"] .site-footer {
-  border-top-color: var(--line);
+  background:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.1), transparent 42%),
+    rgba(22, 22, 22, 0.78);
+  border-color: var(--line);
+}
+
+:root[data-theme="night"] footer.site-footer .footer-links a {
+  background: rgba(245, 241, 232, 0.045);
+  border-color: rgba(226, 192, 107, 0.14);
+  color: #f5f1e8;
+}
+
+:root[data-theme="night"] footer.site-footer .footer-links a:hover {
+  background: rgba(226, 192, 107, 0.09);
+  border-color: rgba(226, 192, 107, 0.34);
+  color: #fff8e8;
 }
 
 @media (max-width: 1220px) {
@@ -3429,6 +3593,19 @@ p {
   .cta-band {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .site-footer {
+    grid-template-columns: 1fr;
+    margin-bottom: 18px;
+  }
+
+  .footer-links {
+    justify-content: flex-start;
+  }
+
+  .footer-links span {
+    text-align: left;
   }
 
   .cta-band__action {

@@ -163,7 +163,7 @@ test.describe("Aliz Studio booking foundation", () => {
   });
 
   test("owner can sign in and manage appointment status", async ({ page }) => {
-    const targetCustomer = test.info().project.name.includes("mobile") ? "Darius Cole" : "Marcus Reed";
+    const targetCustomer = "Darius Cole";
 
     await page.goto("/owner/dashboard");
     await expect(page).toHaveURL(/\/owner\/login/);
@@ -582,25 +582,37 @@ test.describe("Aliz Studio booking foundation", () => {
     await page.goto("/");
     await page.locator(".site-footer").scrollIntoViewIfNeeded();
 
+    const footer = page.locator(".site-footer");
+    const lightFooterBackground = await footer.evaluate((element) => getComputedStyle(element).backgroundImage);
+    const lightFooterRadius = await footer.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).borderTopLeftRadius)
+    );
     const lightFooterLogos = await page
       .locator(".footer-brand img:visible")
       .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
 
+    await expect(footer.getByRole("link", { name: "Packages" })).toHaveAttribute("href", "/packages");
+    await expect(footer.getByRole("link", { name: "Book Online" })).toHaveAttribute("href", "/book");
+    expect(lightFooterBackground, "footer should use a premium surface gradient").toContain("linear-gradient");
+    expect(lightFooterRadius, "footer should read as a refined brand surface").toBeGreaterThanOrEqual(12);
     expect(lightFooterLogos).toHaveLength(1);
     expect(lightFooterLogos[0]).toContain("aliz-studio-logo-dark");
 
-    await page.evaluate(() => {
-      window.localStorage.setItem("aliz-theme", "night");
-      document.documentElement.dataset.theme = "night";
-      document.documentElement.style.colorScheme = "dark";
-    });
+    await page.getByRole("button", { name: "Switch to night theme" }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await page.locator(".site-footer").scrollIntoViewIfNeeded();
+    await page.waitForTimeout(250);
 
     const nightFooterLogos = await page
       .locator(".footer-brand img:visible")
       .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+    const nightFooterLinkColor = await footer
+      .getByRole("link", { name: "Packages" })
+      .evaluate((element) => getComputedStyle(element).color);
 
     expect(nightFooterLogos).toHaveLength(1);
     expect(nightFooterLogos[0]).toContain("aliz-studio-logo-light");
+    expectReadableImageCardTextColor(nightFooterLinkColor, "night footer package link");
 
     await page.goto("/owner/login");
 
@@ -610,6 +622,77 @@ test.describe("Aliz Studio booking foundation", () => {
 
     expect(nightOwnerLogos).toHaveLength(1);
     expect(nightOwnerLogos[0]).toContain("aliz-studio-logo-light");
+  });
+
+  test("desktop owner detail drawer uses premium controls and smooth system typography", async ({ page }) => {
+    await page.setViewportSize({ width: 1365, height: 900 });
+    await page.goto("/owner/login");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+
+    const firstAppointmentCard = page.locator(".appointment-card").first();
+    const detailButton = firstAppointmentCard.getByRole("button", { name: "View details" });
+
+    await expect(firstAppointmentCard).toBeVisible();
+    await detailButton.scrollIntoViewIfNeeded();
+    await detailButton.click();
+
+    const detail = page.getByRole("dialog");
+    const statusSelect = detail.getByLabel("Appointment status");
+    const paymentSelect = detail.getByLabel("Payment status");
+    await expect(detail).toBeVisible();
+    const drawerBox = await detail.boundingBox();
+    const bodyFont = await page.evaluate(() => getComputedStyle(document.body).fontFamily);
+    const fontSmoothing = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("-webkit-font-smoothing")
+    );
+    const drawerBackground = await detail.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const drawerShadow = await detail.evaluate((element) => getComputedStyle(element).boxShadow);
+    const drawerRadius = await detail.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).borderTopLeftRadius)
+    );
+    const selectBackgroundImage = await statusSelect.evaluate(
+      (element) => getComputedStyle(element).backgroundImage
+    );
+    const selectHeight = await statusSelect.evaluate((element) =>
+      Number.parseFloat(getComputedStyle(element).minHeight)
+    );
+    const selectAppearance = await statusSelect.evaluate((element) =>
+      getComputedStyle(element).getPropertyValue("appearance") ||
+      getComputedStyle(element).getPropertyValue("-webkit-appearance")
+    );
+    const overflow = await page.evaluate(() => {
+      const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+      return documentWidth - window.innerWidth;
+    });
+
+    if (!drawerBox) {
+      throw new Error("Appointment detail drawer should be measurable");
+    }
+
+    await expect(detail.getByRole("heading")).toBeVisible();
+    await expect(detail.locator(".appointment-detail-stat")).toHaveCount(3);
+    await expect(detail.getByText("Phone")).toBeVisible();
+    await expect(detail.getByText("Customer notes")).toBeVisible();
+    await expect(statusSelect).toBeVisible();
+    await expect(paymentSelect).toBeVisible();
+    await expect(detail.getByRole("button", { name: "Save detail changes" })).toBeVisible();
+    expect(bodyFont).toContain("Segoe UI");
+    expect(fontSmoothing).toBe("antialiased");
+    expect(drawerBox.width, "desktop detail drawer should have a refined wide layout").toBeGreaterThan(760);
+    expect(parseRgbColor(drawerBackground).red, "drawer should not be raw/default white").toBeLessThan(255);
+    expect(drawerShadow, "drawer should have a premium shadow").not.toBe("none");
+    expect(drawerRadius, "drawer should have a softer premium radius").toBeGreaterThanOrEqual(16);
+    expect(selectBackgroundImage, "detail select should use the custom chevron background").toContain("svg");
+    expect(selectHeight, "detail select should have comfortable desktop height").toBeGreaterThanOrEqual(52);
+    expect(selectAppearance, "detail select should not use the browser default appearance").toContain("none");
+    expect(overflow, "desktop appointment detail should not overflow horizontally").toBeLessThanOrEqual(1);
   });
 
   test("night theme keeps service card titles, prices, and metadata readable over images", async ({ page }) => {

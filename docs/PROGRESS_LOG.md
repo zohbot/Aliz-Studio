@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-05-30 - Desktop Detail Drawer And Footer Premium UI Polish
+
+Scope: desktop owner appointment detail drawer, footer, and system typography polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, route, or persistence behavior was changed.
+
+Completed:
+
+- Refined the global system font stack with Apple/SF, Segoe UI, Roboto, Helvetica Neue, Arial fallbacks and enabled antialiased font smoothing for a softer desktop feel.
+- Reworked the owner appointment detail drawer into a wider premium desktop surface with blur/dim backdrop, softer warm light-theme gradients, stronger night-theme treatment, rounded metric/contact/note cards, polished close control, and refined action spacing.
+- Added custom theme-aware detail select styling with a chevron, consistent height, focus ring, and smoother control surfaces.
+- Upgraded the footer into a branded card-like system section with logo, hierarchy, refined navigation pills, subtle gold line, and light/night theme treatments.
+- Added Playwright coverage for premium drawer styling, custom select appearance, font smoothing, footer Packages link visibility, footer surface styling, and night footer readability.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 80/80 Playwright tests.
+
+Notes:
+
+- Owner appointment behavior remains unchanged from the current demo-safe dashboard; this sprint only changes presentation and control styling.
+
 ## 2026-05-30 - Public Packages Page And Navigation
 
 Scope: public package-marketing and navigation polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, owner workflow, or persistence behavior was changed.

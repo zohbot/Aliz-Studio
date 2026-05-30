@@ -4,7 +4,7 @@ import Image from "next/image";
 export function SiteFooter() {
   return (
     <footer className="site-footer">
-      <div>
+      <div className="site-footer__brand">
         <Link className="footer-brand" href="/" aria-label="Aliz Studio home">
           <span aria-hidden="true">
             <Image
@@ -23,22 +23,24 @@ export function SiteFooter() {
             />
           </span>
         </Link>
-        <p>
-          Snip. Shave. Shine. Booked appointments only. Website design, booking UX, and implementation by{" "}
+        <p className="site-footer__tagline">Snip. Shave. Shine. Booked appointments only.</p>
+        <p className="site-footer__credit">
+          Website design, booking UX, and implementation by{" "}
           <a href="https://worldsoftwares.com" rel="noreferrer" target="_blank">
             SYHTEK
           </a>
           .
         </p>
       </div>
-      <div className="footer-links">
+      <nav className="footer-links" aria-label="Footer navigation">
+        <span>Navigate</span>
         <Link href="/about">About</Link>
         <Link href="/packages">Packages</Link>
         <Link href="/book">Book Online</Link>
         <a href="https://worldsoftwares.com" rel="noreferrer" target="_blank">
           Inquiries
         </a>
-      </div>
+      </nav>
     </footer>
   );
 }
