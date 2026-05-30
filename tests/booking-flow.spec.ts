@@ -24,6 +24,26 @@ async function pngHasAlphaChannel(filePath: string) {
     [4, 6].includes(buffer[25]);
 }
 
+function parseRgbColor(value: string) {
+  const match = value.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+
+  expect(match, `${value} should be an rgb/rgba color`).toBeTruthy();
+
+  return {
+    blue: Number(match?.[3] ?? 0),
+    green: Number(match?.[2] ?? 0),
+    red: Number(match?.[1] ?? 0)
+  };
+}
+
+function expectReadableImageCardTextColor(value: string, label: string) {
+  const color = parseRgbColor(value);
+
+  expect(color.red, `${label} red channel should stay light enough`).toBeGreaterThanOrEqual(180);
+  expect(color.green, `${label} green channel should stay light enough`).toBeGreaterThanOrEqual(145);
+  expect(color.blue, `${label} blue channel should not be near black`).toBeGreaterThanOrEqual(95);
+}
+
 test.describe("Aliz Studio booking foundation", () => {
   test("file appointment storage uses writable temp storage on Vercel", () => {
     expect(resolveFileAppointmentStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
@@ -381,6 +401,39 @@ test.describe("Aliz Studio booking foundation", () => {
 
     await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
     await expect(page.getByText("Select one package to update the summary")).toBeVisible();
+  });
+
+  test("night theme keeps service card titles, prices, and metadata readable over images", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/");
+
+    const deluxeCard = page.locator(".service-card").filter({ hasText: "Deluxe Cut" }).first();
+    const titleColor = await deluxeCard
+      .getByRole("heading", { name: "Deluxe Cut" })
+      .evaluate((element) => getComputedStyle(element).color);
+    const priceColor = await deluxeCard
+      .locator(".service-price")
+      .evaluate((element) => getComputedStyle(element).color);
+    const durationColor = await deluxeCard
+      .locator(".service-duration")
+      .evaluate((element) => getComputedStyle(element).color);
+    const ctaColor = await deluxeCard
+      .getByRole("link", { name: "View package" })
+      .evaluate((element) => getComputedStyle(element).color);
+    const overlayToken = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--image-card-overlay").trim()
+    );
+
+    expectReadableImageCardTextColor(titleColor, "Deluxe Cut title");
+    expectReadableImageCardTextColor(priceColor, "Deluxe Cut price");
+    expectReadableImageCardTextColor(durationColor, "Deluxe Cut duration");
+    expect(parseRgbColor(ctaColor).red, "Night card CTA should use dark text on gold").toBeLessThanOrEqual(
+      20
+    );
+    expect(overlayToken).toMatch(/rgba\(0, 0, 0|#000000/);
   });
 
   test("night theme keeps key mobile routes free of horizontal overflow", async ({ page }) => {

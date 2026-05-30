@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-05-30 - Night Theme Service Card Contrast Fix
+
+Scope: targeted night-theme readability polish for image-backed service/menu cards. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Added dedicated image-card design tokens for title, body, muted metadata, price, divider, and overlay treatment.
+- Strengthened the night-mode image scrim behind service-card text while keeping the photography visible.
+- Updated service-card titles, prices, durations, and related mini-package cards so they no longer inherit dark surface text in night mode.
+- Made the night-mode service-card CTA a gold-forward button with dark text for stronger contrast.
+- Added Playwright coverage for night-mode service-card title, price, duration, CTA, and overlay token readability.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 58/58 Playwright tests.
+
+Notes:
+
+- Light theme remains the default and was not redesigned.
+
 ## 2026-05-30 - Night Theme Sprint
 
 Scope: visual/theming polish only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.

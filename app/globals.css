@@ -21,6 +21,14 @@
   --header-shadow: 0 16px 44px rgba(17, 16, 15, 0.08);
   --input-surface: var(--paper-strong);
   --muted-surface: rgba(17, 16, 15, 0.06);
+  --image-card-title: #fffdf8;
+  --image-card-body: rgba(255, 253, 248, 0.8);
+  --image-card-muted: rgba(255, 253, 248, 0.74);
+  --image-card-price: #fffdf8;
+  --image-card-divider: rgba(255, 253, 248, 0.24);
+  --image-card-overlay:
+    linear-gradient(180deg, rgba(32, 27, 25, 0.04) 0%, rgba(32, 27, 25, 0.38) 42%, rgba(32, 27, 25, 0.94) 100%),
+    linear-gradient(135deg, rgba(216, 168, 77, 0.18), transparent 46%);
   --radius: 8px;
   --max-width: 1180px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
@@ -51,6 +59,15 @@
   --header-shadow: 0 18px 58px rgba(0, 0, 0, 0.4);
   --input-surface: #101010;
   --muted-surface: rgba(245, 241, 232, 0.06);
+  --image-card-title: #f8f3e7;
+  --image-card-body: rgba(245, 241, 232, 0.86);
+  --image-card-muted: rgba(226, 192, 107, 0.84);
+  --image-card-price: #ffe6a6;
+  --image-card-divider: rgba(226, 192, 107, 0.36);
+  --image-card-overlay:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.34) 0%, rgba(0, 0, 0, 0.24) 30%, rgba(0, 0, 0, 0.78) 62%, rgba(0, 0, 0, 0.97) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.72) 0%, transparent 44%),
+    linear-gradient(135deg, rgba(226, 192, 107, 0.22), transparent 46%);
 }
 
 * {
@@ -477,7 +494,7 @@ p {
 }
 
 .service-card {
-  color: var(--paper-strong);
+  color: var(--image-card-title);
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -499,9 +516,7 @@ p {
 }
 
 .service-card::after {
-  background:
-    linear-gradient(180deg, transparent 0%, rgba(32, 27, 25, 0.38) 42%, rgba(32, 27, 25, 0.94) 100%),
-    linear-gradient(135deg, rgba(216, 168, 77, 0.18), transparent 46%);
+  background: var(--image-card-overlay);
   content: "";
   inset: 0;
   pointer-events: none;
@@ -537,7 +552,7 @@ p {
 }
 
 .service-card__body p:not(.service-card__eyebrow) {
-  color: rgba(255, 253, 248, 0.78);
+  color: var(--image-card-body);
 }
 
 .service-card__eyebrow {
@@ -545,7 +560,14 @@ p {
   font-size: 0.78rem;
   font-weight: 800;
   margin-bottom: 10px;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.42);
   text-transform: uppercase;
+}
+
+.service-card h3,
+.mini-package strong {
+  color: var(--image-card-title);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.48);
 }
 
 .service-card__footer,
@@ -556,7 +578,7 @@ p {
 }
 
 .service-card__footer {
-  border-top: 1px solid rgba(255, 253, 248, 0.22);
+  border-top: 1px solid var(--image-card-divider);
   margin-inline: 22px;
   padding-top: 16px;
   position: relative;
@@ -564,13 +586,15 @@ p {
 }
 
 .service-price {
+  color: var(--image-card-price);
   font-size: 1.45rem;
   font-weight: 900;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.48);
 }
 
 .service-duration {
   align-items: center;
-  color: rgba(255, 253, 248, 0.72);
+  color: var(--image-card-muted);
   display: inline-flex;
   gap: 5px;
 }
@@ -1658,7 +1682,7 @@ p {
   aspect-ratio: 16 / 10;
   background: var(--charcoal);
   border-radius: var(--radius);
-  color: var(--paper-strong);
+  color: var(--image-card-title);
   display: grid;
   overflow: hidden;
   padding: 18px;
@@ -1666,7 +1690,7 @@ p {
 }
 
 .mini-package::after {
-  background: linear-gradient(180deg, transparent, rgba(32, 27, 25, 0.82));
+  background: var(--image-card-overlay);
   content: "";
   inset: 0;
   position: absolute;
@@ -2218,15 +2242,21 @@ p {
 }
 
 :root[data-theme="night"] .service-card__accent,
-:root[data-theme="night"] .service-card__link,
 :root[data-theme="night"] .package-hero__tag {
   background: rgba(11, 11, 11, 0.78);
   border: 1px solid rgba(226, 192, 107, 0.22);
   color: var(--gold);
 }
 
+:root[data-theme="night"] .service-card__link {
+  background: linear-gradient(135deg, #f0d98c, var(--gold));
+  border: 1px solid rgba(255, 230, 166, 0.74);
+  color: #0b0b0b;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.36);
+}
+
 :root[data-theme="night"] .service-card__link:hover {
-  background: var(--gold);
+  background: #ffe6a6;
   color: #0b0b0b;
 }
 
