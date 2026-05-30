@@ -116,6 +116,10 @@ Aliz Studio includes a lightweight install card backed by `app/manifest.ts`. Chr
 
 Live QA notes, completed polish items, and current production-readiness limits are tracked in [docs/PROGRESS_LOG.md](docs/PROGRESS_LOG.md). Follow-up work is tracked in [docs/NEXT_STEPS.md](docs/NEXT_STEPS.md).
 
+## Admin Roadmap
+
+The production-readiness admin feature plan is documented in [docs/ADMIN_ROADMAP.md](docs/ADMIN_ROADMAP.md). It breaks the remaining owner/admin work into small, demo-safe implementation sprints before production Supabase, Square, notification, and auth-provider hookups.
+
 ## Verification
 
 ```bash

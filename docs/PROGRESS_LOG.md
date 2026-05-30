@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-05-30 - Admin Production Readiness Roadmap
+
+Scope: planning and documentation only. No auth, database, payment, notification, DNS, Vercel setting, secret, env value, or runtime behavior was changed.
+
+Completed:
+
+- Audited the current app routes, owner routes, booking APIs, repository layer, domain model, seed data, Supabase plan, docs, environment placeholders, and tests.
+- Added `docs/ADMIN_ROADMAP.md` with the current production-readiness assessment, complete admin feature set, proposed data/repository interfaces, and PR-sized implementation roadmap.
+- Identified what is demo-ready today, what is production-ready today, what remains mock/demo-only, what must be connected before real customers use it, what can be built without credentials, and what should wait for owner approval.
+- Recommended the next implementation sprint: demo-safe owner appointment detail/status workflow using the existing appointment repository abstraction.
+- Added README and next-step pointers to the roadmap.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- First `npm run test:e2e` run had one transient mobile mock-checkout navigation timeout with 65/66 passing; immediate rerun passed with 66/66 Playwright tests.
+
+Notes:
+
+- The roadmap keeps the app demo-safe and defers Supabase runtime, Square live checkout, real notifications, durable customer records, and auth-provider replacement until explicitly approved.
+
 ## 2026-05-30 - Mobile Header Compactness And Logo Variant Fix
 
 Scope: targeted mobile header, logo variant, and theme-toggle polish. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.

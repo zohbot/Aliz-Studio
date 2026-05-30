@@ -32,6 +32,7 @@
 
 ## Deferred Production Work
 
+- Start the next admin implementation sprint from `docs/ADMIN_ROADMAP.md`: add a demo-safe owner appointment detail/status workflow using the existing appointment repository.
 - Move appointment persistence from the file-backed repository to Supabase only after repository adapters and transactional booking flows are ready.
 - Implement and test the Supabase repository before allowing the runtime factory to select it.
 - Add owner-managed blocked times/days before using the booking backend for real customer scheduling.
