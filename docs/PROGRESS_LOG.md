@@ -23,7 +23,8 @@ Validation:
 Notes:
 
 - A read-only live availability check before this sprint returned storage-unavailable JSON, which points to a runtime repository/storage configuration problem rather than an owner credential mismatch.
-- Live dashboard safe-mode status still requires post-deploy confirmation with private owner credentials.
+- A post-deploy read-only availability check returned HTTP 200 with slot data after the repository fallback was tightened.
+- Live dashboard safe-mode status still requires founder confirmation with private owner credentials, but the public availability API no longer reports storage unavailable.
 
 ## 2026-05-30 - Corrective Valid Login And Logo Sprint
 
