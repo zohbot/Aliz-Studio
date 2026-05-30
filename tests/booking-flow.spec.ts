@@ -52,6 +52,13 @@ function expectNotBrowserBlue(value: string, label: string) {
   expect(looksLikeDefaultBlue, `${label} should not look like default browser blue`).toBeFalsy();
 }
 
+function dateOffsetId(offsetDays: number) {
+  const date = new Date();
+  date.setDate(date.getDate() + offsetDays);
+
+  return date.toISOString().slice(0, 10);
+}
+
 test.describe("Aliz Studio booking foundation", () => {
   test("file appointment storage uses writable temp storage on Vercel", () => {
     expect(resolveFileAppointmentStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
@@ -181,6 +188,103 @@ test.describe("Aliz Studio booking foundation", () => {
     await ownerSeedCard.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("Appointment saved.")).toBeVisible();
+  });
+
+  test("owner can open appointment detail and save status notes", async ({ page, request }) => {
+    const isMobileProject = test.info().project.name.includes("mobile");
+    const customerName = isMobileProject ? "Taylor Detail Mobile" : "Taylor Detail Desktop";
+    const appointmentDate = dateOffsetId(isMobileProject ? 21 : 20);
+    const appointmentTime = isMobileProject ? "10:00 AM" : "11:00 AM";
+    const ownerNote = `Internal detail note ${test.info().project.name}`;
+
+    const createResponse = await request.post("/api/booking/create", {
+      data: {
+        serviceId: "basic-cut",
+        appointmentDate,
+        appointmentTime,
+        customerName,
+        customerEmail: "taylor.detail@example.com",
+        customerPhone: "(555) 014-0222",
+        notes: "Prefers a quiet appointment and a clean neckline."
+      }
+    });
+
+    expect(createResponse.status()).toBe(200);
+
+    await page.goto("/owner/login");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+
+    await page.getByPlaceholder("Search client, service, or phone").fill(customerName);
+    const appointmentCard = page.locator(".appointment-card").filter({ hasText: customerName }).first();
+
+    await expect(appointmentCard).toBeVisible();
+    await expect(appointmentCard.locator(".status-badge")).toHaveText("Pending deposit");
+    await page.getByRole("button", { name: "View details" }).last().scrollIntoViewIfNeeded();
+    await page.getByRole("button", { name: "View details" }).last().click();
+
+    const detail = page.locator(".appointment-detail-drawer");
+
+    await expect(detail).toBeVisible();
+    await expect(detail.getByRole("heading", { name: customerName })).toBeVisible();
+    await expect(detail.getByText("Basic Cut")).toBeVisible();
+    await expect(detail.getByText("taylor.detail@example.com")).toBeVisible();
+    await expect(detail.getByText("(555) 014-0222")).toBeVisible();
+    await expect(detail.getByText(/Mock deposit pending/i)).toBeVisible();
+    await expect(detail.getByText(/demo\/mock deposit record only/i)).toBeVisible();
+
+    await detail.getByLabel("Appointment status").selectOption("no_show");
+    await detail.getByLabel("Owner notes").fill(ownerNote);
+    await detail.getByRole("button", { name: "Save detail changes" }).click();
+
+    await expect(page.getByText("Appointment saved.")).toBeVisible();
+    await expect(detail.locator(".status-badge")).toHaveText("No show");
+
+    await detail.getByRole("button", { name: "Close", exact: true }).click();
+    await page.getByRole("button", { name: "View details" }).last().click();
+    await expect(page.locator(".appointment-detail-drawer").getByLabel("Owner notes")).toHaveValue(ownerNote);
+  });
+
+  test("owner appointment mutation requires auth and rejects invalid status", async ({ request }) => {
+    const unauthorized = await request.patch("/api/owner/appointments/apt_seed_101", {
+      data: {
+        status: "confirmed"
+      }
+    });
+
+    expect(unauthorized.status()).toBe(401);
+
+    const login = await request.post("/api/owner/auth/login", {
+      headers: {
+        "content-type": "application/json"
+      },
+      data: {
+        email: process.env.OWNER_EMAIL || "owner@alizstudio.test",
+        password: process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+      }
+    });
+
+    expect(login.status()).toBe(200);
+
+    const invalidStatus = await request.patch("/api/owner/appointments/apt_seed_101", {
+      data: {
+        status: "archived"
+      }
+    });
+    const payload = await invalidStatus.json();
+
+    expect(invalidStatus.status()).toBe(400);
+    expect(payload.error).toBe("Invalid appointment update.");
+
+    await request.post("/api/owner/auth/logout", {
+      headers: {
+        "content-type": "application/json"
+      }
+    });
   });
 
   test("owner login rejects invalid credentials with a friendly error", async ({ page }) => {
@@ -688,6 +792,45 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
     await expect(page.getByRole("heading", { name: /manage bookings/i })).toBeVisible();
     await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+  });
+
+  test("owner appointment detail remains readable in night theme on mobile", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+    await page.setViewportSize({ width: 390, height: 900 });
+
+    await page.goto("/owner/login");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+
+    await page.getByRole("button", { name: "View details" }).first().click();
+
+    const detail = page.getByRole("dialog");
+    const badgeColor = await detail
+      .locator(".status-badge")
+      .first()
+      .evaluate((element) => getComputedStyle(element).color);
+    const drawerBackground = await detail.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const overflow = await page.evaluate(() => {
+      const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+      return documentWidth - window.innerWidth;
+    });
+
+    await expect(detail).toBeVisible();
+    await expect(detail.getByText(/demo\/mock deposit record only/i)).toBeVisible();
+    expectReadableImageCardTextColor(badgeColor, "night appointment detail status badge");
+    expect(parseRgbColor(drawerBackground).red, "night detail drawer should stay dark").toBeLessThanOrEqual(
+      35
+    );
+    expect(overflow, "night appointment detail should not overflow horizontally").toBeLessThanOrEqual(1);
   });
 
   test("generated source asset names are archived and not referenced by app code", async ({ page }) => {

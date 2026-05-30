@@ -2276,7 +2276,198 @@ p {
   text-transform: none;
 }
 
+.appointment-controls--detail {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.appointment-controls--detail .appointment-controls__notes {
+  grid-column: 1 / -1;
+}
+
 .appointment-card__actions {
+  justify-content: flex-end;
+}
+
+.appointment-empty-state {
+  background: rgba(255, 253, 248, 0.74);
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 8px;
+  padding: 24px;
+}
+
+.appointment-empty-state strong {
+  font-size: 1.2rem;
+}
+
+.appointment-empty-state p {
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.appointment-detail-backdrop {
+  align-items: stretch;
+  background: rgba(17, 16, 15, 0.46);
+  display: flex;
+  inset: 0;
+  justify-content: flex-end;
+  padding: 14px;
+  position: fixed;
+  z-index: 80;
+}
+
+.appointment-detail-drawer {
+  background:
+    linear-gradient(135deg, rgba(216, 168, 77, 0.12), transparent 36%),
+    rgba(255, 253, 248, 0.96);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 26px 90px rgba(42, 32, 26, 0.28);
+  display: grid;
+  gap: 18px;
+  max-width: 680px;
+  overflow: auto;
+  padding: 24px;
+  width: min(100%, 680px);
+}
+
+.appointment-detail-drawer__topline,
+.appointment-detail-drawer__header,
+.appointment-detail-drawer__actions {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.appointment-detail-drawer__close {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.76);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  cursor: pointer;
+  display: inline-flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+
+.appointment-detail-drawer__close:hover {
+  background: var(--paper-strong);
+  border-color: rgba(212, 175, 55, 0.38);
+}
+
+.appointment-detail-drawer__header h2 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.appointment-detail-drawer__header p {
+  margin: 0;
+}
+
+.appointment-detail-drawer__price {
+  text-align: right;
+}
+
+.appointment-detail-drawer__price strong,
+.appointment-detail-drawer__price span {
+  display: block;
+}
+
+.appointment-detail-drawer__price strong {
+  font-size: 2rem;
+}
+
+.appointment-detail-drawer__price span {
+  color: var(--ink-soft);
+  font-weight: 850;
+}
+
+.appointment-detail-pill-grid,
+.appointment-detail-note-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.appointment-detail-pill-grid span {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.72);
+  border: 1px solid rgba(222, 211, 198, 0.82);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+  display: inline-flex;
+  gap: 8px;
+  min-height: 48px;
+  padding: 10px;
+}
+
+.appointment-detail-pill-grid svg,
+.appointment-detail-list svg {
+  color: var(--clay);
+  flex: 0 0 auto;
+}
+
+.appointment-detail-list {
+  border-block: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 16px 0;
+}
+
+.appointment-detail-list div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.appointment-detail-list dt {
+  align-items: center;
+  color: var(--ink-soft);
+  display: inline-flex;
+  font-size: 0.78rem;
+  font-weight: 900;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.appointment-detail-list dd {
+  font-weight: 750;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.appointment-detail-note-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.appointment-detail-note-grid article {
+  background: rgba(255, 253, 248, 0.72);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.appointment-detail-note-grid span {
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.appointment-detail-note-grid p {
+  margin: 0;
+}
+
+.appointment-detail-drawer__actions {
   justify-content: flex-end;
 }
 
@@ -2333,7 +2524,10 @@ p {
 :root[data-theme="night"] .owner-login-card,
 :root[data-theme="night"] .owner-session-panel,
 :root[data-theme="night"] .owner-stat-grid article,
-:root[data-theme="night"] .appointment-card {
+:root[data-theme="night"] .appointment-card,
+:root[data-theme="night"] .appointment-empty-state,
+:root[data-theme="night"] .appointment-detail-drawer,
+:root[data-theme="night"] .appointment-detail-note-grid article {
   background:
     linear-gradient(135deg, rgba(201, 163, 78, 0.12), transparent 38%),
     rgba(22, 22, 22, 0.84);
@@ -2480,10 +2674,30 @@ p {
 
 :root[data-theme="night"] .checkout-progress span,
 :root[data-theme="night"] .package-stats div,
-:root[data-theme="night"] .appointment-meta-grid span {
+:root[data-theme="night"] .appointment-meta-grid span,
+:root[data-theme="night"] .appointment-detail-pill-grid span {
   background: rgba(245, 241, 232, 0.055);
   border-color: var(--line);
   color: var(--ink-soft);
+}
+
+:root[data-theme="night"] .appointment-detail-backdrop {
+  background: rgba(0, 0, 0, 0.68);
+}
+
+:root[data-theme="night"] .appointment-detail-drawer__close {
+  background: rgba(245, 241, 232, 0.06);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .appointment-detail-drawer__close:hover {
+  background: rgba(226, 192, 107, 0.1);
+  border-color: rgba(226, 192, 107, 0.34);
+}
+
+:root[data-theme="night"] .appointment-detail-list {
+  border-block-color: var(--line);
 }
 
 :root[data-theme="night"] .checkout-progress span[data-active="true"],
@@ -2556,9 +2770,16 @@ p {
   .owner-toolbar,
   .appointment-controls,
   .appointment-meta-grid,
+  .appointment-detail-pill-grid,
+  .appointment-detail-list,
+  .appointment-detail-note-grid,
   .owner-dashboard-hero,
   .owner-dashboard-alert {
     grid-template-columns: 1fr;
+  }
+
+  .appointment-controls--detail .appointment-controls__notes {
+    grid-column: auto;
   }
 
   .owner-dashboard-alert .secondary-action {
@@ -2773,12 +2994,24 @@ p {
 
   .appointment-card__topline,
   .appointment-card__main,
-  .appointment-card__actions {
+  .appointment-card__actions,
+  .appointment-detail-drawer__header,
+  .appointment-detail-drawer__actions {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .appointment-money {
+  .appointment-money,
+  .appointment-detail-drawer__price {
     text-align: left;
+  }
+
+  .appointment-detail-backdrop {
+    padding: 8px;
+  }
+
+  .appointment-detail-drawer {
+    max-height: calc(100vh - 16px);
+    padding: 18px;
   }
 }

@@ -49,7 +49,7 @@ When an owner session is already active, `/owner/login` redirects to `/owner/das
 
 For a local-only demo, set `ALIZ_ALLOW_LOCAL_DEMO_AUTH=true` and choose your own local password and session secret. Do not commit real credentials.
 
-Appointments are seeded into `data/appointments.json` on first local dashboard/API access. On Vercel, the file-backed repository uses ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
+Appointments are seeded into `data/appointments.json` on first local dashboard/API access. The dashboard supports list search/filtering, status and mock payment-state updates, owner-only notes, and an appointment detail drawer for customer/service/payment context. On Vercel, the file-backed repository uses ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
 
 ## Security / Operations Notes
 

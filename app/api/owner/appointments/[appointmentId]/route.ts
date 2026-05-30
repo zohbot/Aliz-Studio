@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getOwnerSession } from "@/lib/admin-auth";
 import { assertSameOriginRequest, parseJsonRequest } from "@/lib/api-security";
 import { updateAppointment } from "@/lib/appointments";
@@ -60,6 +61,8 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (!appointment) {
     return NextResponse.json({ error: "Appointment not found." }, { status: 404 });
   }
+
+  revalidatePath("/owner/dashboard");
 
   return NextResponse.json({ appointment });
 }

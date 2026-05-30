@@ -1,7 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { CalendarClock, CheckCircle2, CircleDollarSign, LogOut, Save, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import {
+  CalendarClock,
+  CheckCircle2,
+  CircleDollarSign,
+  Clock3,
+  LogOut,
+  Mail,
+  NotebookText,
+  Phone,
+  Save,
+  Search,
+  X
+} from "lucide-react";
 import type { Appointment, AppointmentStatus, PaymentStatus } from "@/lib/domain";
 import { formatMoney } from "@/lib/services";
 
@@ -13,7 +26,7 @@ const appointmentStatuses: { value: AppointmentStatus; label: string }[] = [
   { value: "pending_deposit", label: "Pending deposit" },
   { value: "confirmed", label: "Confirmed" },
   { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
+  { value: "cancelled", label: "Canceled" },
   { value: "no_show", label: "No show" }
 ];
 
@@ -33,12 +46,47 @@ function formatDate(dateId: string) {
   }).format(new Date(year, month - 1, day));
 }
 
+function formatTimestamp(timestamp: string) {
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Not available";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(date);
+}
+
+function getStatusLabel(status: AppointmentStatus) {
+  return appointmentStatuses.find((item) => item.value === status)?.label || status;
+}
+
+function getPaymentLabel(paymentStatus: PaymentStatus) {
+  return paymentStatuses.find((item) => item.value === paymentStatus)?.label || paymentStatus;
+}
+
+function getPaymentSummary(appointment: Appointment) {
+  if (appointment.paymentStatus === "paid") {
+    return `Mock deposit marked paid: ${formatMoney(appointment.deposit)}.`;
+  }
+
+  if (appointment.paymentStatus === "refunded") {
+    return `Mock deposit marked refunded: ${formatMoney(appointment.deposit)}.`;
+  }
+
+  return `Mock deposit pending: ${formatMoney(appointment.deposit)} not collected.`;
+}
+
 export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentBoardProps) {
+  const router = useRouter();
   const [appointments, setAppointments] = useState(initialAppointments);
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | AppointmentStatus>("all");
   const [savingId, setSavingId] = useState("");
   const [message, setMessage] = useState("");
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState("");
 
   const visibleAppointments = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
@@ -54,6 +102,11 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
       return matchesStatus && matchesQuery;
     });
   }, [appointments, query, statusFilter]);
+
+  const selectedAppointment = useMemo(
+    () => appointments.find((appointment) => appointment.id === selectedAppointmentId) || null,
+    [appointments, selectedAppointmentId]
+  );
 
   async function updateLocalAppointment(
     appointmentId: string,
@@ -92,6 +145,7 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
 
     updateLocalAppointment(appointment.id, payload.appointment);
     setMessage("Appointment saved.");
+    router.refresh();
   }
 
   async function logout() {
@@ -136,66 +190,240 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
       {message ? <p className="owner-message">{message}</p> : null}
 
       <div className="appointment-list">
-        {visibleAppointments.map((appointment) => (
-          <article className="appointment-card" key={appointment.id}>
-            <div className="appointment-card__topline">
-              <span className={`status-badge status-badge--${appointment.status}`}>
-                {appointmentStatuses.find((status) => status.value === appointment.status)?.label}
+        {visibleAppointments.length ? (
+          visibleAppointments.map((appointment) => (
+            <article className="appointment-card" key={appointment.id}>
+              <div className="appointment-card__topline">
+                <span className={`status-badge status-badge--${appointment.status}`}>
+                  {getStatusLabel(appointment.status)}
+                </span>
+                <span className="appointment-card__id">{appointment.id}</span>
+              </div>
+
+              <div className="appointment-card__main">
+                <div>
+                  <h2>{appointment.customerName}</h2>
+                  <p>{appointment.serviceName}</p>
+                </div>
+                <div className="appointment-money">
+                  <strong>{formatMoney(appointment.price)}</strong>
+                  <span>{formatMoney(appointment.deposit)} deposit</span>
+                </div>
+              </div>
+
+              <div className="appointment-meta-grid">
+                <span>
+                  <CalendarClock size={16} />
+                  {formatDate(appointment.appointmentDate)} at {appointment.appointmentTime}
+                </span>
+                <span>
+                  <CheckCircle2 size={16} />
+                  {appointment.durationMinutes} minutes
+                </span>
+                <span>
+                  <CircleDollarSign size={16} />
+                  Mock deposit: {getPaymentLabel(appointment.paymentStatus)}
+                </span>
+              </div>
+
+              <dl className="appointment-contact">
+                <div>
+                  <dt>Email</dt>
+                  <dd>{appointment.customerEmail}</dd>
+                </div>
+                <div>
+                  <dt>Phone</dt>
+                  <dd>{appointment.customerPhone}</dd>
+                </div>
+                <div>
+                  <dt>Customer notes</dt>
+                  <dd>{appointment.customerNotes || "None"}</dd>
+                </div>
+              </dl>
+
+              <div className="appointment-controls">
+                <label>
+                  Appointment status
+                  <select
+                    onChange={(event) =>
+                      updateLocalAppointment(appointment.id, {
+                        status: event.target.value as AppointmentStatus
+                      })
+                    }
+                    value={appointment.status}
+                  >
+                    {appointmentStatuses.map((status) => (
+                      <option key={status.value} value={status.value}>
+                        {status.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label>
+                  Payment status
+                  <select
+                    onChange={(event) =>
+                      updateLocalAppointment(appointment.id, {
+                        paymentStatus: event.target.value as PaymentStatus
+                      })
+                    }
+                    value={appointment.paymentStatus}
+                  >
+                    {paymentStatuses.map((status) => (
+                      <option key={status.value} value={status.value}>
+                        {status.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="appointment-controls__notes">
+                  Owner notes
+                  <textarea
+                    maxLength={800}
+                    onChange={(event) =>
+                      updateLocalAppointment(appointment.id, {
+                        ownerNotes: event.target.value
+                      })
+                    }
+                    value={appointment.ownerNotes || ""}
+                  />
+                </label>
+              </div>
+
+              <div className="appointment-card__actions">
+                <button
+                  className="secondary-action"
+                  onClick={() => setSelectedAppointmentId(appointment.id)}
+                  type="button"
+                >
+                  <NotebookText size={17} />
+                  View details
+                </button>
+                {appointment.squareCheckoutUrl ? (
+                  <a className="secondary-action" href={appointment.squareCheckoutUrl}>
+                    Square checkout
+                  </a>
+                ) : null}
+                <button
+                  className="primary-action"
+                  disabled={savingId === appointment.id}
+                  onClick={() => saveAppointment(appointment)}
+                  type="button"
+                >
+                  <Save size={17} />
+                  {savingId === appointment.id ? "Saving..." : "Save"}
+                </button>
+              </div>
+            </article>
+          ))
+        ) : (
+          <article className="appointment-empty-state">
+            <strong>No appointments match this view.</strong>
+            <p>Try clearing the search field or switching the status filter.</p>
+          </article>
+        )}
+      </div>
+
+      {selectedAppointment ? (
+        <div className="appointment-detail-backdrop">
+          <aside
+            aria-labelledby="appointment-detail-title"
+            aria-modal="true"
+            className="appointment-detail-drawer"
+            role="dialog"
+          >
+            <div className="appointment-detail-drawer__topline">
+              <span className={`status-badge status-badge--${selectedAppointment.status}`}>
+                {getStatusLabel(selectedAppointment.status)}
               </span>
-              <span className="appointment-card__id">{appointment.id}</span>
+              <button
+                aria-label="Close appointment details"
+                className="appointment-detail-drawer__close"
+                onClick={() => setSelectedAppointmentId("")}
+                type="button"
+              >
+                <X size={18} />
+              </button>
             </div>
 
-            <div className="appointment-card__main">
+            <div className="appointment-detail-drawer__header">
               <div>
-                <h2>{appointment.customerName}</h2>
-                <p>{appointment.serviceName}</p>
+                <p className="section-kicker">Appointment detail</p>
+                <h2 id="appointment-detail-title">{selectedAppointment.customerName}</h2>
+                <p>{selectedAppointment.serviceName}</p>
               </div>
-              <div className="appointment-money">
-                <strong>{formatMoney(appointment.price)}</strong>
-                <span>{formatMoney(appointment.deposit)} deposit</span>
+              <div className="appointment-detail-drawer__price">
+                <strong>{formatMoney(selectedAppointment.price)}</strong>
+                <span>{selectedAppointment.durationMinutes} minutes</span>
               </div>
             </div>
 
-            <div className="appointment-meta-grid">
+            <div className="appointment-detail-pill-grid" aria-label="Appointment summary">
               <span>
                 <CalendarClock size={16} />
-                {formatDate(appointment.appointmentDate)} at {appointment.appointmentTime}
-              </span>
-              <span>
-                <CheckCircle2 size={16} />
-                {appointment.durationMinutes} minutes
+                {formatDate(selectedAppointment.appointmentDate)} at {selectedAppointment.appointmentTime}
               </span>
               <span>
                 <CircleDollarSign size={16} />
-                {appointment.paymentStatus}
+                {getPaymentSummary(selectedAppointment)}
+              </span>
+              <span>
+                <Clock3 size={16} />
+                Updated {formatTimestamp(selectedAppointment.updatedAt)}
               </span>
             </div>
 
-            <dl className="appointment-contact">
+            <dl className="appointment-detail-list">
               <div>
-                <dt>Email</dt>
-                <dd>{appointment.customerEmail}</dd>
+                <dt>
+                  <Phone size={15} />
+                  Phone
+                </dt>
+                <dd>{selectedAppointment.customerPhone || "Not provided"}</dd>
               </div>
               <div>
-                <dt>Phone</dt>
-                <dd>{appointment.customerPhone}</dd>
+                <dt>
+                  <Mail size={15} />
+                  Email
+                </dt>
+                <dd>{selectedAppointment.customerEmail || "Not provided"}</dd>
               </div>
               <div>
-                <dt>Customer notes</dt>
-                <dd>{appointment.customerNotes || "None"}</dd>
+                <dt>Created</dt>
+                <dd>{formatTimestamp(selectedAppointment.createdAt)}</dd>
+              </div>
+              <div>
+                <dt>Appointment ID</dt>
+                <dd>{selectedAppointment.id}</dd>
               </div>
             </dl>
 
-            <div className="appointment-controls">
+            <div className="appointment-detail-note-grid">
+              <article>
+                <span>Customer notes</span>
+                <p>{selectedAppointment.customerNotes || "No customer notes were provided."}</p>
+              </article>
+              <article>
+                <span>Payment note</span>
+                <p>
+                  This is a demo/mock deposit record only. Do not treat it as a real card charge until
+                  production Square reconciliation is connected.
+                </p>
+              </article>
+            </div>
+
+            <div className="appointment-controls appointment-controls--detail">
               <label>
                 Appointment status
                 <select
                   onChange={(event) =>
-                    updateLocalAppointment(appointment.id, {
+                    updateLocalAppointment(selectedAppointment.id, {
                       status: event.target.value as AppointmentStatus
                     })
                   }
-                  value={appointment.status}
+                  value={selectedAppointment.status}
                 >
                   {appointmentStatuses.map((status) => (
                     <option key={status.value} value={status.value}>
@@ -209,15 +437,15 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
                 Payment status
                 <select
                   onChange={(event) =>
-                    updateLocalAppointment(appointment.id, {
+                    updateLocalAppointment(selectedAppointment.id, {
                       paymentStatus: event.target.value as PaymentStatus
                     })
                   }
-                  value={appointment.paymentStatus}
+                  value={selectedAppointment.paymentStatus}
                 >
                   {paymentStatuses.map((status) => (
                     <option key={status.value} value={status.value}>
-                      {status.label}
+                      Mock {status.label.toLowerCase()}
                     </option>
                   ))}
                 </select>
@@ -226,35 +454,39 @@ export function OwnerAppointmentBoard({ initialAppointments }: OwnerAppointmentB
               <label className="appointment-controls__notes">
                 Owner notes
                 <textarea
+                  maxLength={800}
                   onChange={(event) =>
-                    updateLocalAppointment(appointment.id, {
+                    updateLocalAppointment(selectedAppointment.id, {
                       ownerNotes: event.target.value
                     })
                   }
-                  value={appointment.ownerNotes || ""}
+                  placeholder="Add internal notes for the owner. These are not customer-facing."
+                  value={selectedAppointment.ownerNotes || ""}
                 />
               </label>
             </div>
 
-            <div className="appointment-card__actions">
-              {appointment.squareCheckoutUrl ? (
-                <a className="secondary-action" href={appointment.squareCheckoutUrl}>
-                  Square checkout
-                </a>
-              ) : null}
+            <div className="appointment-detail-drawer__actions">
+              <button
+                className="secondary-action"
+                onClick={() => setSelectedAppointmentId("")}
+                type="button"
+              >
+                Close
+              </button>
               <button
                 className="primary-action"
-                disabled={savingId === appointment.id}
-                onClick={() => saveAppointment(appointment)}
+                disabled={savingId === selectedAppointment.id}
+                onClick={() => saveAppointment(selectedAppointment)}
                 type="button"
               >
                 <Save size={17} />
-                {savingId === appointment.id ? "Saving..." : "Save"}
+                {savingId === selectedAppointment.id ? "Saving..." : "Save detail changes"}
               </button>
             </div>
-          </article>
-        ))}
-      </div>
+          </aside>
+        </div>
+      ) : null}
     </section>
   );
 }

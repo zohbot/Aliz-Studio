@@ -1,5 +1,33 @@
 # Progress Log
 
+## 2026-05-30 - Admin Appointment Detail And Status Workflow
+
+Scope: demo-safe owner appointment management only. No Supabase runtime, real payment capture, real notifications, multi-user auth, DNS, Vercel setting, secret, env value, or durable production persistence was changed.
+
+Completed:
+
+- Added a responsive owner appointment detail drawer from the dashboard.
+- Detail view now shows customer name, phone, email, service, price, duration, appointment date/time, current appointment status, mock deposit/payment status, customer notes, owner notes, and created/updated timestamps when available.
+- Added owner-only detail controls for appointment status, mock payment status, and internal owner notes.
+- Kept updates behind the existing protected owner appointment PATCH route and existing appointment repository abstraction.
+- Added dashboard revalidation after owner appointment mutations so server-rendered metrics can refresh after saves.
+- Added an empty-state card for filtered appointment views.
+- Tightened owner notes validation by trimming and keeping the existing 800-character limit.
+- Added Playwright coverage for appointment detail open/save/reopen behavior, unauthorized mutation rejection, invalid status rejection, night-theme detail readability, and mobile detail overflow.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- First `npm run test:e2e` run exposed brittle new detail-test selectors; after tightening the selectors, `npm run test:e2e` passed with 72/72 Playwright tests.
+
+Notes:
+
+- Status values remain the existing domain values: `pending_deposit`, `confirmed`, `completed`, `cancelled`, and `no_show`.
+- Payment copy remains explicitly mock/demo-only.
+- Supabase is still required before appointment records are production-durable.
+
 ## 2026-05-30 - Admin Production Readiness Roadmap
 
 Scope: planning and documentation only. No auth, database, payment, notification, DNS, Vercel setting, secret, env value, or runtime behavior was changed.

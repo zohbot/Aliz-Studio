@@ -84,7 +84,7 @@ export const createBookingSchema = bookingQuoteSchema.extend({
 export const ownerAppointmentUpdateSchema = z.object({
   status: appointmentStatusSchema.optional(),
   paymentStatus: paymentStatusSchema.optional(),
-  ownerNotes: z.string().max(800).optional()
+  ownerNotes: z.string().trim().max(800).optional()
 });
 
 export const appointmentSchema = z.object({

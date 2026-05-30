@@ -346,6 +346,8 @@ Suggested methods:
 
 ### Sprint 1: Admin Appointment Detail And Status Workflow
 
+Status: implemented on 2026-05-30 in demo-safe file-backed mode.
+
 Objective: Make appointment management feel complete without changing persistence.
 
 Scope:
@@ -666,17 +668,17 @@ Risks:
 
 The next single Codex task should be:
 
-**Admin appointment detail/status workflow using the existing repository abstraction, still demo-safe.**
+**Service management UI with a demo repository, still demo-safe.**
 
 Why this is the right next step:
 
-- It gives the owner a more complete admin experience immediately.
-- It uses the existing appointment repository boundary without activating Supabase.
-- It improves real operational workflows while preserving demo-safe behavior.
-- It creates a natural place to add audit events, cancellation reasons, rescheduling, payment references, and notification history later.
+- Appointment detail/status management is now in place.
+- Services remain static and are the next owner/admin surface that can be safely built without production credentials.
+- A service repository boundary will prepare the public menu and booking quote flow for future Supabase-backed services.
+- It creates the owner-editable foundation for names, descriptions, prices, deposits, durations, active flags, and sort order while preserving the current public booking demo.
 
 Suggested next prompt:
 
 ```text
-Build Sprint 1 from docs/ADMIN_ROADMAP.md: add a demo-safe owner appointment detail view/drawer and status workflow using the existing appointment repository. Preserve current APIs, auth, file-backed behavior, mock payments, and light/night themes. Add tests and docs.
+Build Sprint 2 from docs/ADMIN_ROADMAP.md: add a demo-safe owner service management UI and service repository interface/adapters. Preserve current public service IDs, booking behavior, mock payments, owner auth, file-backed appointment behavior, and light/night themes. Add tests and docs.
 ```
