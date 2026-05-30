@@ -21,6 +21,7 @@
 - Continue checking mobile layouts at 320, 375, 390, 414, and 430px before each public demo.
 - Replace the generated brand placeholder files with final production logo/icon exports when they are approved.
 - Decide whether archived source exports in `public/brand/source/` should remain in the repo after production brand review.
+- Re-check both light and night themes when making future UI changes; light remains the default and the night toggle persists locally as `aliz-theme`.
 - Add service-worker/offline PWA behavior only after booking freshness requirements are decided.
 - Keep booking copy explicit that the current deposit step is demo/mock-only until Square live checkout is implemented.
 - Keep form validation aligned with the current US-only phone requirement unless the business expands beyond that assumption.

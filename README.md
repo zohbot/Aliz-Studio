@@ -104,6 +104,10 @@ Staging deployment notes for Vercel and the `aliz.zohbot.net` Cloudflare DNS set
 
 Logo, mark, app icon, and manifest asset usage is documented in [docs/BRAND_ASSETS.md](docs/BRAND_ASSETS.md). The current assets are normalized copies of the generated Aliz Studio exports and can be replaced in place with production exports using the same filenames.
 
+## Theme System
+
+Aliz Studio supports the original polished light theme and an optional black-and-gold night theme. The header theme toggle persists the visitor choice in `localStorage` under `aliz-theme`, and `app/layout.tsx` applies the stored value early to reduce theme flash. Light remains the default when no preference is stored.
+
 ## PWA Install
 
 Aliz Studio includes a lightweight install card backed by `app/manifest.ts`. Chrome, Edge, and Android browsers can use the native install prompt when available; iOS Safari receives manual Share then Add to Home Screen instructions. No push notifications, service worker cache, or offline booking behavior is enabled yet.

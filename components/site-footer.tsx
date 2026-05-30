@@ -6,7 +6,22 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div>
         <Link className="footer-brand" href="/" aria-label="Aliz Studio home">
-          <Image alt="" height={60} src="/brand/aliz-studio-logo-dark.png" width={180} />
+          <span aria-hidden="true">
+            <Image
+              alt=""
+              className="theme-logo--for-light"
+              height={60}
+              src="/brand/aliz-studio-logo-dark.png"
+              width={180}
+            />
+            <Image
+              alt=""
+              className="theme-logo--for-night"
+              height={60}
+              src="/brand/aliz-studio-logo-light.png"
+              width={180}
+            />
+          </span>
         </Link>
         <p>
           Snip. Shave. Shine. Booked appointments only. Website design, booking UX, and implementation by{" "}

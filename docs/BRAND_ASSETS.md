@@ -32,6 +32,7 @@ The archived source PNGs do not contain true alpha transparency. The current nor
 - Use the compact `Aliz` mark for favicon, app icon, mobile/tight header states, and small decorative brand contexts.
 - Keep dark assets on light or glass surfaces.
 - Keep light assets on dark surfaces.
+- The theme system swaps header, footer, and owner login logo assets automatically: dark transparent logos render in the light theme, and light transparent logos render in the night theme.
 - Do not reference files from metadata or the manifest unless the files exist in the repo.
 
 ## Replacement Contract

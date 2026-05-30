@@ -3,6 +3,20 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import "./globals.css";
 
+const themeScript = `
+(() => {
+  try {
+    const storedTheme = window.localStorage.getItem("aliz-theme");
+    const theme = storedTheme === "night" || storedTheme === "light" ? storedTheme : "light";
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme === "night" ? "dark" : "light";
+  } catch {
+    document.documentElement.dataset.theme = "light";
+    document.documentElement.style.colorScheme = "light";
+  }
+})();
+`;
+
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://aliz.zohbot.net"),
   title: {
@@ -45,7 +59,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html data-scroll-behavior="smooth" lang="en">
+    <html data-scroll-behavior="smooth" data-theme="light" lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body>
         <SiteHeader />
         <main>{children}</main>

@@ -13,9 +13,44 @@
   --charcoal: #171310;
   --shadow: 0 24px 80px rgba(17, 16, 15, 0.14);
   --soft-shadow: 0 14px 40px rgba(17, 16, 15, 0.08);
+  --focus-ring: rgba(159, 120, 48, 0.42);
+  --page-background:
+    linear-gradient(145deg, rgba(212, 175, 55, 0.12), transparent 28%),
+    linear-gradient(180deg, var(--paper), #eee9df 54%, #fffdf8);
+  --header-surface: rgba(255, 253, 248, 0.74);
+  --header-shadow: 0 16px 44px rgba(17, 16, 15, 0.08);
+  --input-surface: var(--paper-strong);
+  --muted-surface: rgba(17, 16, 15, 0.06);
   --radius: 8px;
   --max-width: 1180px;
   --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", sans-serif;
+}
+
+:root[data-theme="night"] {
+  color-scheme: dark;
+  --ink: #f5f1e8;
+  --ink-soft: #b8b0a3;
+  --paper: #0b0b0b;
+  --paper-strong: #161616;
+  --paper-glass: rgba(22, 22, 22, 0.82);
+  --line: rgba(226, 192, 107, 0.2);
+  --clay: #c9a34e;
+  --clay-dark: #e2c06b;
+  --moss: #d8bd76;
+  --teal: #cfb368;
+  --gold: #e2c06b;
+  --charcoal: #050505;
+  --shadow: 0 26px 88px rgba(0, 0, 0, 0.54);
+  --soft-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
+  --focus-ring: rgba(226, 192, 107, 0.48);
+  --page-background:
+    radial-gradient(circle at 16% 0%, rgba(201, 163, 78, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(226, 192, 107, 0.1), transparent 30%),
+    linear-gradient(180deg, #070707 0%, #0b0b0b 52%, #121111 100%);
+  --header-surface: rgba(15, 15, 15, 0.78);
+  --header-shadow: 0 18px 58px rgba(0, 0, 0, 0.4);
+  --input-surface: #101010;
+  --muted-surface: rgba(245, 241, 232, 0.06);
 }
 
 * {
@@ -27,9 +62,7 @@ html {
 }
 
 body {
-  background:
-    linear-gradient(145deg, rgba(212, 175, 55, 0.12), transparent 28%),
-    linear-gradient(180deg, var(--paper), #eee9df 54%, #fffdf8);
+  background: var(--page-background);
   color: var(--ink);
   font-family: var(--font-sans);
   margin: 0;
@@ -49,7 +82,7 @@ textarea {
 }
 
 :where(a, button, input, select, textarea):focus-visible {
-  outline: 3px solid rgba(159, 120, 48, 0.42);
+  outline: 3px solid var(--focus-ring);
   outline-offset: 3px;
 }
 
@@ -79,13 +112,13 @@ main {
 .site-header {
   align-items: center;
   backdrop-filter: blur(22px);
-  background: rgba(255, 253, 248, 0.74);
+  background: var(--header-surface);
   border: 1px solid rgba(34, 28, 20, 0.1);
   border-radius: var(--radius);
-  box-shadow: 0 16px 44px rgba(17, 16, 15, 0.08);
+  box-shadow: var(--header-shadow);
   display: grid;
   gap: 18px;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto auto auto;
   margin-top: 14px;
   padding-block: 10px;
   position: sticky;
@@ -113,6 +146,10 @@ main {
   place-items: center;
 }
 
+.brand-mark__asset--symbol {
+  display: none;
+}
+
 .brand-mark__signature {
   height: 60px;
   width: 180px;
@@ -120,6 +157,23 @@ main {
 
 .brand-mark__symbol {
   display: none;
+}
+
+.theme-logo--for-night {
+  display: none;
+}
+
+:root[data-theme="night"] .theme-logo--for-light {
+  display: none;
+}
+
+:root[data-theme="night"] .theme-logo--for-night {
+  display: block;
+}
+
+.footer-brand span {
+  display: inline-grid;
+  place-items: center;
 }
 
 .brand-mark strong {
@@ -136,6 +190,37 @@ main {
 
 .brand-mark__label {
   display: none;
+}
+
+.theme-toggle {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.5);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 850;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 13px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.theme-toggle:hover {
+  background: var(--paper-strong);
+  border-color: rgba(212, 175, 55, 0.42);
+  color: var(--ink);
+  transform: translateY(-1px);
+}
+
+.theme-toggle svg {
+  color: var(--clay-dark);
+  flex: 0 0 auto;
 }
 
 nav {
@@ -2062,9 +2147,198 @@ p {
   justify-content: flex-end;
 }
 
+:root[data-theme="night"] .site-header {
+  border-color: rgba(226, 192, 107, 0.2);
+}
+
+:root[data-theme="night"] nav a:hover,
+:root[data-theme="night"] .secondary-action:hover,
+:root[data-theme="night"] .theme-toggle:hover {
+  background: rgba(226, 192, 107, 0.08);
+  border-color: rgba(226, 192, 107, 0.34);
+}
+
+:root[data-theme="night"] .header-action,
+:root[data-theme="night"] .primary-action {
+  background: linear-gradient(135deg, var(--gold), var(--clay));
+  border-color: rgba(226, 192, 107, 0.82);
+  color: #0b0b0b;
+  box-shadow: 0 16px 38px rgba(201, 163, 78, 0.16);
+}
+
+:root[data-theme="night"] .header-action:hover,
+:root[data-theme="night"] .primary-action:hover {
+  background: linear-gradient(135deg, #f0d98c, var(--gold));
+  border-color: #f0d98c;
+  box-shadow: 0 18px 48px rgba(226, 192, 107, 0.22);
+}
+
+:root[data-theme="night"] .theme-toggle {
+  background: rgba(245, 241, 232, 0.06);
+}
+
+:root[data-theme="night"] .hero-visual::before {
+  background:
+    radial-gradient(circle at 35% 18%, rgba(226, 192, 107, 0.18), transparent 24%),
+    linear-gradient(138deg, #030303, #16130c 48%, #c9a34e 100%);
+}
+
+:root[data-theme="night"] .hero-visual__frame {
+  border-color: rgba(226, 192, 107, 0.24);
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.52);
+}
+
+:root[data-theme="night"] .hero-visual__badge,
+:root[data-theme="night"] .principle-item,
+:root[data-theme="night"] .pwa-install-card,
+:root[data-theme="night"] .story-grid article,
+:root[data-theme="night"] .booking-panel,
+:root[data-theme="night"] .booking-summary,
+:root[data-theme="night"] .checkout-card,
+:root[data-theme="night"] .checkout-summary,
+:root[data-theme="night"] .package-panel,
+:root[data-theme="night"] .owner-login-card,
+:root[data-theme="night"] .owner-session-panel,
+:root[data-theme="night"] .owner-stat-grid article,
+:root[data-theme="night"] .appointment-card {
+  background:
+    linear-gradient(135deg, rgba(201, 163, 78, 0.12), transparent 38%),
+    rgba(22, 22, 22, 0.84);
+  border-color: var(--line);
+  box-shadow: var(--soft-shadow);
+}
+
+:root[data-theme="night"] .experience-band {
+  background: rgba(245, 241, 232, 0.035);
+  border-block-color: rgba(226, 192, 107, 0.2);
+}
+
+:root[data-theme="night"] .service-card:hover {
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.48);
+}
+
+:root[data-theme="night"] .service-card__accent,
+:root[data-theme="night"] .service-card__link,
+:root[data-theme="night"] .package-hero__tag {
+  background: rgba(11, 11, 11, 0.78);
+  border: 1px solid rgba(226, 192, 107, 0.22);
+  color: var(--gold);
+}
+
+:root[data-theme="night"] .service-card__link:hover {
+  background: var(--gold);
+  color: #0b0b0b;
+}
+
+:root[data-theme="night"] .booking-panel::before,
+:root[data-theme="night"] .booking-summary::before,
+:root[data-theme="night"] .checkout-card::before,
+:root[data-theme="night"] .checkout-summary::before {
+  background:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.11), transparent 35%),
+    radial-gradient(circle at 94% 4%, rgba(245, 241, 232, 0.06), transparent 30%);
+}
+
+:root[data-theme="night"] .service-option,
+:root[data-theme="night"] .slot-button,
+:root[data-theme="night"] .calendar-controls button,
+:root[data-theme="night"] .calendar-day,
+:root[data-theme="night"] .date-field,
+:root[data-theme="night"] .checkout-form input,
+:root[data-theme="night"] .owner-login-card input,
+:root[data-theme="night"] .owner-search,
+:root[data-theme="night"] .owner-toolbar select,
+:root[data-theme="night"] .appointment-controls select,
+:root[data-theme="night"] .appointment-controls textarea {
+  background:
+    linear-gradient(135deg, rgba(245, 241, 232, 0.035), rgba(11, 11, 11, 0.22)),
+    var(--input-surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .service-option:hover,
+:root[data-theme="night"] .slot-button:hover:not([aria-pressed="true"]),
+:root[data-theme="night"] .calendar-controls button:hover,
+:root[data-theme="night"] .calendar-day:hover:not(:disabled),
+:root[data-theme="night"] .calendar-day[aria-pressed="true"] {
+  background:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.18), rgba(22, 22, 22, 0.82)),
+    #141414;
+  border-color: rgba(226, 192, 107, 0.55);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .service-option[aria-pressed="true"],
+:root[data-theme="night"] .slot-button[aria-pressed="true"] {
+  background:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.24), transparent 48%),
+    #0d0d0d;
+  border-color: rgba(226, 192, 107, 0.65);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .calendar-day:disabled,
+:root[data-theme="night"] .calendar-day[data-outside-month="true"] {
+  background: rgba(245, 241, 232, 0.035);
+  color: rgba(184, 176, 163, 0.48);
+}
+
+:root[data-theme="night"] .selected-date-pill,
+:root[data-theme="night"] .slot-button__signal,
+:root[data-theme="night"] .checkout-trust-panel,
+:root[data-theme="night"] .confirmation-reference,
+:root[data-theme="night"] .form-error,
+:root[data-theme="night"] .owner-message,
+:root[data-theme="night"] .owner-dashboard-alert,
+:root[data-theme="night"] .demo-credentials {
+  background: rgba(201, 163, 78, 0.12);
+  border-color: rgba(226, 192, 107, 0.28);
+  color: var(--gold);
+}
+
+:root[data-theme="night"] .form-status,
+:root[data-theme="night"] .owner-dashboard-alert .secondary-action,
+:root[data-theme="night"] .owner-logout,
+:root[data-theme="night"] .pwa-install-card__dismiss {
+  background: rgba(245, 241, 232, 0.06);
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+
+:root[data-theme="night"] .checkout-progress span,
+:root[data-theme="night"] .package-stats div,
+:root[data-theme="night"] .appointment-meta-grid span {
+  background: rgba(245, 241, 232, 0.055);
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+
+:root[data-theme="night"] .checkout-progress span[data-active="true"],
+:root[data-theme="night"] .package-panel--dark {
+  background:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.18), transparent 42%),
+    #0d0d0d;
+  border-color: rgba(226, 192, 107, 0.35);
+  color: var(--ink);
+}
+
+:root[data-theme="night"] .status-badge--pending_deposit,
+:root[data-theme="night"] .status-badge--confirmed,
+:root[data-theme="night"] .status-badge--completed,
+:root[data-theme="night"] .status-badge--cancelled,
+:root[data-theme="night"] .status-badge--no_show {
+  background: rgba(226, 192, 107, 0.13);
+  color: var(--gold);
+}
+
+:root[data-theme="night"] .site-footer {
+  border-top-color: var(--line);
+}
+
 @media (max-width: 980px) {
   .site-header {
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
   }
 
   .site-header nav {
@@ -2154,6 +2428,14 @@ p {
 
   .brand-mark__signature {
     display: none;
+  }
+
+  .brand-mark__asset--signature {
+    display: none;
+  }
+
+  .brand-mark__asset--symbol {
+    display: inline-grid;
   }
 
   .brand-mark__symbol {

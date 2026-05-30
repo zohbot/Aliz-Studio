@@ -52,9 +52,18 @@ export function OwnerLoginForm({
       <div className="owner-login-card__brand">
         <Image
           alt="Aliz Studio"
+          className="theme-logo--for-light"
           height={70}
           priority
           src="/brand/aliz-studio-logo-dark.png"
+          width={210}
+        />
+        <Image
+          alt="Aliz Studio"
+          className="theme-logo--for-night"
+          height={70}
+          priority
+          src="/brand/aliz-studio-logo-light.png"
           width={210}
         />
       </div>

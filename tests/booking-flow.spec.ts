@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { readdir, readFile, rm } from "fs/promises";
+import { readdir, readFile } from "fs/promises";
 import path from "path";
 import { resolveFileAppointmentStoragePaths } from "../lib/repositories/file-appointment-repository";
 import { resolveRepositoryBackend } from "../lib/repositories/factory";
@@ -25,10 +25,6 @@ async function pngHasAlphaChannel(filePath: string) {
 }
 
 test.describe("Aliz Studio booking foundation", () => {
-  test.beforeAll(async () => {
-    await rm(path.join(process.cwd(), "data", "appointments.json"), { force: true });
-  });
-
   test("file appointment storage uses writable temp storage on Vercel", () => {
     expect(resolveFileAppointmentStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
 
@@ -132,6 +128,8 @@ test.describe("Aliz Studio booking foundation", () => {
   });
 
   test("owner can sign in and manage appointment status", async ({ page }) => {
+    const targetCustomer = test.info().project.name.includes("mobile") ? "Darius Cole" : "Marcus Reed";
+
     await page.goto("/owner/dashboard");
     await expect(page).toHaveURL(/\/owner\/login/);
 
@@ -147,9 +145,9 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.getByRole("complementary", { name: "Owner session" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
     await expect(page.getByText("Temporary demo storage is unavailable")).toHaveCount(0);
-    await expect(page.getByText("Marcus Reed")).toBeVisible();
+    await expect(page.getByText(targetCustomer)).toBeVisible();
 
-    const ownerSeedCard = page.locator(".appointment-card").filter({ hasText: "Marcus Reed" }).first();
+    const ownerSeedCard = page.locator(".appointment-card").filter({ hasText: targetCustomer }).first();
     await ownerSeedCard.getByLabel("Appointment status").selectOption("completed");
     await expect(ownerSeedCard.locator(".status-badge")).toHaveText("Completed");
     await ownerSeedCard.getByRole("button", { name: "Save" }).click();
@@ -354,6 +352,84 @@ test.describe("Aliz Studio booking foundation", () => {
     ]) {
       await expect(pngHasAlphaChannel(path.join(process.cwd(), assetPath))).resolves.toBeTruthy();
     }
+  });
+
+  test("theme toggle switches to persisted night theme and uses light logo assets", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+    await page.getByRole("button", { name: "Switch to night theme" }).click();
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await expect(page.getByRole("button", { name: "Switch to light theme" })).toBeVisible();
+    await expect.poll(() => page.evaluate(() => window.localStorage.getItem("aliz-theme"))).toBe("night");
+
+    const visibleLogoSrc = await page.locator(".brand-mark img:visible").first().getAttribute("src");
+    const paperToken = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--paper").trim()
+    );
+
+    expect(visibleLogoSrc).toContain("light");
+    expect(paperToken).toBe("#0b0b0b");
+
+    await page.reload();
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+
+    await page.goto("/book");
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await expect(page.getByText("Select one package to update the summary")).toBeVisible();
+  });
+
+  test("night theme keeps key mobile routes free of horizontal overflow", async ({ page }) => {
+    const widths = [320, 375, 390, 414, 430];
+    const routes = ["/", "/book", "/owner/login"];
+
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+
+      for (const route of routes) {
+        await page.goto(route);
+
+        const overflow = await page.evaluate(() => {
+          const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+          return documentWidth - window.innerWidth;
+        });
+
+        await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+        await expect(page.getByRole("banner").getByRole("link", { name: "Aliz Studio home" })).toBeVisible();
+        expect(overflow, `${route} at ${width}px in night theme should not overflow`).toBeLessThanOrEqual(
+          1
+        );
+      }
+    }
+  });
+
+  test("owner login and dashboard remain usable in night theme", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+
+    await page.goto("/owner/login");
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await expect(page.getByRole("heading", { name: /manage bookings/i })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
   });
 
   test("generated source asset names are archived and not referenced by app code", async ({ page }) => {

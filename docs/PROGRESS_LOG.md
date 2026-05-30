@@ -1,5 +1,31 @@
 # Progress Log
 
+## 2026-05-30 - Night Theme Sprint
+
+Scope: visual/theming polish only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Added a tokenized light/night theme system using `data-theme` and CSS variables.
+- Kept the existing light theme as the default.
+- Added a minimal header theme toggle that persists the selected theme locally as `aliz-theme`.
+- Added an early layout script to apply the stored theme before the page finishes painting.
+- Added black-and-gold night theme styling across header, hero, service cards, booking, checkout, owner login, owner dashboard, footer, and PWA install surfaces.
+- Swapped transparent light logo assets into dark-theme header, footer, and owner login contexts.
+- Added Playwright coverage for theme persistence, night-theme logo usage, mobile overflow, and owner login/dashboard usability in night mode.
+- Moved Playwright appointment-store cleanup into a single global setup step to avoid cross-project file-backed data races during e2e runs.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 56/56 Playwright tests.
+
+Notes:
+
+- The night theme is opt-in through the toggle; no backend, payment, or persistence behavior changed.
+
 ## 2026-05-30 - Owner Session UX And Storage Fallback Follow-Up
 
 Scope: owner dashboard session clarity and demo storage reliability only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
