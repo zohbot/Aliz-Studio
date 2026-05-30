@@ -92,7 +92,7 @@ Only `NEXT_PUBLIC_` values are safe to expose to browser code. Keep Supabase ser
 
 ## Current Staging Limitations
 
-- File-backed appointment storage is not durable on Vercel/serverless and is only acceptable for temporary staging/demo validation.
+- File-backed appointment storage uses ephemeral writable temp storage on Vercel/serverless and is only acceptable for temporary staging/demo validation.
 - Supabase schema exists, but the Supabase runtime adapter is not active yet.
 - Square live payments are not active yet.
 - Notifications are not real yet.

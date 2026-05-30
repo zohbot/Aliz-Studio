@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readdir, readFile, rm } from "fs/promises";
 import path from "path";
+import { resolveFileAppointmentStoragePaths } from "../lib/repositories/file-appointment-repository";
 
 async function listFiles(root: string): Promise<string[]> {
   const entries = await readdir(root, { withFileTypes: true });
@@ -18,6 +19,15 @@ async function listFiles(root: string): Promise<string[]> {
 test.describe("Aliz Studio booking foundation", () => {
   test.beforeAll(async () => {
     await rm(path.join(process.cwd(), "data", "appointments.json"), { force: true });
+  });
+
+  test("file appointment storage uses writable temp storage on Vercel", () => {
+    expect(resolveFileAppointmentStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
+
+    const vercelPaths = resolveFileAppointmentStoragePaths({ VERCEL: "1" });
+
+    expect(vercelPaths.dataDirectory).toBe("/tmp/aliz-studio-appointments");
+    expect(vercelPaths.appointmentsFile).toBe("/tmp/aliz-studio-appointments/appointments.json");
   });
 
   test("home page exposes service menu and booking entry point", async ({ page }) => {
@@ -119,9 +129,10 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.getByRole("heading", { name: /manage bookings/i })).toBeVisible();
     await expect(page.getByText("Marcus Reed")).toBeVisible();
 
-    const firstCard = page.locator(".appointment-card").first();
-    await firstCard.getByLabel("Appointment status").selectOption("completed");
-    await firstCard.getByRole("button", { name: "Save" }).click();
+    const ownerSeedCard = page.locator(".appointment-card").filter({ hasText: "Marcus Reed" }).first();
+    await ownerSeedCard.getByLabel("Appointment status").selectOption("completed");
+    await expect(ownerSeedCard.locator(".status-badge")).toHaveText("Completed");
+    await ownerSeedCard.getByRole("button", { name: "Save" }).click();
 
     await expect(page.getByText("Appointment saved.")).toBeVisible();
   });

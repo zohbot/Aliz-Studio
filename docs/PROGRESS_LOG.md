@@ -26,6 +26,30 @@ Notes:
 - Live valid-login confirmation still requires the private owner credentials and a deployment containing this fix.
 - If live login still fails after deployment, verify `OWNER_PASSWORD` in Vercel is entered as raw text with no accidental quotes/spaces, then redeploy.
 
+## 2026-05-30 - Valid Owner Login Success-Path Fix
+
+Scope: authenticated owner dashboard success path only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Investigated the path that only runs after valid credentials: session cookie creation, redirect, and owner dashboard render.
+- Identified the likely production-only failure: the dashboard reads the file-backed appointment repository, which could try to seed/write `data/appointments.json` inside the deployed app directory.
+- Updated the file-backed appointment repository so local development still uses `data/appointments.json`, while Vercel runtime uses writable ephemeral temp storage.
+- Added Playwright coverage for Vercel storage path resolution.
+- Documented that Vercel file-backed storage is usable only for temporary staging/demo validation and remains non-durable.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 38/38 Playwright tests.
+
+Notes:
+
+- This keeps `ALIZ_DATA_BACKEND=file` as the default and does not activate Supabase.
+- Valid live-login confirmation still requires private owner credentials after deployment.
+
 ## 2026-05-30 - Live Deployment QA And Polish
 
 Scope: production-readiness polish only for the live staging app at `https://aliz.zohbot.net`. No real payments, customer database, real auth replacement, Supabase runtime integration, notification provider, Vercel setting, or DNS change was made.

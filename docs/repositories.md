@@ -50,10 +50,13 @@ This intentionally stays appointment-focused. Future repositories can be added f
 
 The file adapter preserves the existing behavior from `lib/appointments.ts`:
 
-- Reads and writes `data/appointments.json`.
+- Reads and writes `data/appointments.json` during local development.
+- Uses writable temp storage at runtime on Vercel so authenticated owner/dashboard and booking demo flows do not crash against the read-only deployment filesystem.
 - Creates the same local seed appointments if the file is missing or invalid.
 - Keeps the current in-process mutation queue.
 - Uses the same appointment IDs, timestamps, slot checks, deposit completion behavior, stats calculation, and update behavior as before.
+
+Vercel temp storage is intentionally ephemeral. It keeps the staging/demo app usable, but appointment data can reset across deployments, cold starts, or serverless instance changes. Supabase is still required before relying on appointment data as production data.
 
 `lib/appointments.ts` remains the public compatibility layer so existing imports do not need broad rewrites.
 

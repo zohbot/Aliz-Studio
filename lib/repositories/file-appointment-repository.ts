@@ -11,8 +11,17 @@ import type {
   UpdateAppointmentRepositoryInput
 } from "@/lib/repositories/types";
 
-const dataDirectory = path.join(process.cwd(), "data");
-const appointmentsFile = path.join(dataDirectory, "appointments.json");
+export function resolveFileAppointmentStoragePaths(env: NodeJS.ProcessEnv = process.env) {
+  const isVercelRuntime = env.VERCEL === "1" || Boolean(env.VERCEL_ENV);
+  const appointmentsFile = isVercelRuntime
+    ? "/tmp/aliz-studio-appointments/appointments.json"
+    : path.join(process.cwd(), "data", "appointments.json");
+
+  return {
+    appointmentsFile,
+    dataDirectory: path.dirname(appointmentsFile)
+  };
+}
 
 function toDateId(offsetDays: number) {
   const date = new Date();
@@ -107,6 +116,7 @@ function appendOwnerNote(existingNote: string | undefined, nextNote: string) {
 
 export function createFileAppointmentRepository(): AppointmentRepository {
   let appointmentMutationQueue = Promise.resolve();
+  const storagePaths = resolveFileAppointmentStoragePaths();
 
   function runAppointmentMutation<T>(operation: () => Promise<T>) {
     const result = appointmentMutationQueue.then(operation, operation);
@@ -121,8 +131,8 @@ export function createFileAppointmentRepository(): AppointmentRepository {
 
   async function writeAppointments(appointments: Appointment[]) {
     const data = `${JSON.stringify(appointments, null, 2)}\n`;
-    const temporaryFile = `${appointmentsFile}.${randomUUID()}.tmp`;
-    await mkdir(dataDirectory, { recursive: true });
+    const temporaryFile = `${storagePaths.appointmentsFile}.${randomUUID()}.tmp`;
+    await mkdir(storagePaths.dataDirectory, { recursive: true });
     await writeFile(temporaryFile, data, "utf8");
 
     let attempts = 0;
@@ -131,7 +141,7 @@ export function createFileAppointmentRepository(): AppointmentRepository {
     while (attempts < maxAttempts) {
       attempts += 1;
       try {
-        await rename(temporaryFile, appointmentsFile);
+        await rename(temporaryFile, storagePaths.appointmentsFile);
         return;
       } catch (error) {
         const code = (error as NodeJS.ErrnoException).code;
@@ -146,17 +156,17 @@ export function createFileAppointmentRepository(): AppointmentRepository {
     }
 
     try {
-      await copyFile(temporaryFile, appointmentsFile);
+      await copyFile(temporaryFile, storagePaths.appointmentsFile);
     } finally {
       await unlink(temporaryFile).catch(() => {});
     }
   }
 
   async function ensureAppointmentsFile() {
-    await mkdir(dataDirectory, { recursive: true });
+    await mkdir(storagePaths.dataDirectory, { recursive: true });
 
     try {
-      await readFile(appointmentsFile, "utf8");
+      await readFile(storagePaths.appointmentsFile, "utf8");
     } catch {
       await writeAppointments(buildSeedAppointments());
     }
@@ -165,7 +175,7 @@ export function createFileAppointmentRepository(): AppointmentRepository {
   async function listAppointments() {
     await ensureAppointmentsFile();
 
-    const raw = await readFile(appointmentsFile, "utf8");
+    const raw = await readFile(storagePaths.appointmentsFile, "utf8");
     const candidate = JSON.parse(raw);
     const parsed = appointmentListSchema.safeParse(candidate);
 

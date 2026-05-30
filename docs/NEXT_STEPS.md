@@ -11,7 +11,7 @@
 - Enter owner env values as raw text in Vercel, without wrapping quotes. `OWNER_PASSWORD` remains exact-match, so accidental spaces or quotes will become part of the password.
 - Redeploy after changing Vercel env vars; existing deployments do not automatically pick up new values.
 - Keep `ALIZ_DATA_BACKEND=file` until the Supabase adapter is intentionally enabled in a later task.
-- Treat live appointment data as temporary while the app remains file-backed on Vercel/serverless.
+- Treat live appointment data as temporary while the app remains file-backed on Vercel/serverless; the file backend uses ephemeral temp storage in that environment.
 - Re-run public navigation, booking, mock checkout, confirmation, owner login, and owner dashboard checks after the staging owner variables are set.
 
 ## Polish Follow-Ups
