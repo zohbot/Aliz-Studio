@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-05-30 - Mobile Header Compactness And Logo Variant Fix
+
+Scope: targeted mobile header, logo variant, and theme-toggle polish. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Fixed the mobile header logo cascade so the light/white mark is hidden on light surfaces and only the dark mark is visible in light mode.
+- Kept the night theme using the light/white mark on dark surfaces.
+- Reworked the mobile header into a compact two-row app-header layout.
+- Reduced mobile logo mark, title, theme toggle, Reserve CTA, nav spacing, and header padding.
+- Made the mobile theme toggle icon-sized while keeping its accessible label and persistence behavior.
+- Added Playwright coverage for compact mobile header height, booking content position, theme-specific header logo variants, theme toggle persistence, footer logo variants, and owner-login logo variants.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 66/66 Playwright tests.
+
+Notes:
+
+- Desktop header behavior and theme persistence remain intact.
+
 ## 2026-05-30 - Night Theme Mock Payment Tile Contrast Fix
 
 Scope: targeted night-theme polish for mock payment method tiles and nearby disabled continue-button state. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.

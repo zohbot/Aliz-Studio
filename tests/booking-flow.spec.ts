@@ -411,6 +411,95 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.getByText("Select one package to update the summary")).toBeVisible();
   });
 
+  test("mobile header stays compact and uses the right logo for each theme", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/book");
+    await page.evaluate(() => {
+      window.localStorage.removeItem("aliz-theme");
+    });
+    await page.reload();
+
+    const headerBox = await page.locator(".site-header").boundingBox();
+    const toggleBox = await page.getByRole("button", { name: "Switch to night theme" }).boundingBox();
+    const bookingShellBox = await page.locator(".booking-shell").boundingBox();
+    const lightLogoSources = await page
+      .locator(".brand-mark img:visible")
+      .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    expect(headerBox?.height, "mobile header should stay compact").toBeLessThanOrEqual(112);
+    expect(toggleBox?.height, "mobile theme toggle should not dominate the header").toBeLessThanOrEqual(42);
+    expect(toggleBox?.width, "mobile theme toggle should be icon-sized").toBeLessThanOrEqual(42);
+    expect(bookingShellBox?.y, "booking form should start within the first mobile viewport").toBeLessThanOrEqual(
+      620
+    );
+    expect(lightLogoSources).toHaveLength(1);
+    expect(lightLogoSources[0]).toContain("aliz-mark-dark");
+
+    await page.getByRole("button", { name: "Switch to night theme" }).click();
+
+    const nightLogoSources = await page
+      .locator(".brand-mark img:visible")
+      .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await expect(page.getByRole("button", { name: "Switch to light theme" })).toBeVisible();
+    expect(nightLogoSources).toHaveLength(1);
+    expect(nightLogoSources[0]).toContain("aliz-mark-light");
+
+    await page.reload();
+
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
+    await expect(page.getByRole("button", { name: "Switch to light theme" })).toBeVisible();
+  });
+
+  test("footer and owner login logos expose only the theme-appropriate variant", async ({ page }) => {
+    await page.goto("/owner/login");
+    await page.evaluate(() => {
+      window.localStorage.removeItem("aliz-theme");
+    });
+    await page.reload();
+
+    const lightOwnerLogos = await page
+      .locator(".owner-login-card__brand img:visible")
+      .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+
+    expect(lightOwnerLogos).toHaveLength(1);
+    expect(lightOwnerLogos[0]).toContain("aliz-studio-logo-dark");
+
+    await page.goto("/");
+    await page.locator(".site-footer").scrollIntoViewIfNeeded();
+
+    const lightFooterLogos = await page
+      .locator(".footer-brand img:visible")
+      .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+
+    expect(lightFooterLogos).toHaveLength(1);
+    expect(lightFooterLogos[0]).toContain("aliz-studio-logo-dark");
+
+    await page.evaluate(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+      document.documentElement.dataset.theme = "night";
+      document.documentElement.style.colorScheme = "dark";
+    });
+
+    const nightFooterLogos = await page
+      .locator(".footer-brand img:visible")
+      .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+
+    expect(nightFooterLogos).toHaveLength(1);
+    expect(nightFooterLogos[0]).toContain("aliz-studio-logo-light");
+
+    await page.goto("/owner/login");
+
+    const nightOwnerLogos = await page
+      .locator(".owner-login-card__brand img:visible")
+      .evaluateAll((images) => images.map((image) => image.getAttribute("src") || ""));
+
+    expect(nightOwnerLogos).toHaveLength(1);
+    expect(nightOwnerLogos[0]).toContain("aliz-studio-logo-light");
+  });
+
   test("night theme keeps service card titles, prices, and metadata readable over images", async ({ page }) => {
     await page.addInitScript(() => {
       window.localStorage.setItem("aliz-theme", "night");
