@@ -65,7 +65,7 @@ Owner credential notes:
 - `OWNER_EMAIL` is normalized by trimming surrounding whitespace, removing accidental wrapping quotes, and comparing case-insensitively.
 - `OWNER_PASSWORD` is intentionally exact-match. Do not add surrounding quotes or spaces unless they are part of the intended password.
 - Vercel environment variable changes require a new deployment before the live app can read them.
-- Keep `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and tested. If `ALIZ_DATA_BACKEND=supabase` is entered early, the app currently falls back to `file` unless this explicit enable flag is set.
+- Keep `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and tested. If `ALIZ_DATA_BACKEND=supabase` is entered early, the app currently falls back to `file`.
 
 ## Optional Future Environment Variables
 

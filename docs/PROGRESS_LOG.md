@@ -9,7 +9,7 @@ Completed:
 - Confirmed that an active owner session intentionally redirects `/owner/login` to `/owner/dashboard`; this is expected protected-route behavior, not a credential form bypass.
 - Added a visible owner session panel and `Log out` action to the dashboard so testers can clearly end the current session before retesting credentials.
 - Added logout feedback on `/owner/login` after the session is cleared.
-- Hardened repository backend selection so an accidental `ALIZ_DATA_BACKEND=supabase` value falls back to the file backend unless `ALIZ_ENABLE_SUPABASE_REPOSITORY=true` is explicitly set.
+- Hardened repository backend selection so an accidental `ALIZ_DATA_BACKEND=supabase` or unsupported backend value falls back to the file backend until the Supabase adapter is implemented.
 - Documented the staging expectation that Supabase repository activation remains disabled until the adapter is implemented.
 - Added Playwright coverage for active-session redirect behavior, logout, dashboard session controls on mobile, and Supabase backend fallback.
 

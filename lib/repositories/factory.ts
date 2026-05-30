@@ -1,18 +1,13 @@
 import { createDemoAppointmentRepository } from "@/lib/repositories/demo-appointment-repository";
 import { createFileAppointmentRepository } from "@/lib/repositories/file-appointment-repository";
 import { createSupabaseAppointmentRepository } from "@/lib/repositories/supabase-appointment-repository";
-import {
-  AppointmentRepositoryError,
-  REPOSITORY_BACKENDS
-} from "@/lib/repositories/types";
+import { AppointmentRepositoryError } from "@/lib/repositories/types";
 import type { AppointmentRepository, RepositoryBackend } from "@/lib/repositories/types";
 
 let cachedAppointmentRepository: AppointmentRepository | null = null;
 let cachedBackend: RepositoryBackend | null = null;
 
-function isSupabaseRepositoryEnabled(env: NodeJS.ProcessEnv = process.env) {
-  return env.ALIZ_ENABLE_SUPABASE_REPOSITORY === "true";
-}
+const isSupabaseRepositoryImplemented = false;
 
 export function resolveRepositoryBackend(
   value = process.env.ALIZ_DATA_BACKEND,
@@ -24,20 +19,19 @@ export function resolveRepositoryBackend(
 
   const normalizedValue = value.trim().toLowerCase();
 
-  if (normalizedValue === "supabase" && !isSupabaseRepositoryEnabled(env)) {
+  if (normalizedValue === "supabase") {
+    if (isSupabaseRepositoryImplemented && env.ALIZ_ENABLE_SUPABASE_REPOSITORY === "true") {
+      return "supabase";
+    }
+
     return "file";
   }
 
-  if (REPOSITORY_BACKENDS.includes(normalizedValue as RepositoryBackend)) {
+  if (normalizedValue === "file" || normalizedValue === "demo") {
     return normalizedValue as RepositoryBackend;
   }
 
-  throw new AppointmentRepositoryError(
-    `Unsupported ALIZ_DATA_BACKEND value "${value}". Allowed values: file, demo, supabase.`,
-    {
-      code: "invalid_backend"
-    }
-  );
+  return "file";
 }
 
 export function createAppointmentRepository(backend: RepositoryBackend = resolveRepositoryBackend()) {

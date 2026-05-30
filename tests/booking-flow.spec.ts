@@ -40,9 +40,8 @@ test.describe("Aliz Studio booking foundation", () => {
 
   test("inactive Supabase repository setting falls back to file backend", () => {
     expect(resolveRepositoryBackend("supabase", {})).toBe("file");
-    expect(resolveRepositoryBackend("supabase", { ALIZ_ENABLE_SUPABASE_REPOSITORY: "true" })).toBe(
-      "supabase"
-    );
+    expect(resolveRepositoryBackend("supabase", { ALIZ_ENABLE_SUPABASE_REPOSITORY: "true" })).toBe("file");
+    expect(resolveRepositoryBackend("unexpected")).toBe("file");
   });
 
   test("home page exposes service menu and booking entry point", async ({ page }) => {
