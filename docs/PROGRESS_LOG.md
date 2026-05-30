@@ -1,5 +1,29 @@
 # Progress Log
 
+## 2026-05-30 - Night Theme Booking Interaction Polish
+
+Scope: targeted night-theme polish for booking controls, form focus states, and mock payment option cards. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Added theme tokens for tap highlights, selected-state surfaces, selected-state borders, input focus styling, placeholders, and mock payment cards.
+- Replaced default-looking blue mobile tap/focus/selection behavior with warm gold and charcoal night-theme treatment.
+- Updated selected service, calendar day, and time-slot controls to share theme-aware selected-state styling.
+- Fixed night-mode mock payment option cards so their labels and icons are readable on dark premium card surfaces.
+- Improved night-mode textarea placeholder and booking helper text readability.
+- Added Playwright coverage for night booking selection colors, tap highlight styling, payment card readability, and helper/placeholder contrast.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 62/62 Playwright tests.
+
+Notes:
+
+- Mock deposit behavior remains demo-only and unchanged.
+
 ## 2026-05-30 - Night Theme Service Card Contrast Fix
 
 Scope: targeted night-theme readability polish for image-backed service/menu cards. No auth, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.

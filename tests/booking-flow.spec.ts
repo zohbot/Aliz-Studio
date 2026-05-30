@@ -44,6 +44,14 @@ function expectReadableImageCardTextColor(value: string, label: string) {
   expect(color.blue, `${label} blue channel should not be near black`).toBeGreaterThanOrEqual(95);
 }
 
+function expectNotBrowserBlue(value: string, label: string) {
+  const color = parseRgbColor(value);
+  const looksLikeDefaultBlue =
+    color.blue >= 150 && color.blue > color.red + 60 && color.blue > color.green + 30;
+
+  expect(looksLikeDefaultBlue, `${label} should not look like default browser blue`).toBeFalsy();
+}
+
 test.describe("Aliz Studio booking foundation", () => {
   test("file appointment storage uses writable temp storage on Vercel", () => {
     expect(resolveFileAppointmentStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
@@ -434,6 +442,81 @@ test.describe("Aliz Studio booking foundation", () => {
       20
     );
     expect(overlayToken).toMatch(/rgba\(0, 0, 0|#000000/);
+  });
+
+  test("night theme booking selections use gold styling without default blue states", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/book?service=basic-cut");
+
+    const plusCut = page.getByRole("button", { name: /Plus Cut/ });
+    await plusCut.click();
+    const selectedDate = page.locator(".calendar-day[aria-pressed='true']").first();
+    const openSlot = page.locator(".slot-button:not(:disabled)").first();
+    await openSlot.click();
+
+    const selectedServiceBorder = await plusCut.evaluate((element) => getComputedStyle(element).borderTopColor);
+    const selectedDateBorder = await selectedDate.evaluate((element) => getComputedStyle(element).borderTopColor);
+    const selectedSlotBorder = await openSlot.evaluate((element) => getComputedStyle(element).borderTopColor);
+    const selectedSlotTextColor = await openSlot.evaluate((element) => getComputedStyle(element).color);
+    const tapHighlight = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("-webkit-tap-highlight-color")
+    );
+
+    await page.getByLabel("Full name").focus();
+    const focusedInputBorder = await page
+      .getByLabel("Full name")
+      .evaluate((element) => getComputedStyle(element).borderTopColor);
+
+    for (const [label, color] of [
+      ["selected service border", selectedServiceBorder],
+      ["selected date border", selectedDateBorder],
+      ["selected slot border", selectedSlotBorder],
+      ["focused input border", focusedInputBorder],
+      ["tap highlight", tapHighlight]
+    ] as const) {
+      expectNotBrowserBlue(color, label);
+      expect(parseRgbColor(color).red, `${label} should carry warm gold/neutral styling`).toBeGreaterThanOrEqual(
+        180
+      );
+    }
+
+    expectReadableImageCardTextColor(selectedSlotTextColor, "selected slot text");
+  });
+
+  test("night theme keeps mock payment cards and booking helper text readable", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("aliz-theme", "night");
+    });
+    await page.setViewportSize({ width: 390, height: 900 });
+    await page.goto("/book?service=deluxe-cut");
+
+    const creditCardLogo = page.locator(".payment-logo").filter({ hasText: "Credit or debit" }).first();
+    const paymentTextColor = await creditCardLogo.evaluate((element) => getComputedStyle(element).color);
+    const paymentBackground = await creditCardLogo.evaluate(
+      (element) => getComputedStyle(element).backgroundColor
+    );
+    const paymentBorder = await creditCardLogo.evaluate((element) => getComputedStyle(element).borderTopColor);
+    const paymentIconColor = await creditCardLogo
+      .locator(".payment-logo__icon")
+      .evaluate((element) => getComputedStyle(element).color);
+    const phoneHelpColor = await page
+      .locator("#booking-phone-help")
+      .evaluate((element) => getComputedStyle(element).color);
+    const notesPlaceholderColor = await page
+      .getByLabel("Notes")
+      .evaluate((element) => getComputedStyle(element, "::placeholder").color);
+
+    expectReadableImageCardTextColor(paymentTextColor, "payment card text");
+    expectReadableImageCardTextColor(paymentIconColor, "payment card icon");
+    expectReadableImageCardTextColor(phoneHelpColor, "phone helper text");
+    expectReadableImageCardTextColor(notesPlaceholderColor, "notes placeholder text");
+    expect(parseRgbColor(paymentBackground).red, "payment card background should stay dark").toBeLessThanOrEqual(
+      35
+    );
+    expectNotBrowserBlue(paymentBorder, "payment card border");
   });
 
   test("night theme keeps key mobile routes free of horizontal overflow", async ({ page }) => {

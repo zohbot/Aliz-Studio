@@ -14,6 +14,24 @@
   --shadow: 0 24px 80px rgba(17, 16, 15, 0.14);
   --soft-shadow: 0 14px 40px rgba(17, 16, 15, 0.08);
   --focus-ring: rgba(159, 120, 48, 0.42);
+  --tap-highlight: rgba(212, 175, 55, 0.18);
+  --selection-bg:
+    linear-gradient(135deg, rgba(216, 168, 77, 0.22), transparent 50%),
+    var(--ink);
+  --selection-border: rgba(216, 168, 77, 0.72);
+  --selection-text: var(--paper-strong);
+  --selection-shadow: inset 0 0 0 1px rgba(255, 253, 248, 0.08), 0 16px 42px rgba(32, 27, 25, 0.16);
+  --input-focus-bg: #ffffff;
+  --input-focus-border: rgba(184, 141, 58, 0.62);
+  --input-focus-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12);
+  --placeholder-text: rgba(91, 87, 80, 0.72);
+  --payment-card-bg:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(244, 239, 231, 0.94)),
+    var(--paper-strong);
+  --payment-card-border: rgba(222, 210, 182, 0.9);
+  --payment-card-text: var(--ink);
+  --payment-card-icon: var(--clay-dark);
+  --payment-card-shadow: 0 8px 18px rgba(42, 32, 26, 0.06);
   --page-background:
     linear-gradient(145deg, rgba(212, 175, 55, 0.12), transparent 28%),
     linear-gradient(180deg, var(--paper), #eee9df 54%, #fffdf8);
@@ -51,6 +69,24 @@
   --shadow: 0 26px 88px rgba(0, 0, 0, 0.54);
   --soft-shadow: 0 16px 50px rgba(0, 0, 0, 0.35);
   --focus-ring: rgba(226, 192, 107, 0.48);
+  --tap-highlight: rgba(226, 192, 107, 0.24);
+  --selection-bg:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.24), rgba(245, 241, 232, 0.04) 44%),
+    #0d0d0d;
+  --selection-border: rgba(226, 192, 107, 0.72);
+  --selection-text: var(--ink);
+  --selection-shadow: inset 0 0 0 1px rgba(226, 192, 107, 0.12), 0 16px 42px rgba(0, 0, 0, 0.34), 0 0 0 4px rgba(226, 192, 107, 0.08);
+  --input-focus-bg: #111111;
+  --input-focus-border: rgba(226, 192, 107, 0.74);
+  --input-focus-shadow: 0 0 0 4px rgba(226, 192, 107, 0.16);
+  --placeholder-text: rgba(184, 176, 163, 0.72);
+  --payment-card-bg:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.14), rgba(245, 241, 232, 0.04) 44%, rgba(11, 11, 11, 0.22)),
+    #111111;
+  --payment-card-border: rgba(226, 192, 107, 0.32);
+  --payment-card-text: #f5f1e8;
+  --payment-card-icon: var(--gold);
+  --payment-card-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
   --page-background:
     radial-gradient(circle at 16% 0%, rgba(201, 163, 78, 0.16), transparent 28%),
     radial-gradient(circle at 88% 10%, rgba(226, 192, 107, 0.1), transparent 30%),
@@ -75,6 +111,8 @@
 }
 
 html {
+  -webkit-tap-highlight-color: var(--tap-highlight);
+  accent-color: var(--gold);
   scroll-behavior: smooth;
 }
 
@@ -95,6 +133,7 @@ button,
 input,
 select,
 textarea {
+  -webkit-tap-highlight-color: var(--tap-highlight);
   font: inherit;
 }
 
@@ -817,6 +856,13 @@ p {
     transform 180ms ease;
 }
 
+.service-option:active:not(:disabled),
+.slot-button:active:not(:disabled),
+.calendar-day:active:not(:disabled),
+.calendar-controls button:active {
+  transform: scale(0.985);
+}
+
 .service-option {
   align-items: center;
   background:
@@ -876,12 +922,10 @@ p {
 
 .service-option[aria-pressed="true"],
 .slot-button[aria-pressed="true"] {
-  background:
-    linear-gradient(135deg, rgba(216, 168, 77, 0.22), transparent 50%),
-    var(--ink);
-  border-color: rgba(216, 168, 77, 0.72);
-  box-shadow: inset 0 0 0 1px rgba(255, 253, 248, 0.08), 0 16px 42px rgba(32, 27, 25, 0.16);
-  color: var(--paper-strong);
+  background: var(--selection-bg);
+  border-color: var(--selection-border);
+  box-shadow: var(--selection-shadow);
+  color: var(--selection-text);
 }
 
 .service-option[aria-pressed="true"] .service-option__name svg {
@@ -920,6 +964,11 @@ p {
   display: inline-flex;
   height: 40px;
   justify-content: center;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
   width: 40px;
 }
 
@@ -956,13 +1005,20 @@ p {
   min-height: 42px;
   place-items: center;
   position: relative;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
 }
 
 .calendar-day:hover:not(:disabled),
 .calendar-day[aria-pressed="true"] {
-  background: var(--ink);
-  border-color: var(--ink);
-  color: var(--paper-strong);
+  background: var(--selection-bg);
+  border-color: var(--selection-border);
+  box-shadow: var(--selection-shadow);
+  color: var(--selection-text);
 }
 
 .calendar-day[aria-pressed="true"]::after {
@@ -1163,13 +1219,11 @@ p {
 
 .payment-logo {
   align-items: center;
-  background:
-    linear-gradient(135deg, rgba(255, 253, 248, 0.98), rgba(244, 239, 231, 0.94)),
-    var(--paper-strong);
-  border: 1px solid rgba(222, 210, 182, 0.9);
+  background: var(--payment-card-bg);
+  border: 1px solid var(--payment-card-border);
   border-radius: 6px;
-  box-shadow: 0 8px 18px rgba(42, 32, 26, 0.06);
-  color: var(--ink);
+  box-shadow: var(--payment-card-shadow);
+  color: var(--payment-card-text);
   display: inline-flex;
   font-size: 0.68rem;
   font-weight: 900;
@@ -1188,7 +1242,7 @@ p {
 }
 
 .payment-logo__icon {
-  color: var(--clay-dark);
+  color: var(--payment-card-icon);
   flex: 0 0 auto;
   height: 18px;
   width: 18px;
@@ -1250,10 +1304,18 @@ p {
 .booking-customer-form textarea:focus,
 .owner-login-card input:focus,
 .checkout-form input:focus {
-  background: #ffffff;
-  border-color: rgba(184, 141, 58, 0.62);
-  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.12);
+  background: var(--input-focus-bg);
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
   outline: 0;
+}
+
+.booking-customer-form input::placeholder,
+.booking-customer-form textarea::placeholder,
+.checkout-form input::placeholder,
+.owner-login-card input::placeholder {
+  color: var(--placeholder-text);
+  opacity: 1;
 }
 
 .booking-customer-form small {
@@ -2301,11 +2363,9 @@ p {
 
 :root[data-theme="night"] .service-option[aria-pressed="true"],
 :root[data-theme="night"] .slot-button[aria-pressed="true"] {
-  background:
-    linear-gradient(135deg, rgba(226, 192, 107, 0.24), transparent 48%),
-    #0d0d0d;
-  border-color: rgba(226, 192, 107, 0.65);
-  color: var(--ink);
+  background: var(--selection-bg);
+  border-color: var(--selection-border);
+  color: var(--selection-text);
 }
 
 :root[data-theme="night"] .calendar-day:disabled,
