@@ -4,16 +4,16 @@
 
 The app references normalized copies of the generated Aliz Studio brand exports:
 
-- `public/brand/aliz-studio-logo-dark.png` - full generated black signature logo for light or glass surfaces.
-- `public/brand/aliz-studio-logo-light.png` - full generated white signature logo for dark surfaces.
-- `public/brand/aliz-mark-dark.png` - compact generated mark for app icons and tight UI.
-- `public/brand/aliz-mark-light.png` - alternate compact generated mark.
+- `public/brand/aliz-studio-logo-dark.png` - full black signature logo for light or glass surfaces, with real alpha transparency.
+- `public/brand/aliz-studio-logo-light.png` - full white signature logo for dark surfaces, with real alpha transparency.
+- `public/brand/aliz-mark-dark.png` - compact black mark for tight UI, with real alpha transparency.
+- `public/brand/aliz-mark-light.png` - compact white mark for dark tight UI, with real alpha transparency.
 - `public/icons/icon-192.png` - 192x192 PWA icon.
 - `public/icons/icon-512.png` - 512x512 PWA icon.
 - `public/icons/apple-touch-icon.png` - 180x180 Apple touch icon.
 - `app/icon.svg` - Next.js app icon/fav icon source.
 
-SVG fallback placeholders also exist in `public/brand` for future vector replacement, but the current UI uses the generated PNG exports.
+SVG fallback placeholders also exist in `public/brand` for future vector replacement, but the current UI uses the PNG exports. The app-facing PNG logo and mark files should remain transparent; do not replace them with checkerboard or solid-background exports.
 
 ## Source Exports
 
@@ -23,6 +23,8 @@ Original generated source exports are archived with clean names under `public/br
 - `public/brand/source/aliz-mark-source-01.png` through `aliz-mark-source-06.png`
 
 These files are reference/source art only. The app should not import or render them directly.
+
+The archived source PNGs do not contain true alpha transparency. The current normalized app-facing logo and mark files were cleaned from the best available source exports into transparent PNGs. Future brand replacements should be generated directly with transparent backgrounds instead of requiring cleanup.
 
 ## Usage
 
@@ -41,6 +43,8 @@ Future production brand exports can replace the normalized files in place if the
 - PWA icon: PNG, 192x192.
 - PWA icon: PNG, 512x512.
 - Apple touch icon: PNG, 180x180.
+
+The PWA and Apple icons may keep an intentional designed icon background, especially for iOS home screen presentation. The wordmark and compact mark files used in the header, footer, and owner login should remain transparent.
 
 ## Metadata And Manifest
 

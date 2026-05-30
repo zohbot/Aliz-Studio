@@ -1,5 +1,35 @@
 # Progress Log
 
+## 2026-05-30 - Corrective Valid Login And Logo Sprint
+
+Scope: owner valid-login success path, transparent app-used brand assets, owner login polish, and handoff packaging. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Investigated the valid-login path that runs after credentials are accepted: session token creation, cookie setting, redirect, protected dashboard render, and appointment repository access.
+- Kept the previous Vercel temp-storage fallback and added explicit Node.js runtime declarations to owner/booking/checkout routes that depend on Node APIs or the file-backed appointment repository.
+- Added dashboard-level error handling so appointment storage failures render a friendly owner safe-mode state instead of a generic server error screen.
+- Added safe 503 responses for owner appointment APIs and booking availability when appointment storage is temporarily unavailable.
+- Confirmed a production-build local login flow with test-only credentials reaches `/owner/dashboard`.
+- Rebuilt the app-used wordmark and mark PNGs with real alpha transparency from the cleanest available archived source exports.
+- Added a show/hide password toggle with accessible labels and preserved `autocomplete="current-password"`.
+- Tightened the owner login card presentation and logo placement.
+- Added Playwright coverage for valid owner login, invalid login, password visibility, desktop/mobile overflow, Vercel storage path resolution, and app-used PNG alpha channels.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 42/42 Playwright tests.
+- Production build smoke test with test-only owner credentials passed: login API returned 200 and `/owner/dashboard` returned 200 with dashboard content.
+
+Notes:
+
+- Vercel CLI/log access was not available locally, so raw Vercel runtime logs were not inspected.
+- `cfc6d13` could not be directly confirmed from response headers; the pushed corrective commit supersedes that deployment.
+- Live valid-login confirmation still requires private owner credentials after Vercel deploys the corrective commit.
+
 ## 2026-05-30 - Owner Login Debug Sprint
 
 Scope: owner login reliability and documentation only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.

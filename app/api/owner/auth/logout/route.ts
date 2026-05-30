@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { assertSameOriginRequest } from "@/lib/api-security";
 import { getOwnerCookieOptions, ownerSessionCookieName } from "@/lib/admin-auth";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   const originError = assertSameOriginRequest(request);
 

@@ -4,6 +4,8 @@ import { getReservedTimesForDate } from "@/lib/appointments";
 import { getPreviewSlots } from "@/lib/availability";
 import { appointmentDateSchema } from "@/lib/domain";
 
+export const runtime = "nodejs";
+
 const availabilitySchema = z.object({
   date: appointmentDateSchema
 });
@@ -23,7 +25,19 @@ export async function GET(request: Request) {
     );
   }
 
-  const reservedTimes = await getReservedTimesForDate(parsed.data.date);
+  let reservedTimes: string[];
+
+  try {
+    reservedTimes = await getReservedTimesForDate(parsed.data.date);
+  } catch {
+    return NextResponse.json(
+      {
+        error: "Availability is temporarily unavailable."
+      },
+      { status: 503 }
+    );
+  }
+
   const slots = getPreviewSlots().map((slot) => ({
     ...slot,
     isReserved: reservedTimes.includes(slot.value)

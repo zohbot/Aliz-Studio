@@ -16,6 +16,13 @@ async function listFiles(root: string): Promise<string[]> {
   return files.flat();
 }
 
+async function pngHasAlphaChannel(filePath: string) {
+  const buffer = await readFile(filePath);
+
+  return buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) &&
+    [4, 6].includes(buffer[25]);
+}
+
 test.describe("Aliz Studio booking foundation", () => {
   test.beforeAll(async () => {
     await rm(path.join(process.cwd(), "data", "appointments.json"), { force: true });
@@ -122,11 +129,14 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page).toHaveURL(/\/owner\/login/);
 
     await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
-    await page.getByLabel("Password").fill(process.env.OWNER_PASSWORD || "local-owner-password-for-tests");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
     await page.getByRole("button", { name: /sign in/i }).click();
 
     await expect(page).toHaveURL(/\/owner\/dashboard/);
     await expect(page.getByRole("heading", { name: /manage bookings/i })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Appointment statistics" })).toBeVisible();
     await expect(page.getByText("Marcus Reed")).toBeVisible();
 
     const ownerSeedCard = page.locator(".appointment-card").filter({ hasText: "Marcus Reed" }).first();
@@ -141,11 +151,26 @@ test.describe("Aliz Studio booking foundation", () => {
     await page.goto("/owner/login");
 
     await page.getByLabel("Email").fill("not-owner@example.com");
-    await page.getByLabel("Password").fill("wrong-password");
+    await page.getByLabel("Password", { exact: true }).fill("wrong-password");
     await page.getByRole("button", { name: /sign in/i }).click();
 
     await expect(page).toHaveURL(/\/owner\/login/);
     await expect(page.getByText("Invalid owner login. Check the owner email and password.")).toBeVisible();
+  });
+
+  test("owner login password visibility toggle is accessible", async ({ page }) => {
+    await page.goto("/owner/login");
+
+    const passwordInput = page.getByLabel("Password", { exact: true });
+    const showPassword = page.getByRole("button", { name: "Show password" });
+
+    await expect(passwordInput).toHaveAttribute("type", "password");
+    await expect(passwordInput).toHaveAttribute("autocomplete", "current-password");
+
+    await showPassword.click();
+
+    await expect(passwordInput).toHaveAttribute("type", "text");
+    await expect(page.getByRole("button", { name: "Hide password" })).toBeVisible();
   });
 
   test("owner login API accepts normalized email and exact password", async ({ request }) => {
@@ -277,6 +302,15 @@ test.describe("Aliz Studio booking foundation", () => {
 
       expect(response.status(), `${assetPath} should be available`).toBe(200);
     }
+
+    for (const assetPath of [
+      "public/brand/aliz-studio-logo-dark.png",
+      "public/brand/aliz-studio-logo-light.png",
+      "public/brand/aliz-mark-dark.png",
+      "public/brand/aliz-mark-light.png"
+    ]) {
+      await expect(pngHasAlphaChannel(path.join(process.cwd(), assetPath))).resolves.toBeTruthy();
+    }
   });
 
   test("generated source asset names are archived and not referenced by app code", async ({ page }) => {
@@ -406,6 +440,20 @@ test.describe("Aliz Studio booking foundation", () => {
         expect(overflow, `${route} at ${width}px should not overflow horizontally`).toBeLessThanOrEqual(1);
       }
     }
+  });
+
+  test("owner login desktop layout does not create horizontal overflow", async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/owner/login");
+
+    const overflow = await page.evaluate(() => {
+      const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+      return documentWidth - window.innerWidth;
+    });
+
+    await expect(page.getByRole("heading", { name: /appointment command center/i })).toBeVisible();
+    expect(overflow).toBeLessThanOrEqual(1);
   });
 
   test("booking validation rejects non-US phone lengths clearly", async ({ page }) => {

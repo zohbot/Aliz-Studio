@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { OwnerLoginForm } from "@/components/owner-login-form";
 import { getOwnerCredentials, getOwnerSession, shouldShowDemoOwnerCredentials } from "@/lib/admin-auth";
 
+export const runtime = "nodejs";
+
 export const metadata: Metadata = {
   title: "Owner Login"
 };

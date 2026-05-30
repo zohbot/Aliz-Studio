@@ -4,6 +4,8 @@ import { assertSameOriginRequest, parseJsonRequest } from "@/lib/api-security";
 import { updateAppointment } from "@/lib/appointments";
 import { ownerAppointmentUpdateSchema } from "@/lib/domain";
 
+export const runtime = "nodejs";
+
 type RouteContext = {
   params: Promise<{
     appointmentId: string;
@@ -42,7 +44,18 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 
   const { appointmentId } = await context.params;
-  const appointment = await updateAppointment(appointmentId, parsed.data);
+  let appointment;
+
+  try {
+    appointment = await updateAppointment(appointmentId, parsed.data);
+  } catch {
+    return NextResponse.json(
+      {
+        error: "Appointment storage is temporarily unavailable."
+      },
+      { status: 503 }
+    );
+  }
 
   if (!appointment) {
     return NextResponse.json({ error: "Appointment not found." }, { status: 404 });

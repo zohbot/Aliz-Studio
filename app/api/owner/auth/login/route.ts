@@ -9,6 +9,8 @@ import {
 import { assertSameOriginRequest, parseJsonRequest } from "@/lib/api-security";
 import { clearRateLimit, consumeRateLimit } from "@/lib/rate-limit";
 
+export const runtime = "nodejs";
+
 const loginSchema = z.object({
   email: z.string().trim().email(),
   password: z.string().min(1)

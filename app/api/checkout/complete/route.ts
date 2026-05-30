@@ -3,6 +3,8 @@ import { z } from "zod";
 import { parseJsonRequest } from "@/lib/api-security";
 import { completeAppointmentDeposit } from "@/lib/appointments";
 
+export const runtime = "nodejs";
+
 const completeCheckoutSchema = z.object({
   appointmentId: z.string().min(1),
   cardholderName: z.string().min(2).max(80),

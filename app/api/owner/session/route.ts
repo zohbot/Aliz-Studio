@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getOwnerSession } from "@/lib/admin-auth";
 
+export const runtime = "nodejs";
+
 export async function GET() {
   const session = await getOwnerSession();
 

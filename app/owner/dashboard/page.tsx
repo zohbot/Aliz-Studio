@@ -3,10 +3,23 @@ import { redirect } from "next/navigation";
 import { OwnerAppointmentBoard } from "@/components/owner-appointment-board";
 import { getOwnerSession } from "@/lib/admin-auth";
 import { getAppointmentStats, listAppointments } from "@/lib/appointments";
+import type { Appointment } from "@/lib/domain";
+import type { AppointmentStats } from "@/lib/repositories";
 import { formatMoney } from "@/lib/services";
+
+export const runtime = "nodejs";
 
 export const metadata: Metadata = {
   title: "Owner Dashboard"
+};
+
+const emptyStats: AppointmentStats = {
+  total: 0,
+  upcoming: 0,
+  confirmed: 0,
+  pendingDeposits: 0,
+  projectedRevenue: 0,
+  depositsCollected: 0
 };
 
 export default async function OwnerDashboardPage() {
@@ -16,7 +29,16 @@ export default async function OwnerDashboardPage() {
     redirect("/owner/login");
   }
 
-  const [appointments, stats] = await Promise.all([listAppointments(), getAppointmentStats()]);
+  let appointments: Appointment[] = [];
+  let stats = emptyStats;
+  let dashboardError = "";
+
+  try {
+    [appointments, stats] = await Promise.all([listAppointments(), getAppointmentStats()]);
+  } catch {
+    dashboardError =
+      "Appointment storage is temporarily unavailable. Owner access is active, but booking records cannot be loaded right now.";
+  }
 
   return (
     <>
@@ -31,6 +53,13 @@ export default async function OwnerDashboardPage() {
           </p>
         </div>
       </section>
+
+      {dashboardError ? (
+        <section className="owner-dashboard-alert" role="alert">
+          <strong>Dashboard opened in safe mode.</strong>
+          <p>{dashboardError}</p>
+        </section>
+      ) : null}
 
       <section className="owner-stat-grid" aria-label="Appointment statistics">
         <article>

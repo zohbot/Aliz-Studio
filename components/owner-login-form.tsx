@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useState } from "react";
-import { LockKeyhole, LogIn } from "lucide-react";
+import { Eye, EyeOff, LogIn } from "lucide-react";
 
 type OwnerLoginFormProps = {
   demoEmail: string;
@@ -14,6 +15,7 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
   const [password, setPassword] = useState(showDemoCredentials ? demoPassword : "");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -41,8 +43,14 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
 
   return (
     <form className="owner-login-card" onSubmit={handleSubmit}>
-      <div className="owner-login-card__icon" aria-hidden="true">
-        <LockKeyhole size={22} />
+      <div className="owner-login-card__brand">
+        <Image
+          alt="Aliz Studio"
+          height={70}
+          priority
+          src="/brand/aliz-studio-logo-dark.png"
+          width={210}
+        />
       </div>
       <div>
         <p className="section-kicker">Owner access</p>
@@ -53,29 +61,41 @@ export function OwnerLoginForm({ demoEmail, demoPassword, showDemoCredentials }:
         </p>
       </div>
 
-      <label>
-        Email
+      <div className="owner-login-field">
+        <label htmlFor="owner-email">Email</label>
         <input
           autoComplete="email"
+          id="owner-email"
           name="email"
           onChange={(event) => setEmail(event.target.value)}
           required
           type="email"
           value={email}
         />
-      </label>
+      </div>
 
-      <label>
-        Password
-        <input
-          autoComplete="current-password"
-          name="password"
-          onChange={(event) => setPassword(event.target.value)}
-          required
-          type="password"
-          value={password}
-        />
-      </label>
+      <div className="owner-login-field">
+        <label htmlFor="owner-password">Password</label>
+        <span className="password-field">
+          <input
+            autoComplete="current-password"
+            id="owner-password"
+            name="password"
+            onChange={(event) => setPassword(event.target.value)}
+            required
+            type={isPasswordVisible ? "text" : "password"}
+            value={password}
+          />
+          <button
+            aria-label={isPasswordVisible ? "Hide password" : "Show password"}
+            className="password-toggle"
+            onClick={() => setIsPasswordVisible((current) => !current)}
+            type="button"
+          >
+            {isPasswordVisible ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        </span>
+      </div>
 
       {error ? <p className="form-error">{error}</p> : null}
 

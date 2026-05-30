@@ -1655,23 +1655,28 @@ p {
   width: min(100%, calc(100vw - 48px));
 }
 
-.owner-login-card__icon {
+.owner-login-card__brand {
   align-items: center;
-  background: var(--ink);
-  border-radius: 999px;
-  color: var(--paper-strong);
-  display: inline-flex;
-  height: 48px;
+  display: flex;
   justify-content: center;
-  width: 48px;
 }
 
-.owner-login-card h1,
+.owner-login-card__brand img {
+  height: auto;
+  max-width: 210px;
+  width: 58%;
+}
+
+.owner-login-card h1 {
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  line-height: 1;
+}
+
 .owner-dashboard-hero h1 {
   font-size: clamp(3rem, 7vw, 6.4rem);
 }
 
-.owner-login-card label,
+.owner-login-field,
 .appointment-controls label {
   color: var(--ink-soft);
   display: grid;
@@ -1701,6 +1706,36 @@ p {
   width: 100%;
 }
 
+.password-field {
+  display: grid;
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 52px;
+}
+
+.password-toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  display: inline-flex;
+  height: 38px;
+  justify-content: center;
+  position: absolute;
+  right: 6px;
+  top: 5px;
+  width: 38px;
+}
+
+.password-toggle:hover {
+  background: rgba(17, 16, 15, 0.07);
+  color: var(--ink);
+}
+
 .form-error,
 .owner-message {
   background: rgba(212, 175, 55, 0.12);
@@ -1710,6 +1745,20 @@ p {
   font-weight: 800;
   margin: 0;
   padding: 12px;
+}
+
+.owner-dashboard-alert {
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: var(--radius);
+  margin: 16px auto 8px;
+  max-width: var(--max-width);
+  padding: 18px 24px;
+  width: calc(100% - 48px);
+}
+
+.owner-dashboard-alert p {
+  margin: 6px 0 0;
 }
 
 .demo-credentials {

@@ -6,6 +6,8 @@ import { notifyOwnerOfBooking } from "@/lib/notifications";
 import { createSquareDepositCheckout } from "@/lib/square";
 import { consumeRateLimit } from "@/lib/rate-limit";
 
+export const runtime = "nodejs";
+
 export async function POST(request: Request) {
   const json = await parseJsonRequest(request);
 
