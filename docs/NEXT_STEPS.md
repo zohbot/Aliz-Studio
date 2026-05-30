@@ -2,12 +2,14 @@
 
 ## Staging Readiness
 
-- Configure the live Vercel staging owner environment so `https://aliz.zohbot.net/owner/login` renders successfully:
+- Verify the live Vercel staging owner environment so `https://aliz.zohbot.net/owner/login` accepts the intended owner credentials:
   - `OWNER_EMAIL`
   - `OWNER_PASSWORD`
   - `OWNER_SESSION_SECRET`
   - `ALIZ_REQUIRE_PRODUCTION_SECRETS=true`
   - `NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS=false`
+- Enter owner env values as raw text in Vercel, without wrapping quotes. `OWNER_PASSWORD` remains exact-match, so accidental spaces or quotes will become part of the password.
+- Redeploy after changing Vercel env vars; existing deployments do not automatically pick up new values.
 - Keep `ALIZ_DATA_BACKEND=file` until the Supabase adapter is intentionally enabled in a later task.
 - Treat live appointment data as temporary while the app remains file-backed on Vercel/serverless.
 - Re-run public navigation, booking, mock checkout, confirmation, owner login, and owner dashboard checks after the staging owner variables are set.

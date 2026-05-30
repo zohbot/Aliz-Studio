@@ -126,6 +126,40 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.getByText("Appointment saved.")).toBeVisible();
   });
 
+  test("owner login rejects invalid credentials with a friendly error", async ({ page }) => {
+    await page.goto("/owner/login");
+
+    await page.getByLabel("Email").fill("not-owner@example.com");
+    await page.getByLabel("Password").fill("wrong-password");
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/login/);
+    await expect(page.getByText("Invalid owner login. Check the owner email and password.")).toBeVisible();
+  });
+
+  test("owner login API accepts normalized email and exact password", async ({ request }) => {
+    const email = (process.env.OWNER_EMAIL || "owner@alizstudio.test").trim().replace(/^['"]|['"]$/g, "");
+    const password = process.env.OWNER_PASSWORD || "local-owner-password-for-tests";
+
+    const response = await request.post("/api/owner/auth/login", {
+      headers: {
+        "content-type": "application/json"
+      },
+      data: {
+        email: ` ${email.toUpperCase()} `,
+        password
+      }
+    });
+
+    expect(response.status()).toBe(200);
+
+    await request.post("/api/owner/auth/logout", {
+      headers: {
+        "content-type": "application/json"
+      }
+    });
+  });
+
   test("owner session cookie is issued with strict attributes", async ({ request }) => {
     const email = process.env.OWNER_EMAIL || "owner@alizstudio.test";
     const password = process.env.OWNER_PASSWORD || "local-owner-password-for-tests";

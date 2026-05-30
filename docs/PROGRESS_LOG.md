@@ -1,5 +1,31 @@
 # Progress Log
 
+## 2026-05-30 - Owner Login Debug Sprint
+
+Scope: owner login reliability and documentation only. No real auth provider, database, payment, notification, DNS, Vercel setting, secret, or env value was changed.
+
+Completed:
+
+- Confirmed the owner login code reads the intended env names: `OWNER_EMAIL`, `OWNER_PASSWORD`, `OWNER_SESSION_SECRET`, `ALIZ_REQUIRE_PRODUCTION_SECRETS`, and `NEXT_PUBLIC_SHOW_DEMO_CREDENTIALS`.
+- Confirmed login sets the same signed HttpOnly owner session cookie that protected owner routes read.
+- Normalized configured owner email handling so accidental surrounding whitespace or wrapping quotes from Vercel env entry do not break email comparison.
+- Updated the login API to trim email before email validation, so copy/pasted owner email input with surrounding spaces can still authenticate.
+- Kept owner password exact-match and documented that accidental quotes or spaces in Vercel become part of the password.
+- Added Playwright coverage for invalid owner login error copy and normalized email login through the owner auth API.
+- Documented the Vercel env redeploy requirement after changing owner credentials.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e` passed with 36/36 Playwright tests.
+
+Notes:
+
+- Live valid-login confirmation still requires the private owner credentials and a deployment containing this fix.
+- If live login still fails after deployment, verify `OWNER_PASSWORD` in Vercel is entered as raw text with no accidental quotes/spaces, then redeploy.
+
 ## 2026-05-30 - Live Deployment QA And Polish
 
 Scope: production-readiness polish only for the live staging app at `https://aliz.zohbot.net`. No real payments, customer database, real auth replacement, Supabase runtime integration, notification provider, Vercel setting, or DNS change was made.

@@ -58,6 +58,13 @@ BOOKING_TIMEZONE=America/New_York
 DEPOSIT_HOLD_MINUTES=15
 ```
 
+Owner credential notes:
+
+- Enter Vercel values as raw text, without surrounding quotes.
+- `OWNER_EMAIL` is normalized by trimming surrounding whitespace, removing accidental wrapping quotes, and comparing case-insensitively.
+- `OWNER_PASSWORD` is intentionally exact-match. Do not add surrounding quotes or spaces unless they are part of the intended password.
+- Vercel environment variable changes require a new deployment before the live app can read them.
+
 ## Optional Future Environment Variables
 
 These are not active for the current staging backend, but will be needed by later Supabase, Square, and notification tasks. Add values only when those integrations are implemented and reviewed.

@@ -25,6 +25,21 @@ type OwnerAuthConfig = OwnerCredentials & {
   sessionSecret: string;
 };
 
+function stripWrappingQuotes(value: string) {
+  const trimmedValue = value.trim();
+  const firstCharacter = trimmedValue.at(0);
+  const lastCharacter = trimmedValue.at(-1);
+
+  if (
+    trimmedValue.length >= 2 &&
+    ((firstCharacter === `"` && lastCharacter === `"`) || (firstCharacter === `'` && lastCharacter === `'`))
+  ) {
+    return trimmedValue.slice(1, -1).trim();
+  }
+
+  return trimmedValue;
+}
+
 function isStrictProductionRuntime() {
   return (
     process.env.NODE_ENV === "production" ||
@@ -39,9 +54,10 @@ function isLocalDemoAuthAllowed() {
 
 function getOwnerAuthConfig(): OwnerAuthConfig {
   const allowLocalDemo = isLocalDemoAuthAllowed();
+  const configuredEmail = process.env.OWNER_EMAIL || (allowLocalDemo ? localDemoOwnerEmail : "");
 
   return {
-    email: process.env.OWNER_EMAIL || (allowLocalDemo ? localDemoOwnerEmail : ""),
+    email: stripWrappingQuotes(configuredEmail),
     password: process.env.OWNER_PASSWORD || "",
     name: process.env.OWNER_NAME || (allowLocalDemo ? localDemoOwnerName : "Owner"),
     sessionSecret: process.env.OWNER_SESSION_SECRET || ""
@@ -167,7 +183,7 @@ export function getOwnerCookieOptions() {
 export function isValidOwnerLogin(email: string, password: string) {
   const credentials = getOwnerCredentials();
   const normalizedEmail = email.trim().toLowerCase();
-  const expectedEmail = credentials.email.toLowerCase();
+  const expectedEmail = credentials.email.trim().toLowerCase();
 
   return stringsMatch(normalizedEmail, expectedEmail) && stringsMatch(password, credentials.password);
 }

@@ -10,7 +10,7 @@ import { assertSameOriginRequest, parseJsonRequest } from "@/lib/api-security";
 import { clearRateLimit, consumeRateLimit } from "@/lib/rate-limit";
 
 const loginSchema = z.object({
-  email: z.string().email(),
+  email: z.string().trim().email(),
   password: z.string().min(1)
 });
 
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
   const parsed = loginSchema.safeParse(json.data);
 
   if (!parsed.success) {
-    return NextResponse.json({ error: "Invalid owner login." }, { status: 401 });
+    return NextResponse.json({ error: "Invalid owner login. Check the owner email and password." }, { status: 401 });
   }
 
   const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
   if (!isValidOwnerLogin(parsed.data.email, parsed.data.password)) {
     return NextResponse.json(
       {
-        error: "Invalid owner login."
+        error: "Invalid owner login. Check the owner email and password."
       },
       { status: 401 }
     );

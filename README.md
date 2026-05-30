@@ -43,6 +43,8 @@ Configure owner credentials in `.env.local` before testing the protected backend
 - `OWNER_PASSWORD`
 - `OWNER_SESSION_SECRET`
 
+Owner email is compared case-insensitively and tolerates accidental surrounding whitespace or wrapping quotes. Owner password is intentionally exact-match; enter it without surrounding quotes or spaces unless those characters are part of the intended password.
+
 For a local-only demo, set `ALIZ_ALLOW_LOCAL_DEMO_AUTH=true` and choose your own local password and session secret. Do not commit real credentials.
 
 Appointments are seeded into `data/appointments.json` on first dashboard/API access. The repository is intentionally isolated in `lib/appointments.ts` so it can be replaced with Postgres, Supabase, Prisma, or another production database without changing the dashboard workflow.
