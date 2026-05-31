@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getReservedTimesForDate } from "@/lib/appointments";
-import { getPreviewSlots } from "@/lib/availability";
+import { getAvailabilitySlotsForDate } from "@/lib/availability";
 import { appointmentDateSchema } from "@/lib/domain";
 
 export const runtime = "nodejs";
@@ -25,10 +24,10 @@ export async function GET(request: Request) {
     );
   }
 
-  let reservedTimes: string[];
+  let slots;
 
   try {
-    reservedTimes = await getReservedTimesForDate(parsed.data.date);
+    slots = await getAvailabilitySlotsForDate(parsed.data.date);
   } catch {
     return NextResponse.json(
       {
@@ -37,11 +36,6 @@ export async function GET(request: Request) {
       { status: 503 }
     );
   }
-
-  const slots = getPreviewSlots().map((slot) => ({
-    ...slot,
-    isReserved: reservedTimes.includes(slot.value)
-  }));
 
   return NextResponse.json({
     date: parsed.data.date,

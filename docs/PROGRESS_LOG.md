@@ -1,5 +1,31 @@
 # Progress Log
 
+## 2026-05-30 - Demo-Safe Owner Availability Management
+
+Scope: owner-only availability and booking-rule management, file/demo availability repository support, public availability filtering, tests, and docs. No Supabase connection, real payment capture, notifications, auth-provider changes, DNS, Vercel setting, secret, env value, or route slug changes were made.
+
+Completed:
+
+- Added `/owner/availability` as a protected owner availability management route.
+- Added an owner availability manager with weekly open/closed toggles, daily start/end times, optional break times, blocked-date add/remove controls, lead time, max appointments per slot/day, cancellation cutoff, and timezone settings.
+- Added `GET` and `PATCH /api/owner/availability` with owner-session auth, same-origin protection, server-side validation, safe errors, and path revalidation.
+- Added an availability repository interface with file, demo, and Supabase-ready skeleton adapters.
+- Updated public booking availability to respect configured weekly hours, closed days, blocked dates, optional breaks, lead time, and simple slot/day capacity checks while preserving the current slot response shape.
+- Added dashboard navigation to Availability alongside Services.
+- Added Playwright coverage for protected availability access, blocked-date behavior in public availability, invalid settings, unauthorized mutation rejection, mobile overflow, and Vercel/local availability storage paths.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 89/90 Playwright tests and 1 intentional mobile-project skip for the shared file-backed availability mutation path.
+
+Notes:
+
+- Availability edits persist to `data/availability-settings.json` locally and `/tmp/aliz-studio-availability/settings.json` on Vercel. This remains demo-safe and ephemeral, not production durable.
+- Current booking availability still uses the existing fixed slot labels; Supabase is still required for transaction-safe holds, service-duration overlap checks, durable blocked-time ranges, and audit events.
+
 ## 2026-05-30 - Demo-Safe Owner Service/Menu Management
 
 Scope: owner-only service/menu management, file/demo service repository support, public service reads, tests, and docs. No Supabase connection, real payment capture, notifications, auth-provider changes, DNS, Vercel setting, secret, env value, or route slug changes were made.

@@ -1,6 +1,8 @@
 import type {
   Appointment,
   AppointmentStatus,
+  AvailabilitySettings,
+  AvailabilitySettingsUpdateInput,
   AppointmentUpdateInput,
   CreateAppointmentInput,
   PaymentStatus,
@@ -36,6 +38,8 @@ export type CreateAppointmentRepositoryInput = CreateAppointmentInput;
 export type UpdateAppointmentRepositoryInput = AppointmentUpdateInput;
 
 export type UpdateServiceRepositoryInput = ServiceUpdateInput;
+
+export type UpdateAvailabilitySettingsRepositoryInput = AvailabilitySettingsUpdateInput;
 
 export type AppointmentRepositoryErrorCode =
   | "invalid_backend"
@@ -73,6 +77,24 @@ export class ServiceRepositoryError extends Error {
   }
 }
 
+export type AvailabilityRepositoryErrorCode =
+  | "invalid_backend"
+  | "not_configured"
+  | "not_implemented"
+  | "invalid_settings";
+
+export class AvailabilityRepositoryError extends Error {
+  readonly backend?: RepositoryBackend;
+  readonly code: AvailabilityRepositoryErrorCode;
+
+  constructor(message: string, options: { backend?: RepositoryBackend; code: AvailabilityRepositoryErrorCode }) {
+    super(message);
+    this.name = "AvailabilityRepositoryError";
+    this.backend = options.backend;
+    this.code = options.code;
+  }
+}
+
 export type AppointmentRepository = {
   readonly backend: RepositoryBackend;
   listAppointments(): Promise<Appointment[]>;
@@ -102,4 +124,12 @@ export type ServiceRepository = {
   listServices(): Promise<Service[]>;
   getServiceById(serviceId: string): Promise<Service | null>;
   updateService(serviceId: string, patch: UpdateServiceRepositoryInput): Promise<Service | null>;
+};
+
+export type AvailabilityRepository = {
+  readonly backend: RepositoryBackend;
+  getAvailabilitySettings(): Promise<AvailabilitySettings>;
+  updateAvailabilitySettings(
+    input: UpdateAvailabilitySettingsRepositoryInput
+  ): Promise<AvailabilitySettings>;
 };

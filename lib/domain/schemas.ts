@@ -58,6 +58,10 @@ export const bookingHoldStatusSchema = z.enum(BOOKING_HOLD_STATUSES);
 
 export const adminRoleSchema = z.enum(ADMIN_ROLES);
 
+export const localTime24Schema = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Use a 24-hour HH:mm time.");
+
 export const serviceSchema = z.object({
   id: z.string().trim().min(1).max(80),
   name: z.string().trim().min(1).max(80),
@@ -109,6 +113,117 @@ export const appointmentDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)
   .refine(isBookableDate, "Appointment date must be within the next 120 days.");
+
+export const availabilityBlockedDateSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  date: appointmentDateSchema,
+  reason: z.string().trim().max(120).optional(),
+  createdAt: z.string()
+});
+
+const availabilityDaySettingsObjectSchema = z
+  .object({
+    weekday: z.union([
+      z.literal(0),
+      z.literal(1),
+      z.literal(2),
+      z.literal(3),
+      z.literal(4),
+      z.literal(5),
+      z.literal(6)
+    ]),
+    label: z.string().trim().min(3).max(12),
+    isOpen: z.boolean(),
+    startTime: localTime24Schema,
+    endTime: localTime24Schema,
+    breakStartTime: z.union([localTime24Schema, z.literal("")]).optional(),
+    breakEndTime: z.union([localTime24Schema, z.literal("")]).optional()
+  })
+  .strict();
+
+export const availabilityDaySettingsSchema = availabilityDaySettingsObjectSchema
+  .superRefine((day, context) => {
+    if (!day.isOpen) {
+      return;
+    }
+
+    if (day.startTime >= day.endTime) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "End time must be after start time.",
+        path: ["endTime"]
+      });
+    }
+
+    const hasBreakStart = Boolean(day.breakStartTime);
+    const hasBreakEnd = Boolean(day.breakEndTime);
+
+    if (hasBreakStart !== hasBreakEnd) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Break start and end are both required.",
+        path: hasBreakStart ? ["breakEndTime"] : ["breakStartTime"]
+      });
+      return;
+    }
+
+    if (day.breakStartTime && day.breakEndTime) {
+      if (day.breakStartTime >= day.breakEndTime) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Break end must be after break start.",
+          path: ["breakEndTime"]
+        });
+      }
+
+      if (day.breakStartTime < day.startTime || day.breakEndTime > day.endTime) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Break must fit inside open hours.",
+          path: ["breakStartTime"]
+        });
+      }
+    }
+  });
+
+export const availabilityBookingRulesSchema = z.object({
+  leadTimeMinutes: z.number().int().min(0).max(1440),
+  maxAppointmentsPerSlot: z.number().int().min(1).max(4),
+  maxAppointmentsPerDay: z.number().int().min(1).max(48),
+  cancellationCutoffHours: z.number().int().min(0).max(168)
+});
+
+const availabilitySettingsObjectSchema = z
+  .object({
+    timezone: z.string().trim().min(3).max(80),
+    weeklyHours: z.array(availabilityDaySettingsSchema).length(7),
+    blockedDates: z.array(availabilityBlockedDateSchema.strict()).max(80),
+    bookingRules: availabilityBookingRulesSchema.strict(),
+    updatedAt: z.string()
+  })
+  .strict();
+
+function refineAvailabilityWeekdays(settings: { weeklyHours: { weekday: number }[] }, context: z.RefinementCtx) {
+    const weekdays = new Set(settings.weeklyHours.map((day) => day.weekday));
+
+    if (weekdays.size !== 7) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Weekly hours must include each weekday exactly once.",
+        path: ["weeklyHours"]
+      });
+    }
+}
+
+export const availabilitySettingsSchema = availabilitySettingsObjectSchema.superRefine(
+  refineAvailabilityWeekdays
+);
+
+export const ownerAvailabilitySettingsUpdateSchema = availabilitySettingsObjectSchema
+  .omit({
+    updatedAt: true
+  })
+  .superRefine(refineAvailabilityWeekdays);
 
 export const bookingQuoteSchema = z.object({
   serviceId: z.string().trim().min(1),

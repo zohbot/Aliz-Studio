@@ -2369,6 +2369,7 @@ p {
 .owner-dashboard-hero,
 .owner-stat-grid,
 .owner-board,
+.owner-availability-manager,
 .owner-service-manager {
   margin-inline: auto;
   max-width: var(--max-width);
@@ -2461,7 +2462,10 @@ p {
 }
 
 .owner-login-field,
-.appointment-controls label {
+.appointment-controls label,
+.availability-time-grid label,
+.blocked-date-form label,
+.booking-rule-grid label {
   color: var(--ink-soft);
   display: grid;
   font-size: 0.82rem;
@@ -2475,6 +2479,9 @@ p {
 .owner-toolbar select,
 .service-edit-form input,
 .service-edit-form textarea,
+.availability-time-grid input,
+.blocked-date-form input,
+.booking-rule-grid input,
 .appointment-controls select,
 .appointment-controls textarea {
   background: var(--paper-strong);
@@ -2486,6 +2493,9 @@ p {
 .owner-login-card input,
 .owner-toolbar select,
 .service-edit-form input,
+.availability-time-grid input,
+.blocked-date-form input,
+.booking-rule-grid input,
 .appointment-controls select,
 .appointment-controls textarea {
   min-height: 48px;
@@ -2649,6 +2659,205 @@ p {
 
 .owner-service-manager {
   padding-block: 0 86px;
+}
+
+.owner-availability-manager {
+  display: grid;
+  gap: 16px;
+  padding-block: 0 86px;
+}
+
+.availability-summary-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.availability-summary-grid article {
+  background: rgba(255, 253, 248, 0.78);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.availability-summary-grid span {
+  color: var(--ink-soft);
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.availability-summary-grid strong {
+  display: block;
+  font-size: 1.35rem;
+  overflow-wrap: anywhere;
+}
+
+.availability-editor {
+  align-items: start;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
+}
+
+.availability-editor__main,
+.availability-editor__side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+.availability-editor__side {
+  position: sticky;
+  top: 130px;
+}
+
+.availability-panel {
+  background:
+    linear-gradient(135deg, rgba(216, 168, 77, 0.12), transparent 38%),
+    rgba(255, 253, 248, 0.84);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 50px rgba(42, 32, 26, 0.08);
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+.availability-panel__header {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.availability-panel__header h2 {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  margin-bottom: 0;
+}
+
+.availability-panel__header svg {
+  color: var(--clay-dark);
+  flex: 0 0 auto;
+}
+
+.availability-day-list,
+.blocked-date-list,
+.booking-rule-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.availability-day-row {
+  background: rgba(255, 253, 248, 0.68);
+  border: 1px solid rgba(222, 211, 198, 0.82);
+  border-radius: var(--radius);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(170px, 0.28fr) minmax(0, 1fr);
+  padding: 14px;
+}
+
+.availability-day-toggle {
+  align-items: center;
+  background: rgba(17, 16, 15, 0.05);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--ink);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+  padding: 12px;
+  text-align: left;
+}
+
+.availability-day-toggle svg {
+  color: var(--clay-dark);
+  flex: 0 0 auto;
+}
+
+.availability-day-toggle small {
+  color: var(--ink-soft);
+  display: block;
+  font-size: 0.78rem;
+  margin-top: 2px;
+}
+
+.availability-day-toggle[aria-pressed="true"] {
+  background: rgba(212, 175, 55, 0.14);
+  border-color: rgba(212, 175, 55, 0.26);
+}
+
+.availability-time-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.availability-time-grid input:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.blocked-date-form {
+  align-items: end;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(140px, 0.35fr) minmax(0, 1fr) auto;
+}
+
+.blocked-date-form .secondary-action {
+  min-height: 48px;
+}
+
+.blocked-date-chip {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.68);
+  border: 1px solid rgba(222, 211, 198, 0.82);
+  border-radius: var(--radius);
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.blocked-date-chip small {
+  color: var(--ink-soft);
+  display: block;
+  margin-top: 3px;
+}
+
+.blocked-date-chip button {
+  align-items: center;
+  background: rgba(17, 16, 15, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--clay-dark);
+  cursor: pointer;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.availability-empty-note,
+.availability-help {
+  margin: 0;
+}
+
+.availability-help {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.24);
+  border-radius: var(--radius);
+  padding: 13px;
+}
+
+.availability-actions {
+  display: grid;
 }
 
 .owner-service-grid {
@@ -3514,6 +3723,8 @@ p {
 :root[data-theme="night"] .owner-session-panel,
 :root[data-theme="night"] .owner-service-note,
 :root[data-theme="night"] .owner-service-card,
+:root[data-theme="night"] .availability-panel,
+:root[data-theme="night"] .availability-summary-grid article,
 :root[data-theme="night"] .owner-stat-grid article,
 :root[data-theme="night"] .appointment-card,
 :root[data-theme="night"] .appointment-empty-state,
@@ -3529,6 +3740,9 @@ p {
 :root[data-theme="night"] .owner-service-card__facts div,
 :root[data-theme="night"] .owner-service-preview,
 :root[data-theme="night"] .service-toggle,
+:root[data-theme="night"] .availability-day-row,
+:root[data-theme="night"] .blocked-date-chip,
+:root[data-theme="night"] .availability-day-toggle,
 :root[data-theme="night"] .service-detail-drawer__header {
   background:
     linear-gradient(135deg, rgba(226, 192, 107, 0.1), rgba(245, 241, 232, 0.035)),
@@ -3554,7 +3768,10 @@ p {
 }
 
 :root[data-theme="night"] .service-edit-form input,
-:root[data-theme="night"] .service-edit-form textarea {
+:root[data-theme="night"] .service-edit-form textarea,
+:root[data-theme="night"] .availability-time-grid input,
+:root[data-theme="night"] .blocked-date-form input,
+:root[data-theme="night"] .booking-rule-grid input {
   background:
     linear-gradient(135deg, rgba(245, 241, 232, 0.035), rgba(11, 11, 11, 0.22)),
     var(--input-surface);
@@ -3566,6 +3783,18 @@ p {
   background: var(--selection-bg);
   border-color: var(--selection-border);
   box-shadow: var(--selection-shadow);
+}
+
+:root[data-theme="night"] .availability-day-toggle[aria-pressed="true"] {
+  background: var(--selection-bg);
+  border-color: var(--selection-border);
+  box-shadow: var(--selection-shadow);
+}
+
+:root[data-theme="night"] .availability-day-toggle svg,
+:root[data-theme="night"] .availability-panel__header svg,
+:root[data-theme="night"] .blocked-date-chip button {
+  color: var(--gold);
 }
 
 :root[data-theme="night"] .service-state--live,
@@ -3967,6 +4196,11 @@ p {
   .appointment-detail-list,
   .appointment-detail-note-grid,
   .owner-service-card__facts,
+  .availability-summary-grid,
+  .availability-editor,
+  .availability-day-row,
+  .availability-time-grid,
+  .blocked-date-form,
   .service-edit-form,
   .service-toggle-grid,
   .owner-dashboard-hero,
@@ -3988,6 +4222,10 @@ p {
   }
 
   .booking-summary {
+    position: static;
+  }
+
+  .availability-editor__side {
     position: static;
   }
 
@@ -4294,6 +4532,25 @@ p {
   .owner-login-card {
     padding: 24px;
     width: min(100%, calc(100vw - 36px));
+  }
+
+  .owner-availability-manager {
+    padding-inline: 18px;
+  }
+
+  .availability-panel,
+  .availability-summary-grid article {
+    padding: 18px;
+  }
+
+  .availability-panel__header,
+  .blocked-date-chip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .blocked-date-chip button {
+    align-self: flex-start;
   }
 
   .owner-stat-grid,

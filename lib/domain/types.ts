@@ -249,6 +249,44 @@ export type AvailabilitySlot = {
   isReserved?: boolean;
 };
 
+export type WeekdayId = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type LocalTime24 = string;
+
+export type AvailabilityDaySettings = {
+  weekday: WeekdayId;
+  label: string;
+  isOpen: boolean;
+  startTime: LocalTime24;
+  endTime: LocalTime24;
+  breakStartTime?: LocalTime24;
+  breakEndTime?: LocalTime24;
+};
+
+export type AvailabilityBlockedDate = {
+  id: Id;
+  date: IsoDateString;
+  reason?: string;
+  createdAt: IsoDateTimeString;
+};
+
+export type AvailabilityBookingRules = {
+  leadTimeMinutes: number;
+  maxAppointmentsPerSlot: number;
+  maxAppointmentsPerDay: number;
+  cancellationCutoffHours: number;
+};
+
+export type AvailabilitySettings = {
+  timezone: TimezoneName;
+  weeklyHours: AvailabilityDaySettings[];
+  blockedDates: AvailabilityBlockedDate[];
+  bookingRules: AvailabilityBookingRules;
+  updatedAt: IsoDateTimeString;
+};
+
+export type AvailabilitySettingsUpdateInput = Omit<AvailabilitySettings, "updatedAt">;
+
 export type BlockedTimeRange = {
   startsAt: IsoDateTimeString;
   endsAt: IsoDateTimeString;

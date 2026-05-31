@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { parseJsonRequest } from "@/lib/api-security";
 import { createAppointment, setAppointmentCheckoutUrl } from "@/lib/appointments";
+import { isBookingSlotAvailableForDate } from "@/lib/availability";
 import { buildBookingQuote, createBookingSchema } from "@/lib/booking";
 import { notifyOwnerOfBooking } from "@/lib/notifications";
 import { createSquareDepositCheckout } from "@/lib/square";
@@ -52,6 +53,17 @@ export async function POST(request: Request) {
 
     response.headers.set("Retry-After", String(rateLimit.retryAfterSeconds));
     return response;
+  }
+
+  const isAvailable = await isBookingSlotAvailableForDate(parsed.data.appointmentDate, parsed.data.appointmentTime);
+
+  if (!isAvailable) {
+    return NextResponse.json(
+      {
+        error: "That appointment time is not currently available. Please choose another slot."
+      },
+      { status: 409 }
+    );
   }
 
   const checkout = await createSquareDepositCheckout(quote);

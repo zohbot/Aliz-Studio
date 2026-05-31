@@ -12,9 +12,13 @@ Task 7 added a narrow repository boundary around appointment persistence. The ow
 - `lib/repositories/file-service-repository.ts`: demo-safe editable service/menu store seeded from the core service catalog.
 - `lib/repositories/demo-service-repository.ts`: deterministic in-memory service adapter using `lib/demo` seed data.
 - `lib/repositories/supabase-service-repository.ts`: Supabase-ready service skeleton that fails closed if selected directly.
+- `lib/repositories/file-availability-repository.ts`: demo-safe weekly-hours, blocked-date, and booking-rule store.
+- `lib/repositories/demo-availability-repository.ts`: deterministic in-memory availability adapter.
+- `lib/repositories/supabase-availability-repository.ts`: Supabase-ready availability skeleton that fails closed if selected directly.
 - `lib/repositories/index.ts`: repository barrel exports.
 - `lib/appointments.ts`: compatibility facade preserving existing public exports.
 - `lib/services.ts`: compatibility facade plus async service repository helpers for public and owner views.
+- `lib/availability.ts`: compatibility facade plus public availability calculation helpers.
 - `lib/service-catalog.ts`: build-safe core service catalog with stable IDs/routes.
 
 ## Current Default Backend
@@ -28,6 +32,7 @@ If `ALIZ_DATA_BACKEND` is unset, the app behaves like it did before this task. T
 Allowed `ALIZ_DATA_BACKEND` values:
 
 - `file`: default runtime backend. Uses `data/appointments.json` and `data/services.json` locally, with `/tmp` equivalents on Vercel.
+- Availability settings use `data/availability-settings.json` locally and `/tmp/aliz-studio-availability/settings.json` on Vercel.
 - `demo`: optional in-memory adapter backed by deterministic seed data.
 - `supabase`: future backend. Currently a skeleton and intentionally falls back to `file`.
 
@@ -61,6 +66,25 @@ The service interface covers owner service/menu operations now used by the app:
 
 The update path preserves stable service IDs, public route slugs, images, detail copy, and inclusions. Editable fields are limited to display name, short name, short description, price, deposit, duration, active/bookable state, featured state, public visibility, and sort order.
 
+## AvailabilityRepository Methods
+
+The availability interface covers owner-managed booking rules now used by `/owner/availability` and `/api/booking/availability`:
+
+- `getAvailabilitySettings()`
+- `updateAvailabilitySettings(input)`
+
+The current settings shape includes:
+
+- `timezone`
+- weekly hours with open/closed day toggles
+- daily start/end time
+- optional break start/end time
+- blocked dates with optional owner reason
+- booking lead time minutes
+- max appointments per slot
+- max appointments per day
+- cancellation cutoff hours for display/future workflow use
+
 ## File Backend
 
 The file adapter preserves the existing behavior from `lib/appointments.ts`:
@@ -85,9 +109,18 @@ The service file adapter:
 
 Vercel temp storage is intentionally ephemeral. It keeps `/owner/services`, `/book`, `/packages`, and service detail demos usable, but service edits can reset across deployments, cold starts, or serverless instance changes.
 
+The availability file adapter:
+
+- Reads and writes `data/availability-settings.json` during local development.
+- Uses writable temp storage at `/tmp/aliz-studio-availability/settings.json` on Vercel.
+- Seeds from demo-safe defaults where all weekdays are open across the existing fixed slot list.
+- Validates weekly hours, blocked dates, lead time, and slot/day limits through the canonical Zod schemas.
+
+The public booking availability API now filters fixed slots through these settings. This supports closed days, open-hour windows, optional breaks, blocked dates, lead time, and simple slot/day capacity checks while preserving the current customer-facing slot response shape.
+
 ## Demo Backend
 
-The demo adapters read deterministic seed appointments and services from `lib/demo`.
+The demo adapters read deterministic seed appointments and services from `lib/demo`, and the availability demo adapter uses deterministic in-memory defaults.
 
 It returns cloned, API-compatible appointment objects so callers cannot mutate module-level seed constants or leak future-only seed fields into current API responses. Write operations are in-memory only and reset per server process. Runtime-created demo appointment IDs are deterministic process-local IDs such as `apt_demo_runtime_009`.
 
@@ -106,6 +139,7 @@ Expected future mapping:
 - `payments`: Square deposit payment records and provider references.
 - `booking_holds`: pending deposit holds and expiration state.
 - `availability_blocks`: owner-managed blocked times and days used by availability checks.
+- `availability_rules`: owner-managed weekly hours and booking windows.
 - `services`: service/package records, active/public visibility, pricing, deposits, duration, and sort order.
 
 The migration already includes a GiST exclusion constraint to prevent overlapping active appointments. Production creation should still use a transaction or RPC for customer, appointment, hold, and payment setup.
@@ -114,7 +148,7 @@ The migration already includes a GiST exclusion constraint to prevent overlappin
 
 This boundary prepares for:
 
-- blocked times/days by moving availability checks toward repository-backed appointment and block reads
+- blocked times/days by moving availability checks toward repository-backed weekly settings and block reads
 - transaction-safe booking by isolating create/check/update operations behind one interface
 - Square reconciliation by giving payments a future repository path without changing current checkout behavior
 - Vercel/Supabase deployment by keeping database access in server-side routes and adapters
@@ -125,7 +159,7 @@ This boundary prepares for:
 - No live Supabase connection.
 - No production credentials.
 - No default backend switch.
-- No availability block repository.
+- No durable Supabase availability adapter.
 - No payment repository.
 - No notification repository.
 - No owner settings repository.

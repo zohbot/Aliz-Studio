@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { readdir, readFile } from "fs/promises";
 import path from "path";
+import { resolveFileAvailabilityStoragePaths } from "../lib/repositories/file-availability-repository";
 import { resolveFileAppointmentStoragePaths } from "../lib/repositories/file-appointment-repository";
 import { resolveRepositoryBackend } from "../lib/repositories/factory";
 
@@ -67,6 +68,13 @@ test.describe("Aliz Studio booking foundation", () => {
 
     expect(vercelPaths.dataDirectory).toBe("/tmp/aliz-studio-appointments");
     expect(vercelPaths.appointmentsFile).toBe("/tmp/aliz-studio-appointments/appointments.json");
+
+    expect(resolveFileAvailabilityStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
+
+    const vercelAvailabilityPaths = resolveFileAvailabilityStoragePaths({ VERCEL: "1" });
+
+    expect(vercelAvailabilityPaths.dataDirectory).toBe("/tmp/aliz-studio-availability");
+    expect(vercelAvailabilityPaths.availabilityFile).toBe("/tmp/aliz-studio-availability/settings.json");
   });
 
   test("inactive Supabase repository setting falls back to file backend", () => {
@@ -348,6 +356,133 @@ test.describe("Aliz Studio booking foundation", () => {
     });
 
     expect(response.status()).toBe(401);
+  });
+
+  test("owner availability page is protected and responsive", async ({ page }) => {
+    await page.goto("/owner/availability");
+    await expect(page).toHaveURL(/\/owner\/login/);
+
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await page.goto("/owner/availability");
+    await expect(page.getByRole("heading", { name: /set booking hours/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Business hours" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Blocked dates", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Controls" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Services" })).toHaveAttribute("href", "/owner/services");
+
+    if (test.info().project.name.includes("mobile")) {
+      for (const width of [320, 375, 390, 414, 430]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto("/owner/availability");
+
+        const overflow = await page.evaluate(() => {
+          const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+          return documentWidth - window.innerWidth;
+        });
+
+        expect(overflow, `owner availability should not overflow at ${width}px`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  test("owner can manage availability settings and booking respects blocked dates", async ({ page }) => {
+    test.skip(
+      test.info().project.name.includes("mobile"),
+      "Shared file-backed availability mutation is covered in the desktop project."
+    );
+
+    const blockedDate = dateOffsetId(45);
+
+    await page.goto("/owner/login");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await page.goto("/owner/availability");
+    await expect(page.getByRole("heading", { name: "Business hours" })).toBeVisible();
+
+    await page.locator('input[type="date"]').fill(blockedDate);
+    await page.getByLabel("Reason").fill("Playwright blocked date");
+    await page.getByRole("button", { name: "Add blocked date" }).click();
+    await expect(page.getByText("Blocked date added. Save changes to apply it to booking.")).toBeVisible();
+    await page.getByRole("button", { name: "Save availability" }).click();
+    await expect(page.getByText("Availability rules saved.")).toBeVisible();
+
+    const blockedAvailability = await page.request.get(`/api/booking/availability?date=${blockedDate}`);
+    const blockedPayload = await blockedAvailability.json();
+
+    expect(blockedAvailability.status()).toBe(200);
+    expect(blockedPayload.slots.every((slot: { isReserved?: boolean }) => slot.isReserved)).toBeTruthy();
+
+    await page.getByLabel(`Remove blocked date ${blockedDate}`).click();
+    await page.getByRole("button", { name: "Save availability" }).click();
+    await expect(page.getByText("Availability rules saved.")).toBeVisible();
+
+    const restoredAvailability = await page.request.get(`/api/booking/availability?date=${blockedDate}`);
+    const restoredPayload = await restoredAvailability.json();
+
+    expect(restoredPayload.slots.some((slot: { isReserved?: boolean }) => !slot.isReserved)).toBeTruthy();
+
+    await page.getByLabel("Monday start time").fill("17:00");
+    await page.getByLabel("Monday end time").fill("10:00");
+    await page.getByRole("button", { name: "Save availability" }).click();
+    await expect(page.getByText("Monday end time must be after start time.")).toBeVisible();
+  });
+
+  test("owner availability endpoint requires auth and rejects invalid settings", async ({ request }) => {
+    const unauthorized = await request.patch("/api/owner/availability", {
+      data: {
+        timezone: "America/New_York"
+      }
+    });
+
+    expect(unauthorized.status()).toBe(401);
+
+    const login = await request.post("/api/owner/auth/login", {
+      headers: {
+        "content-type": "application/json"
+      },
+      data: {
+        email: process.env.OWNER_EMAIL || "owner@alizstudio.test",
+        password: process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+      }
+    });
+
+    expect(login.status()).toBe(200);
+
+    const invalidSettings = await request.patch("/api/owner/availability", {
+      data: {
+        timezone: "America/New_York",
+        weeklyHours: [],
+        blockedDates: [],
+        bookingRules: {
+          leadTimeMinutes: -1,
+          maxAppointmentsPerSlot: 0,
+          maxAppointmentsPerDay: 0,
+          cancellationCutoffHours: 24
+        }
+      }
+    });
+    const payload = await invalidSettings.json();
+
+    expect(invalidSettings.status()).toBe(400);
+    expect(payload.error).toBe("Invalid availability settings.");
+
+    await request.post("/api/owner/auth/logout", {
+      headers: {
+        "content-type": "application/json"
+      }
+    });
   });
 
   test("owner appointment mutation requires auth and rejects invalid status", async ({ request }) => {

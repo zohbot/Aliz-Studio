@@ -96,15 +96,24 @@ This document captures the current Aliz Studio routes before production scheduli
 - Known limitations: Edits are file-backed/ephemeral on Vercel, do not create audit events, and do not support deleting core demo services.
 - Future production direction: Map to the Supabase `services` table through a production service repository with durable audit events and owner permissions.
 
+### `/owner/availability`
+
+- Purpose: Protected owner availability and booking-rule management for weekly hours, open/closed day toggles, optional breaks, blocked dates, lead time, per-slot/day limits, and timezone display.
+- Current data source: Availability repository helpers from `lib/availability.ts` backed by ignored local JSON storage or Vercel temp storage.
+- Auth requirement: Requires valid owner session cookie.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: Uses the current fixed slot list, file-backed settings are ephemeral on Vercel, max appointment settings are demo-safe guardrails, and no audit events are written yet.
+- Future production direction: Map weekly rules and blocked dates to Supabase availability tables, enforce booking holds transactionally, and create audit events for owner changes.
+
 ## Booking APIs
 
 ### `GET /api/booking/availability`
 
 - Purpose: Returns slots for a requested date and marks reserved times.
-- Current data source: Fixed slot list from `lib/availability.ts`; reserved times from `lib/appointments.ts`.
+- Current data source: Fixed slot list filtered by owner-managed availability settings from `lib/availability.ts`; active appointment counts from `lib/appointments.ts`.
 - Auth requirement: None.
 - Readiness: Demo-ready, not production-ready.
-- Known limitations: Only exact time strings are reserved; service duration, buffers, blocked times/days, business hours, timezone, and hold expiration are not modeled.
+- Known limitations: Availability now respects weekly open hours, closed days, blocked dates, optional breaks, lead time, and simple per-slot/day limits, but still uses fixed time labels and does not model service-duration overlap, buffers, booking holds, or durable transactions.
 - Future production direction: Query Supabase through an availability service that calculates valid slots from rules, blocks, service duration, buffers, existing appointments, and active holds.
 
 ### `POST /api/booking/quote`
@@ -201,6 +210,24 @@ This document captures the current Aliz Studio routes before production scheduli
 - Known limitations: Stable IDs/slugs, images, inclusions, and core routes are intentionally preserved; edits are ephemeral on Vercel until Supabase is active.
 - Future production direction: Update Supabase service records transactionally, add audit events, validate owner permissions, and revalidate public package/booking views.
 
+### `GET /api/owner/availability`
+
+- Purpose: Returns current owner availability settings for protected owner tooling.
+- Current data source: Availability repository seeded from default demo-safe settings.
+- Auth requirement: Requires valid owner session.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: File-backed settings are local/ephemeral, no audit trail exists, and the data shape is a Supabase-ready bridge rather than the final schema adapter.
+- Future production direction: Read Supabase availability rules, availability blocks, booking rules, and owner settings with role-aware owner permissions.
+
+### `PATCH /api/owner/availability`
+
+- Purpose: Updates weekly hours, blocked dates, and booking-rule settings.
+- Current data source: Availability repository writing ignored local JSON storage or Vercel temp storage.
+- Auth requirement: Requires valid owner session and same-origin request.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: Updates do not write audit events, do not auto-cancel existing appointments, and do not touch Supabase yet.
+- Future production direction: Transactionally update Supabase availability tables, validate conflicts with existing appointments, and create owner audit events.
+
 ## Missing Production Routes Likely Needed
 
 ### `GET /api/services`
@@ -218,7 +245,7 @@ This document captures the current Aliz Studio routes before production scheduli
 ### `POST /api/owner/availability-blocks`
 
 - Purpose: Let owner block a time range or full day.
-- Future data source: Supabase `availability_blocks`.
+- Future data source: Supabase `availability_blocks`; current demo owner availability uses `PATCH /api/owner/availability` for blocked dates.
 - Auth requirement: Owner/admin only with same-origin/CSRF-aware protections.
 
 ### `DELETE /api/owner/availability-blocks/[id]`

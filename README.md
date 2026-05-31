@@ -49,7 +49,7 @@ When an owner session is already active, `/owner/login` redirects to `/owner/das
 
 For a local-only demo, set `ALIZ_ALLOW_LOCAL_DEMO_AUTH=true` and choose your own local password and session secret. Do not commit real credentials.
 
-Appointments are seeded into `data/appointments.json` on first local dashboard/API access. The dashboard supports list search/filtering, status and mock payment-state updates, owner-only notes, and an appointment detail drawer for customer/service/payment context. The protected `/owner/services` page lets the owner make demo-safe edits to service names, descriptions, prices, deposits, durations, visibility, featured state, and sort order without changing stable service IDs or routes. On Vercel, the file-backed repositories use ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
+Appointments are seeded into `data/appointments.json` on first local dashboard/API access. The dashboard supports list search/filtering, status and mock payment-state updates, owner-only notes, and an appointment detail drawer for customer/service/payment context. The protected `/owner/services` page lets the owner make demo-safe edits to service names, descriptions, prices, deposits, durations, visibility, featured state, and sort order without changing stable service IDs or routes. The protected `/owner/availability` page lets the owner manage weekly booking hours, open/closed day toggles, optional breaks, blocked dates, lead time, and simple slot/day limits for the demo booking flow. On Vercel, the file-backed repositories use ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
 
 ## Security / Operations Notes
 
@@ -132,4 +132,4 @@ npm run build
 npm run test:e2e
 ```
 
-The Playwright suite covers the landing page, service package routing, security headers, booking validation, mock checkout completion, owner dashboard status management, and owner service/menu management across desktop and mobile viewports.
+The Playwright suite covers the landing page, service package routing, security headers, booking validation, availability rule filtering, mock checkout completion, owner dashboard status management, owner service/menu management, and owner availability management across desktop and mobile viewports.

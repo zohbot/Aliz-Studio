@@ -15,7 +15,7 @@ import {
   Sparkles,
   UserRound
 } from "lucide-react";
-import { getPreviewSlots } from "@/lib/availability";
+import { getPreviewSlots } from "@/lib/availability-preview";
 import { formatMoney } from "@/lib/format";
 import { PaymentMethodLogos } from "@/components/payment-method-logos";
 import type { AvailabilitySlot, Service } from "@/lib/domain";

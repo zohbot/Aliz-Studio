@@ -1,14 +1,24 @@
+import { createDemoAvailabilityRepository } from "@/lib/repositories/demo-availability-repository";
 import { createDemoAppointmentRepository } from "@/lib/repositories/demo-appointment-repository";
 import { createDemoServiceRepository } from "@/lib/repositories/demo-service-repository";
+import { createFileAvailabilityRepository } from "@/lib/repositories/file-availability-repository";
 import { createFileAppointmentRepository } from "@/lib/repositories/file-appointment-repository";
 import { createFileServiceRepository } from "@/lib/repositories/file-service-repository";
+import { createSupabaseAvailabilityRepository } from "@/lib/repositories/supabase-availability-repository";
 import { createSupabaseAppointmentRepository } from "@/lib/repositories/supabase-appointment-repository";
 import { createSupabaseServiceRepository } from "@/lib/repositories/supabase-service-repository";
 import { AppointmentRepositoryError } from "@/lib/repositories/types";
-import type { AppointmentRepository, RepositoryBackend, ServiceRepository } from "@/lib/repositories/types";
+import type {
+  AppointmentRepository,
+  AvailabilityRepository,
+  RepositoryBackend,
+  ServiceRepository
+} from "@/lib/repositories/types";
 
+let cachedAvailabilityRepository: AvailabilityRepository | null = null;
 let cachedAppointmentRepository: AppointmentRepository | null = null;
 let cachedServiceRepository: ServiceRepository | null = null;
+let cachedAvailabilityBackend: RepositoryBackend | null = null;
 let cachedBackend: RepositoryBackend | null = null;
 let cachedServiceBackend: RepositoryBackend | null = null;
 
@@ -71,6 +81,22 @@ export function createServiceRepository(backend: RepositoryBackend = resolveRepo
   }
 }
 
+export function createAvailabilityRepository(backend: RepositoryBackend = resolveRepositoryBackend()) {
+  switch (backend) {
+    case "file":
+      return createFileAvailabilityRepository();
+    case "demo":
+      return createDemoAvailabilityRepository();
+    case "supabase":
+      return createSupabaseAvailabilityRepository();
+    default:
+      throw new AppointmentRepositoryError(`Unsupported repository backend "${backend}".`, {
+        backend,
+        code: "invalid_backend"
+      });
+  }
+}
+
 export function getAppointmentRepository() {
   const backend = resolveRepositoryBackend();
 
@@ -91,4 +117,15 @@ export function getServiceRepository() {
   }
 
   return cachedServiceRepository;
+}
+
+export function getAvailabilityRepository() {
+  const backend = resolveRepositoryBackend();
+
+  if (!cachedAvailabilityRepository || cachedAvailabilityBackend !== backend) {
+    cachedAvailabilityRepository = createAvailabilityRepository(backend);
+    cachedAvailabilityBackend = backend;
+  }
+
+  return cachedAvailabilityRepository;
 }

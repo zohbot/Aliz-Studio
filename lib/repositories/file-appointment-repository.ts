@@ -3,6 +3,7 @@ import { copyFile, mkdir, readFile, rename, unlink, writeFile } from "fs/promise
 import path from "path";
 import type { Appointment } from "@/lib/domain";
 import { appointmentListSchema } from "@/lib/domain";
+import { createFileAvailabilityRepository } from "@/lib/repositories/file-availability-repository";
 import type {
   AppointmentRepository,
   AppointmentStats,
@@ -114,6 +115,16 @@ function appendOwnerNote(existingNote: string | undefined, nextNote: string) {
   return mergedNote.slice(-800);
 }
 
+async function getMaxAppointmentsPerSlot() {
+  try {
+    const settings = await createFileAvailabilityRepository().getAvailabilitySettings();
+
+    return settings.bookingRules.maxAppointmentsPerSlot;
+  } catch {
+    return 1;
+  }
+}
+
 export function createFileAppointmentRepository(): AppointmentRepository {
   let appointmentMutationQueue = Promise.resolve();
   const storagePaths = resolveFileAppointmentStoragePaths();
@@ -196,20 +207,37 @@ export function createFileAppointmentRepository(): AppointmentRepository {
 
   async function getReservedTimesForDate(appointmentDate: string) {
     const appointments = await listAppointments();
+    const maxAppointmentsPerSlot = await getMaxAppointmentsPerSlot();
+    const appointmentCounts = new Map<string, number>();
 
-    return appointments
-      .filter(
-        (appointment) =>
-          appointment.appointmentDate === appointmentDate &&
-          ["pending_deposit", "confirmed"].includes(appointment.status)
-      )
-      .map((appointment) => appointment.appointmentTime);
+    for (const appointment of appointments) {
+      if (
+        appointment.appointmentDate === appointmentDate &&
+        ["pending_deposit", "confirmed"].includes(appointment.status)
+      ) {
+        appointmentCounts.set(
+          appointment.appointmentTime,
+          (appointmentCounts.get(appointment.appointmentTime) ?? 0) + 1
+        );
+      }
+    }
+
+    return Array.from(appointmentCounts.entries())
+      .filter(([, count]) => count >= maxAppointmentsPerSlot)
+      .map(([appointmentTime]) => appointmentTime);
   }
 
   async function isAppointmentSlotAvailable(appointmentDate: string, appointmentTime: string) {
-    const reservedTimes = await getReservedTimesForDate(appointmentDate);
+    const appointments = await listAppointments();
+    const maxAppointmentsPerSlot = await getMaxAppointmentsPerSlot();
+    const activeAppointmentCount = appointments.filter(
+      (appointment) =>
+        appointment.appointmentDate === appointmentDate &&
+        appointment.appointmentTime === appointmentTime &&
+        ["pending_deposit", "confirmed"].includes(appointment.status)
+    ).length;
 
-    return !reservedTimes.includes(appointmentTime);
+    return activeAppointmentCount < maxAppointmentsPerSlot;
   }
 
   async function updateAppointment(appointmentId: string, patch: UpdateAppointmentRepositoryInput) {
