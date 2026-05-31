@@ -19,7 +19,7 @@ import {
   X
 } from "lucide-react";
 import type { Appointment, AppointmentStatus, PaymentStatus } from "@/lib/domain";
-import { formatMoney } from "@/lib/services";
+import { formatMoney } from "@/lib/format";
 
 type OwnerAppointmentBoardProps = {
   initialAppointments: Appointment[];

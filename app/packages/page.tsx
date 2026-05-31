@@ -11,7 +11,10 @@ import {
   Sparkles
 } from "lucide-react";
 import { getPackageMarketingCopy } from "@/lib/package-copy";
-import { formatMoney, getService, services } from "@/lib/services";
+import { formatMoney, listPublicServices } from "@/lib/services";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Packages",
@@ -34,8 +37,23 @@ const confidenceItems = [
   }
 ];
 
-export default function PackagesPage() {
-  const featuredService = getService("deluxe-cut") ?? services[0];
+export default async function PackagesPage() {
+  const services = await listPublicServices();
+  const featuredService =
+    services.find((service) => service.featured) ||
+    services.find((service) => service.id === "deluxe-cut") ||
+    services[0];
+
+  if (!featuredService) {
+    return (
+      <section className="subpage-hero">
+        <p className="section-kicker">Service packages</p>
+        <h1>Packages are temporarily unavailable.</h1>
+        <p>The owner has not enabled any public services yet. Please check back soon.</p>
+      </section>
+    );
+  }
+
   const featuredCopy = getPackageMarketingCopy(featuredService.id);
 
   return (
@@ -103,10 +121,16 @@ export default function PackagesPage() {
           <p className="packages-feature__tone">
             {featuredCopy?.toneLine ?? featuredService.styleNote}
           </p>
-          <Link className="primary-action" href={`/book?service=${featuredService.id}`}>
-            Select Deluxe Cut
-            <ArrowRight size={18} />
-          </Link>
+          {featuredService.active === false ? (
+            <span className="secondary-action" aria-disabled="true">
+              Featured package inactive
+            </span>
+          ) : (
+            <Link className="primary-action" href={`/book?service=${featuredService.id}`}>
+              Select {featuredService.shortName}
+              <ArrowRight size={18} />
+            </Link>
+          )}
         </div>
       </section>
 
@@ -161,9 +185,15 @@ export default function PackagesPage() {
                 </div>
                 <p className="package-card__tone">{copy?.toneLine ?? service.styleNote}</p>
                 <div className="package-card__actions">
-                  <Link className="primary-action" href={`/book?service=${service.id}`}>
-                    Book {service.shortName}
-                  </Link>
+                  {service.active === false ? (
+                    <span className="secondary-action" aria-disabled="true">
+                      Not bookable
+                    </span>
+                  ) : (
+                    <Link className="primary-action" href={`/book?service=${service.id}`}>
+                      Book {service.shortName}
+                    </Link>
+                  )}
                   <Link className="secondary-action" href={`/services/${service.id}`}>
                     View details
                   </Link>

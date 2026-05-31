@@ -1,6 +1,6 @@
 # Repository Layer
 
-Task 7 adds a narrow repository boundary around appointment persistence. The goal is to prepare the app for mock and Supabase-backed data access later while preserving the current file-backed runtime behavior today.
+Task 7 added a narrow repository boundary around appointment persistence. The owner service/menu management sprint extends that boundary to services while preserving the current file-backed runtime behavior today.
 
 ## Files
 
@@ -9,20 +9,25 @@ Task 7 adds a narrow repository boundary around appointment persistence. The goa
 - `lib/repositories/file-appointment-repository.ts`: current file-backed behavior moved behind the interface.
 - `lib/repositories/demo-appointment-repository.ts`: deterministic in-memory demo adapter using `lib/demo` seed data.
 - `lib/repositories/supabase-appointment-repository.ts`: Supabase-ready skeleton that fails closed if selected.
+- `lib/repositories/file-service-repository.ts`: demo-safe editable service/menu store seeded from the core service catalog.
+- `lib/repositories/demo-service-repository.ts`: deterministic in-memory service adapter using `lib/demo` seed data.
+- `lib/repositories/supabase-service-repository.ts`: Supabase-ready service skeleton that fails closed if selected directly.
 - `lib/repositories/index.ts`: repository barrel exports.
 - `lib/appointments.ts`: compatibility facade preserving existing public exports.
+- `lib/services.ts`: compatibility facade plus async service repository helpers for public and owner views.
+- `lib/service-catalog.ts`: build-safe core service catalog with stable IDs/routes.
 
 ## Current Default Backend
 
 The default backend is `file`.
 
-If `ALIZ_DATA_BACKEND` is unset, the app behaves like it did before this task. The current booking flow, mock checkout flow, owner dashboard, and appointment APIs still use the file-backed appointment store.
+If `ALIZ_DATA_BACKEND` is unset, the app behaves like it did before this task. The current booking flow, mock checkout flow, owner dashboard, appointment APIs, and owner service management use file-backed stores.
 
 ## Backend Names
 
 Allowed `ALIZ_DATA_BACKEND` values:
 
-- `file`: default runtime backend. Uses `data/appointments.json` through the proven file-backed implementation.
+- `file`: default runtime backend. Uses `data/appointments.json` and `data/services.json` locally, with `/tmp` equivalents on Vercel.
 - `demo`: optional in-memory adapter backed by deterministic seed data.
 - `supabase`: future backend. Currently a skeleton and intentionally falls back to `file`.
 
@@ -46,7 +51,15 @@ The interface currently covers appointment operations already used by the app:
 - `completeAppointmentDeposit(input)`
 - `getAppointmentStats()`
 
-This intentionally stays appointment-focused. Future repositories can be added for services, availability, payments, notifications, settings, and audit events when those tasks need them.
+## ServiceRepository Methods
+
+The service interface covers owner service/menu operations now used by the app:
+
+- `listServices()`
+- `getServiceById(serviceId)`
+- `updateService(serviceId, patch)`
+
+The update path preserves stable service IDs, public route slugs, images, detail copy, and inclusions. Editable fields are limited to display name, short name, short description, price, deposit, duration, active/bookable state, featured state, public visibility, and sort order.
 
 ## File Backend
 
@@ -60,15 +73,25 @@ The file adapter preserves the existing behavior from `lib/appointments.ts`:
 
 Vercel temp storage is intentionally ephemeral. It keeps the staging/demo app usable, but appointment data can reset across deployments, cold starts, or serverless instance changes. Supabase is still required before relying on appointment data as production data.
 
-`lib/appointments.ts` remains the public compatibility layer so existing imports do not need broad rewrites.
+`lib/appointments.ts` remains the public appointment compatibility layer so existing imports do not need broad rewrites.
+
+The service file adapter:
+
+- Reads and writes `data/services.json` during local development.
+- Uses writable temp storage at `/tmp/aliz-studio-services/services.json` on Vercel.
+- Seeds from the stable catalog in `lib/service-catalog.ts`.
+- Merges stored service records against the core catalog so deleted/missing demo services are restored safely.
+- Validates money/duration basics and prevents deposits from exceeding price.
+
+Vercel temp storage is intentionally ephemeral. It keeps `/owner/services`, `/book`, `/packages`, and service detail demos usable, but service edits can reset across deployments, cold starts, or serverless instance changes.
 
 ## Demo Backend
 
-The demo adapter reads deterministic seed appointments from `lib/demo`.
+The demo adapters read deterministic seed appointments and services from `lib/demo`.
 
 It returns cloned, API-compatible appointment objects so callers cannot mutate module-level seed constants or leak future-only seed fields into current API responses. Write operations are in-memory only and reset per server process. Runtime-created demo appointment IDs are deterministic process-local IDs such as `apt_demo_runtime_009`.
 
-The demo adapter is not the default backend.
+Demo writes are in-memory only and reset per server process. The demo adapter is not the default backend.
 
 ## Supabase Backend
 
@@ -83,6 +106,7 @@ Expected future mapping:
 - `payments`: Square deposit payment records and provider references.
 - `booking_holds`: pending deposit holds and expiration state.
 - `availability_blocks`: owner-managed blocked times and days used by availability checks.
+- `services`: service/package records, active/public visibility, pricing, deposits, duration, and sort order.
 
 The migration already includes a GiST exclusion constraint to prevent overlapping active appointments. Production creation should still use a transaction or RPC for customer, appointment, hold, and payment setup.
 
@@ -101,7 +125,6 @@ This boundary prepares for:
 - No live Supabase connection.
 - No production credentials.
 - No default backend switch.
-- No service repository.
 - No availability block repository.
 - No payment repository.
 - No notification repository.

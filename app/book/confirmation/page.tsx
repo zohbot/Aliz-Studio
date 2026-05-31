@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CalendarClock, CheckCircle2, CreditCard, ReceiptText, Scissors } from "lucide-react";
 import { getAppointmentById } from "@/lib/appointments";
-import { formatMoney, getService } from "@/lib/services";
+import { formatMoney, getEditableService } from "@/lib/services";
 
 type ConfirmationPageProps = {
   searchParams: Promise<{
@@ -32,7 +32,11 @@ function formatDate(dateId?: string) {
 export default async function ConfirmationPage({ searchParams }: ConfirmationPageProps) {
   const params = await searchParams;
   const appointment = params.appointment ? await getAppointmentById(params.appointment) : null;
-  const service = appointment ? getService(appointment.serviceId) : params.service ? getService(params.service) : undefined;
+  const service = appointment
+    ? await getEditableService(appointment.serviceId)
+    : params.service
+      ? await getEditableService(params.service)
+      : undefined;
   const deposit = Number(params.deposit || appointment?.deposit || service?.deposit || 0);
   const paid = params.paid === "1" || appointment?.paymentStatus === "paid";
 

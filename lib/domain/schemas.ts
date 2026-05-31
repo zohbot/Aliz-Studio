@@ -58,6 +58,53 @@ export const bookingHoldStatusSchema = z.enum(BOOKING_HOLD_STATUSES);
 
 export const adminRoleSchema = z.enum(ADMIN_ROLES);
 
+export const serviceSchema = z.object({
+  id: z.string().trim().min(1).max(80),
+  name: z.string().trim().min(1).max(80),
+  shortName: z.string().trim().min(1).max(28),
+  price: z.number().int().min(0).max(500),
+  durationMinutes: z.number().int().min(5).max(240),
+  deposit: z.number().int().min(0).max(500),
+  description: z.string().trim().min(1).max(180),
+  detail: z.string().trim().min(1).max(500),
+  image: z.string().trim().min(1).max(500),
+  accent: z.string().trim().min(1).max(40),
+  styleNote: z.string().trim().min(1).max(240),
+  inclusions: z.array(z.string().trim().min(1).max(120)).min(1).max(8),
+  category: z.enum(["haircut", "beard", "detail", "kids", "add_on"]).optional(),
+  active: z.boolean().optional(),
+  featured: z.boolean().optional(),
+  publicVisible: z.boolean().optional(),
+  sortOrder: z.number().int().min(0).max(999).optional()
+});
+
+export const serviceListSchema = z.array(serviceSchema.strict());
+
+export const ownerServiceUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1, "Service name is required.").max(80).optional(),
+    shortName: z.string().trim().min(1, "Short name is required.").max(28).optional(),
+    price: z.number().int("Price must be a whole dollar amount.").min(0, "Price cannot be negative.").max(500).optional(),
+    durationMinutes: z
+      .number()
+      .int("Duration must be a whole number of minutes.")
+      .min(5, "Duration must be at least 5 minutes.")
+      .max(240, "Duration must stay within a reasonable booking window.")
+      .optional(),
+    deposit: z
+      .number()
+      .int("Deposit must be a whole dollar amount.")
+      .min(0, "Deposit cannot be negative.")
+      .max(500)
+      .optional(),
+    description: z.string().trim().min(1, "Short description is required.").max(180).optional(),
+    active: z.boolean().optional(),
+    featured: z.boolean().optional(),
+    publicVisible: z.boolean().optional(),
+    sortOrder: z.number().int("Sort order must be a whole number.").min(0).max(999).optional()
+  })
+  .strict();
+
 export const appointmentDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/)

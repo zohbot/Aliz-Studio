@@ -18,6 +18,7 @@
 
 ## Polish Follow-Ups
 
+- Founder-review the new `/owner/services` flow on desktop and mobile, especially the service edit drawer and active/public visibility language.
 - Continue checking mobile layouts at 320, 375, 390, 414, and 430px before each public demo.
 - Replace the generated brand placeholder files with final production logo/icon exports when they are approved.
 - Decide whether archived source exports in `public/brand/source/` should remain in the repo after production brand review.
@@ -31,6 +32,7 @@
 - Keep owner appointment detail drawer stat/contact/note panels on the refined card treatment when adding future admin fields.
 - Keep owner appointment detail typography on the softened near-black tokens and medium/semi-bold weights; avoid returning drawer labels or values to pure black or 850/900-heavy weights.
 - Keep `/packages` as the public package comparison destination; if services become owner-editable, move the richer package copy behind the future service repository instead of duplicating prices or durations.
+- Extend owner service management later for image selection, long-form detail copy, inclusions, and audit-event history; the current sprint intentionally limits edits to safe menu fields.
 - Keep the owner appointment detail drawer and footer aligned with the refined premium surface system when adding future admin fields or footer links.
 - Add service-worker/offline PWA behavior only after booking freshness requirements are decided.
 - Keep booking copy explicit that the current deposit step is demo/mock-only until Square live checkout is implemented.
@@ -38,7 +40,7 @@
 
 ## Deferred Production Work
 
-- Start the next admin implementation sprint from `docs/ADMIN_ROADMAP.md`: add a demo-safe owner service management UI with a service repository boundary.
+- Start the next admin implementation sprint from `docs/ADMIN_ROADMAP.md`: owner availability/settings UI with demo-safe availability blocks and booking rules.
 - Move appointment persistence from the file-backed repository to Supabase only after repository adapters and transactional booking flows are ready.
 - Implement and test the Supabase repository before allowing the runtime factory to select it.
 - Add owner-managed blocked times/days before using the booking backend for real customer scheduling.

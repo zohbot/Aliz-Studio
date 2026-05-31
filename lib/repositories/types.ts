@@ -3,7 +3,9 @@ import type {
   AppointmentStatus,
   AppointmentUpdateInput,
   CreateAppointmentInput,
-  PaymentStatus
+  PaymentStatus,
+  Service,
+  ServiceUpdateInput
 } from "@/lib/domain";
 
 export const REPOSITORY_BACKENDS = ["file", "demo", "supabase"] as const;
@@ -33,6 +35,8 @@ export type CreateAppointmentRepositoryInput = CreateAppointmentInput;
 
 export type UpdateAppointmentRepositoryInput = AppointmentUpdateInput;
 
+export type UpdateServiceRepositoryInput = ServiceUpdateInput;
+
 export type AppointmentRepositoryErrorCode =
   | "invalid_backend"
   | "not_configured"
@@ -46,6 +50,24 @@ export class AppointmentRepositoryError extends Error {
   constructor(message: string, options: { backend?: RepositoryBackend; code: AppointmentRepositoryErrorCode }) {
     super(message);
     this.name = "AppointmentRepositoryError";
+    this.backend = options.backend;
+    this.code = options.code;
+  }
+}
+
+export type ServiceRepositoryErrorCode =
+  | "invalid_backend"
+  | "not_configured"
+  | "not_implemented"
+  | "invalid_service";
+
+export class ServiceRepositoryError extends Error {
+  readonly backend?: RepositoryBackend;
+  readonly code: ServiceRepositoryErrorCode;
+
+  constructor(message: string, options: { backend?: RepositoryBackend; code: ServiceRepositoryErrorCode }) {
+    super(message);
+    this.name = "ServiceRepositoryError";
     this.backend = options.backend;
     this.code = options.code;
   }
@@ -73,4 +95,11 @@ export type AppointmentRepository = {
   setAppointmentCheckoutUrl(appointmentId: string, squareCheckoutUrl: string): Promise<Appointment | null>;
   completeAppointmentDeposit(input: CompleteAppointmentDepositInput): Promise<Appointment | null>;
   getAppointmentStats(): Promise<AppointmentStats>;
+};
+
+export type ServiceRepository = {
+  readonly backend: RepositoryBackend;
+  listServices(): Promise<Service[]>;
+  getServiceById(serviceId: string): Promise<Service | null>;
+  updateService(serviceId: string, patch: UpdateServiceRepositoryInput): Promise<Service | null>;
 };

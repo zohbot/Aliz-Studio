@@ -12,7 +12,7 @@ import {
   Sparkles
 } from "lucide-react";
 import type { Appointment } from "@/lib/domain";
-import { formatMoney } from "@/lib/services";
+import { formatMoney } from "@/lib/format";
 import { PaymentMethodLogos } from "@/components/payment-method-logos";
 
 type MockCheckoutProps = {

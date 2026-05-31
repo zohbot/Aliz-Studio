@@ -1,9 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Clock, Sparkles } from "lucide-react";
-import { formatMoney, services } from "@/lib/services";
+import type { Service } from "@/lib/domain";
+import { formatMoney } from "@/lib/format";
 
-export function ServiceGrid() {
+type ServiceGridProps = {
+  services: Service[];
+};
+
+export function ServiceGrid({ services }: ServiceGridProps) {
   return (
     <div className="service-grid">
       {services.map((service) => (

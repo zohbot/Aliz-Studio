@@ -3,4 +3,5 @@ import path from "path";
 
 export default async function globalSetup() {
   await rm(path.join(process.cwd(), "data", "appointments.json"), { force: true });
+  await rm(path.join(process.cwd(), "data", "services.json"), { force: true });
 }

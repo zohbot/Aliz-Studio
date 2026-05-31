@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { BookingConfigurator } from "@/components/booking-configurator";
+import { listBookableServices } from "@/lib/services";
+
+export const runtime = "nodejs";
 
 export const metadata: Metadata = {
   title: "Book Online"
@@ -13,6 +16,7 @@ type BookPageProps = {
 
 export default async function BookPage({ searchParams }: BookPageProps) {
   const params = await searchParams;
+  const services = await listBookableServices();
 
   return (
     <>
@@ -24,7 +28,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
           sandbox-style checkout. Reserved times are protected from duplicate booking.
         </p>
       </section>
-      <BookingConfigurator initialServiceId={params.service} />
+      <BookingConfigurator initialServiceId={params.service} services={services} />
     </>
   );
 }

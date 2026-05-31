@@ -27,7 +27,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const quote = buildBookingQuote(parsed.data);
+  let quote;
+
+  try {
+    quote = await buildBookingQuote(parsed.data);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unable to build booking quote."
+      },
+      { status: 404 }
+    );
+  }
 
   const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "local";
   const bookingKey = `booking-create:${ipAddress}`;

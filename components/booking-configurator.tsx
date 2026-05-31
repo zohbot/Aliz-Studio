@@ -16,12 +16,13 @@ import {
   UserRound
 } from "lucide-react";
 import { getPreviewSlots } from "@/lib/availability";
-import { formatMoney, services } from "@/lib/services";
+import { formatMoney } from "@/lib/format";
 import { PaymentMethodLogos } from "@/components/payment-method-logos";
-import type { AvailabilitySlot } from "@/lib/domain";
+import type { AvailabilitySlot, Service } from "@/lib/domain";
 
 type BookingConfiguratorProps = {
   initialServiceId?: string;
+  services: Service[];
 };
 
 const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -98,8 +99,12 @@ function formatUsPhone(value: string) {
   return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
 }
 
-export function BookingConfigurator({ initialServiceId }: BookingConfiguratorProps) {
-  const [serviceId, setServiceId] = useState(initialServiceId || services[0].id);
+export function BookingConfigurator({ initialServiceId, services }: BookingConfiguratorProps) {
+  const fallbackService = services[0];
+  const initialSelectedService = services.some((service) => service.id === initialServiceId)
+    ? initialServiceId
+    : fallbackService?.id;
+  const [serviceId, setServiceId] = useState(initialSelectedService || "");
   const [selectedDate, setSelectedDate] = useState(() => toDateId(new Date()));
   const [selectedSlot, setSelectedSlot] = useState("");
   const [slots, setSlots] = useState<AvailabilitySlot[]>(() => getPreviewSlots());
@@ -116,16 +121,19 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
   });
 
   const service = useMemo(
-    () => services.find((item) => item.id === serviceId) || services[0],
-    [serviceId]
+    () => services.find((item) => item.id === serviceId) || fallbackService,
+    [fallbackService, serviceId, services]
   );
+  const hasBookableServices = services.length > 0 && Boolean(service);
 
-  const remainingBalance = Math.max(service.price - service.deposit, 0);
+  const remainingBalance = service ? Math.max(service.price - service.deposit, 0) : 0;
   const calendarDays = useMemo(() => buildCalendarDays(visibleMonth), [visibleMonth]);
   const monthLabel = getMonthLabel(visibleMonth);
   const selectedDateLabel = getSelectedDateLabel(selectedDate);
   const canSubmit =
-    Boolean(selectedDate && selectedSlot && customerName && customerEmail && customerPhone) && !isSubmitting;
+    hasBookableServices &&
+    Boolean(selectedDate && selectedSlot && customerName && customerEmail && customerPhone) &&
+    !isSubmitting;
 
   useEffect(() => {
     let isCurrent = true;
@@ -179,7 +187,7 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        serviceId: service.id,
+        serviceId: service?.id,
         appointmentDate: selectedDate,
         appointmentTime: selectedSlot,
         customerName,
@@ -208,24 +216,28 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
           Select one package to update the summary, price, duration, and deposit.
         </p>
         <div className="service-picker" role="group" aria-label="Available services">
-          {services.map((item) => (
-            <button
-              aria-pressed={item.id === serviceId}
-              className="service-option"
-              key={item.id}
-              onClick={() => {
-                setServiceId(item.id);
-                setSelectedSlot("");
-              }}
-              type="button"
-            >
-              <span className="service-option__name">
-                <Scissors size={15} />
-                {item.name}
-              </span>
-              <strong>{formatMoney(item.price)}</strong>
-            </button>
-          ))}
+          {services.length ? (
+            services.map((item) => (
+              <button
+                aria-pressed={item.id === serviceId}
+                className="service-option"
+                key={item.id}
+                onClick={() => {
+                  setServiceId(item.id);
+                  setSelectedSlot("");
+                }}
+                type="button"
+              >
+                <span className="service-option__name">
+                  <Scissors size={15} />
+                  {item.name}
+                </span>
+                <strong>{formatMoney(item.price)}</strong>
+              </button>
+            ))
+          ) : (
+            <p className="booking-panel__hint">No bookable services are active right now.</p>
+          )}
         </div>
       </div>
 
@@ -303,8 +315,8 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
       <aside className="booking-summary" aria-label="Booking summary">
         <div>
           <p className="section-kicker">Appointment summary</p>
-          <h2>{service.name}</h2>
-          <p>{service.detail}</p>
+          <h2>{service?.name ?? "No active services"}</h2>
+          <p>{service?.detail ?? "The owner has not enabled any bookable services yet."}</p>
         </div>
 
         <dl className="price-list">
@@ -314,11 +326,11 @@ export function BookingConfigurator({ initialServiceId }: BookingConfiguratorPro
           </div>
           <div>
             <dt>Package</dt>
-            <dd>{formatMoney(service.price)}</dd>
+            <dd>{formatMoney(service?.price ?? 0)}</dd>
           </div>
           <div>
             <dt>Deposit due now</dt>
-            <dd>{formatMoney(service.deposit)} mock</dd>
+            <dd>{formatMoney(service?.deposit ?? 0)} mock</dd>
           </div>
           <div>
             <dt>Due at visit</dt>

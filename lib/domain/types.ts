@@ -45,8 +45,26 @@ export type Service = {
   inclusions: string[];
   category?: ServiceCategory;
   active?: boolean;
+  featured?: boolean;
+  publicVisible?: boolean;
   sortOrder?: number;
 };
+
+export type ServiceUpdateInput = Partial<
+  Pick<
+    Service,
+    | "name"
+    | "shortName"
+    | "price"
+    | "durationMinutes"
+    | "deposit"
+    | "description"
+    | "active"
+    | "featured"
+    | "publicVisible"
+    | "sortOrder"
+  >
+>;
 
 export type CustomerContact = {
   name: string;

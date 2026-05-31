@@ -4,7 +4,7 @@ import {
   bookingQuoteSchema,
   createBookingSchema
 } from "@/lib/domain";
-import { getService } from "@/lib/services";
+import { getBookableService } from "@/lib/services";
 
 export {
   appointmentDateSchema,
@@ -14,8 +14,8 @@ export {
 
 export type { BookingCreateInput, BookingQuote, BookingQuoteInput, BookingRequest } from "@/lib/domain";
 
-export function buildBookingQuote(input: BookingQuoteInput): BookingQuote {
-  const service = getService(input.serviceId);
+export async function buildBookingQuote(input: BookingQuoteInput): Promise<BookingQuote> {
+  const service = await getBookableService(input.serviceId);
 
   if (!service) {
     throw new Error("Unknown service selected.");

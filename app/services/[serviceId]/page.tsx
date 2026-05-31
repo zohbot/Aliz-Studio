@@ -3,7 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, CalendarClock, CheckCircle2, Clock, CreditCard, ShieldCheck } from "lucide-react";
-import { formatMoney, getService, services } from "@/lib/services";
+import { formatMoney, getPublicService, listPublicServices, services } from "@/lib/services";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type ServicePageProps = {
   params: Promise<{
@@ -19,7 +22,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: ServicePageProps): Promise<Metadata> {
   const { serviceId } = await params;
-  const service = getService(serviceId);
+  const service = await getPublicService(serviceId);
 
   if (!service) {
     return {
@@ -35,13 +38,13 @@ export async function generateMetadata({ params }: ServicePageProps): Promise<Me
 
 export default async function ServicePage({ params }: ServicePageProps) {
   const { serviceId } = await params;
-  const service = getService(serviceId);
+  const service = await getPublicService(serviceId);
 
   if (!service) {
     notFound();
   }
 
-  const relatedServices = services.filter((item) => item.id !== service.id).slice(0, 3);
+  const relatedServices = (await listPublicServices()).filter((item) => item.id !== service.id).slice(0, 3);
 
   return (
     <>
@@ -78,10 +81,16 @@ export default async function ServicePage({ params }: ServicePageProps) {
           </div>
 
           <div className="package-actions">
-            <Link className="primary-action" href={`/book?service=${service.id}`}>
-              <CalendarClock size={18} />
-              Pick date and time
-            </Link>
+            {service.active === false ? (
+              <span className="secondary-action" aria-disabled="true">
+                Currently not bookable
+              </span>
+            ) : (
+              <Link className="primary-action" href={`/book?service=${service.id}`}>
+                <CalendarClock size={18} />
+                Pick date and time
+              </Link>
+            )}
             <Link className="secondary-action" href="/packages">
               View all packages
             </Link>

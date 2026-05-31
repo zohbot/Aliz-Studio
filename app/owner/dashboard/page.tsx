@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
+import { Scissors } from "lucide-react";
 import { OwnerAppointmentBoard } from "@/components/owner-appointment-board";
 import { OwnerSessionActions } from "@/components/owner-session-actions";
 import { getOwnerSession } from "@/lib/admin-auth";
@@ -52,6 +54,12 @@ export default async function OwnerDashboardPage() {
             appointment store so you can test real owner workflows before connecting a production
             database and notification provider.
           </p>
+          <div className="owner-services-hero__actions">
+            <Link className="secondary-action" href="/owner/services">
+              <Scissors size={17} />
+              Manage services
+            </Link>
+          </div>
         </div>
         <OwnerSessionActions ownerName={session.name} />
       </section>

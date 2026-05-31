@@ -1,5 +1,30 @@
 # Progress Log
 
+## 2026-05-30 - Demo-Safe Owner Service/Menu Management
+
+Scope: owner-only service/menu management, file/demo service repository support, public service reads, tests, and docs. No Supabase connection, real payment capture, notifications, auth-provider changes, DNS, Vercel setting, secret, env value, or route slug changes were made.
+
+Completed:
+
+- Added `/owner/services` as a protected owner service/menu management route.
+- Added an owner service manager with premium cards, edit drawer, validation, active/bookable toggles, public visibility, featured/signature state, sort order, price, deposit, duration, name, and short-description edits.
+- Added `PATCH /api/owner/services/[serviceId]` with owner-session auth, same-origin protection, server-side validation, safe errors, and path revalidation.
+- Added a service repository interface with file, demo, and Supabase-ready skeleton adapters while preserving stable service IDs and public routes.
+- Updated public home, packages, service detail, booking, quote, booking create, and confirmation paths to read repository-backed service data where server-side/runtime-safe.
+- Added Playwright coverage for owner service editing, validation, unauthorized service mutation rejection, active/bookable behavior, and deterministic service test reset.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 84/84 Playwright tests.
+
+Notes:
+
+- Service edits persist to `data/services.json` locally and `/tmp/aliz-studio-services/services.json` on Vercel. This remains demo-safe and ephemeral, not production durable.
+- Core demo services cannot be deleted in this sprint; missing service records are restored from the stable catalog.
+
 ## 2026-05-30 - Desktop Typography Smoothness Polish
 
 Scope: focused desktop typography refinement for the owner appointment detail drawer and related theme tokens. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, route, or persistence behavior was changed.

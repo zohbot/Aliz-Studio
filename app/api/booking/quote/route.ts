@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 
   try {
     return NextResponse.json({
-      quote: buildBookingQuote(parsed.data)
+      quote: await buildBookingQuote(parsed.data)
     });
   } catch (error) {
     return NextResponse.json(

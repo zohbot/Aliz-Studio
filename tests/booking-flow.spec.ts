@@ -257,6 +257,99 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page.locator(".appointment-detail-drawer").getByLabel("Owner notes")).toHaveValue(ownerNote);
   });
 
+  test("owner can manage service menu details with validation", async ({ page }) => {
+    const isMobileProject = test.info().project.name.includes("mobile");
+    const targetServiceId = isMobileProject ? "eyebrows" : "shape-up";
+    const targetServiceName = isMobileProject ? "Eyebrows" : "Shape Up";
+    const updatedDescription = `Demo-safe owner service edit for ${test.info().project.name}.`;
+    const restoredDescription = isMobileProject
+      ? "Subtle eyebrow cleanup for a finished look."
+      : "Fast edge cleanup for a sharper look between cuts.";
+    const restoredPrice = isMobileProject ? "10" : "15";
+    const restoredDeposit = "5";
+    const restoredDuration = isMobileProject ? "15" : "20";
+    const restoredSortOrder = isMobileProject ? "70" : "50";
+
+    await page.goto("/owner/services");
+    await expect(page).toHaveURL(/\/owner\/login/);
+
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await page.goto("/owner/services");
+    await expect(page.getByRole("heading", { name: /manage the public menu/i })).toBeVisible();
+    await expect(page.locator(".owner-service-card")).toHaveCount(7);
+    await expect(page.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/owner/dashboard");
+
+    if (isMobileProject) {
+      for (const width of [320, 375, 390, 414, 430]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto("/owner/services");
+
+        const overflow = await page.evaluate(() => {
+          const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+          return documentWidth - window.innerWidth;
+        });
+
+        expect(overflow, `owner services should not overflow at ${width}px`).toBeLessThanOrEqual(1);
+      }
+    }
+
+    const serviceCard = page.locator(".owner-service-card").filter({ hasText: targetServiceName }).first();
+    await expect(serviceCard).toBeVisible();
+    await serviceCard.getByRole("button", { name: "Edit" }).click();
+
+    const drawer = page.getByRole("dialog", { name: targetServiceName });
+    await expect(drawer).toBeVisible();
+    await expect(drawer.getByText(`Stable ID: ${targetServiceId}`)).toBeVisible();
+
+    await drawer.getByLabel("Price").fill("10");
+    await drawer.getByLabel("Deposit").fill("20");
+    await drawer.getByRole("button", { name: "Save service" }).click();
+    await expect(drawer.getByText("Deposit cannot exceed the service price.")).toBeVisible();
+
+    await drawer.getByLabel("Price").fill(isMobileProject ? "12" : "18");
+    await drawer.getByLabel("Deposit").fill(restoredDeposit);
+    await drawer.getByLabel("Duration minutes").fill(isMobileProject ? "18" : "24");
+    await drawer.getByLabel("Short description").fill(updatedDescription);
+    await drawer.getByRole("button", { name: "Bookable Shown in booking" }).click();
+    await drawer.getByRole("button", { name: "Save service" }).click();
+
+    await expect(page.getByText(`${targetServiceName} saved.`)).toBeVisible();
+    await page.goto("/book");
+    await expect(page.getByRole("button", { name: new RegExp(targetServiceName) })).toHaveCount(0);
+
+    await page.goto("/owner/services");
+    await page.locator(".owner-service-card").filter({ hasText: targetServiceName }).first().getByRole("button", { name: "Edit" }).click();
+    const restoreDrawer = page.getByRole("dialog", { name: targetServiceName });
+    await restoreDrawer.getByLabel("Price").fill(restoredPrice);
+    await restoreDrawer.getByLabel("Deposit").fill(restoredDeposit);
+    await restoreDrawer.getByLabel("Duration minutes").fill(restoredDuration);
+    await restoreDrawer.getByLabel("Short description").fill(restoredDescription);
+    await restoreDrawer.getByLabel("Sort order").fill(restoredSortOrder);
+    await restoreDrawer.getByRole("button", { name: "Bookable Hidden from booking" }).click();
+    await restoreDrawer.getByRole("button", { name: "Save service" }).click();
+
+    await expect(page.getByText(`${targetServiceName} saved.`)).toBeVisible();
+    await page.goto("/book");
+    await expect(page.getByRole("button", { name: new RegExp(targetServiceName) })).toBeVisible();
+  });
+
+  test("owner service update endpoint rejects unauthorized requests", async ({ request }) => {
+    const response = await request.patch("/api/owner/services/basic-cut", {
+      data: {
+        price: 31
+      }
+    });
+
+    expect(response.status()).toBe(401);
+  });
+
   test("owner appointment mutation requires auth and rejects invalid status", async ({ request }) => {
     const unauthorized = await request.patch("/api/owner/appointments/apt_seed_101", {
       data: {

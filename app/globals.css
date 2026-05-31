@@ -2368,7 +2368,8 @@ p {
 .owner-login-shell,
 .owner-dashboard-hero,
 .owner-stat-grid,
-.owner-board {
+.owner-board,
+.owner-service-manager {
   margin-inline: auto;
   max-width: var(--max-width);
   padding-inline: 24px;
@@ -2472,6 +2473,8 @@ p {
 .owner-login-card input,
 .owner-search,
 .owner-toolbar select,
+.service-edit-form input,
+.service-edit-form textarea,
 .appointment-controls select,
 .appointment-controls textarea {
   background: var(--paper-strong);
@@ -2482,6 +2485,7 @@ p {
 
 .owner-login-card input,
 .owner-toolbar select,
+.service-edit-form input,
 .appointment-controls select,
 .appointment-controls textarea {
   min-height: 48px;
@@ -2614,6 +2618,312 @@ p {
 
 .owner-board {
   padding-block: 0 86px;
+}
+
+.owner-services-hero {
+  padding-bottom: 28px;
+}
+
+.owner-services-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.owner-service-note {
+  background:
+    linear-gradient(135deg, rgba(212, 175, 55, 0.14), transparent 42%),
+    rgba(255, 253, 248, 0.78);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--soft-shadow);
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+}
+
+.owner-service-note p {
+  margin: 0;
+}
+
+.owner-service-manager {
+  padding-block: 0 86px;
+}
+
+.owner-service-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.owner-service-card {
+  background:
+    linear-gradient(135deg, rgba(216, 168, 77, 0.12), transparent 38%),
+    rgba(255, 253, 248, 0.84);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 50px rgba(42, 32, 26, 0.08);
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+}
+
+.owner-service-card__topline,
+.owner-service-card__main {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.owner-service-card__main {
+  align-items: start;
+}
+
+.owner-service-card__main h2 {
+  font-size: clamp(1.8rem, 3vw, 3rem);
+  margin-bottom: 6px;
+}
+
+.owner-service-card__main p {
+  margin: 0;
+}
+
+.service-state {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 760;
+  gap: 5px;
+  padding: 8px 10px;
+  text-transform: uppercase;
+}
+
+.service-state--live,
+.service-state--featured {
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--moss);
+}
+
+.service-state--inactive,
+.service-state--hidden,
+.service-state--demo {
+  background: rgba(17, 16, 15, 0.08);
+  color: var(--clay-dark);
+}
+
+.owner-service-card__facts {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0;
+}
+
+.owner-service-card__facts div,
+.owner-service-preview {
+  background: rgba(255, 253, 248, 0.7);
+  border: 1px solid rgba(222, 211, 198, 0.82);
+  border-radius: var(--radius);
+  padding: 12px;
+}
+
+.owner-service-card__facts dt {
+  align-items: center;
+  color: var(--ink-soft);
+  display: flex;
+  font-size: 0.72rem;
+  font-weight: 760;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.owner-service-card__facts dd {
+  font-size: 1.1rem;
+  font-weight: 760;
+  margin: 6px 0 0;
+}
+
+.owner-service-preview {
+  display: grid;
+  gap: 6px;
+}
+
+.owner-service-preview p {
+  margin: 0;
+}
+
+.service-detail-backdrop {
+  align-items: stretch;
+  backdrop-filter: blur(18px) saturate(1.08);
+  background:
+    radial-gradient(circle at 76% 18%, rgba(212, 175, 55, 0.16), transparent 32%),
+    rgba(17, 16, 15, 0.38);
+  display: flex;
+  inset: 0;
+  justify-content: flex-end;
+  padding: 18px;
+  position: fixed;
+  z-index: 80;
+}
+
+.service-detail-drawer {
+  background:
+    radial-gradient(circle at 92% 0%, rgba(255, 253, 248, 0.9), transparent 28%),
+    linear-gradient(145deg, rgba(216, 168, 77, 0.13), rgba(255, 253, 248, 0.5) 44%, rgba(241, 232, 219, 0.92)),
+    rgba(247, 241, 231, 0.96);
+  border: 1px solid rgba(255, 253, 248, 0.62);
+  border-radius: 18px;
+  box-shadow:
+    0 34px 120px rgba(17, 16, 15, 0.32),
+    inset 0 1px 0 rgba(255, 253, 248, 0.76);
+  color: var(--detail-ink);
+  display: grid;
+  gap: 18px;
+  max-width: 760px;
+  overflow: auto;
+  padding: clamp(22px, 2.4vw, 34px);
+  width: min(100%, 760px);
+}
+
+.service-detail-drawer__topline,
+.service-detail-drawer__header,
+.service-detail-drawer__actions {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.service-detail-drawer__header {
+  align-items: stretch;
+  background:
+    linear-gradient(135deg, rgba(255, 253, 248, 0.88), rgba(247, 241, 231, 0.64)),
+    rgba(255, 253, 248, 0.58);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 0 rgba(255, 253, 248, 0.68);
+  padding: clamp(18px, 2vw, 24px);
+}
+
+.service-detail-drawer__header h2 {
+  color: var(--detail-ink-strong);
+  font-size: clamp(2.1rem, 4vw, 3.45rem);
+  font-weight: 720;
+  line-height: 1.04;
+}
+
+.service-detail-drawer__header p {
+  color: var(--detail-ink-muted);
+  margin: 0;
+}
+
+.service-detail-drawer__icon {
+  align-items: center;
+  align-self: center;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 253, 248, 0.42));
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 999px;
+  color: var(--clay);
+  display: inline-flex;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
+}
+
+.service-edit-form {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.service-edit-form label {
+  color: var(--detail-label);
+  display: grid;
+  font-size: 0.78rem;
+  font-weight: 650;
+  gap: 8px;
+  text-transform: uppercase;
+}
+
+.service-edit-form textarea {
+  min-height: 94px;
+  padding: 12px 13px;
+  resize: vertical;
+  text-transform: none;
+  width: 100%;
+}
+
+.service-edit-form input,
+.service-edit-form textarea {
+  color: var(--detail-ink);
+  font-weight: 520;
+}
+
+.service-edit-form__wide,
+.service-toggle-grid,
+.service-detail-drawer__actions {
+  grid-column: 1 / -1;
+}
+
+.service-toggle-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.service-toggle {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.62);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
+  color: var(--detail-ink);
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  min-height: 74px;
+  padding: 12px;
+  text-align: left;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.service-toggle[aria-pressed="true"] {
+  background:
+    linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 253, 248, 0.78)),
+    rgba(255, 253, 248, 0.72);
+  border-color: rgba(212, 175, 55, 0.34);
+}
+
+.service-toggle:hover {
+  border-color: rgba(212, 175, 55, 0.34);
+  box-shadow: 0 12px 28px rgba(42, 32, 26, 0.1);
+  transform: translateY(-1px);
+}
+
+.service-toggle svg {
+  color: var(--clay);
+  flex: 0 0 auto;
+}
+
+.service-toggle span {
+  display: grid;
+  gap: 3px;
+}
+
+.service-toggle small {
+  color: var(--detail-ink-muted);
+  font-size: 0.76rem;
+}
+
+.service-detail-drawer__actions {
+  border-top: 1px solid var(--line);
+  justify-content: flex-end;
+  padding-top: 16px;
 }
 
 .owner-toolbar {
@@ -3202,6 +3512,8 @@ p {
 :root[data-theme="night"] .package-panel,
 :root[data-theme="night"] .owner-login-card,
 :root[data-theme="night"] .owner-session-panel,
+:root[data-theme="night"] .owner-service-note,
+:root[data-theme="night"] .owner-service-card,
 :root[data-theme="night"] .owner-stat-grid article,
 :root[data-theme="night"] .appointment-card,
 :root[data-theme="night"] .appointment-empty-state,
@@ -3212,6 +3524,62 @@ p {
     rgba(22, 22, 22, 0.84);
   border-color: var(--line);
   box-shadow: var(--soft-shadow);
+}
+
+:root[data-theme="night"] .owner-service-card__facts div,
+:root[data-theme="night"] .owner-service-preview,
+:root[data-theme="night"] .service-toggle,
+:root[data-theme="night"] .service-detail-drawer__header {
+  background:
+    linear-gradient(135deg, rgba(226, 192, 107, 0.1), rgba(245, 241, 232, 0.035)),
+    #101010;
+  border-color: var(--line);
+}
+
+:root[data-theme="night"] .service-detail-drawer {
+  background:
+    radial-gradient(circle at 92% 0%, rgba(226, 192, 107, 0.1), transparent 28%),
+    linear-gradient(145deg, rgba(226, 192, 107, 0.1), rgba(18, 18, 18, 0.86) 45%, rgba(8, 8, 8, 0.96)),
+    #0b0b0b;
+  border-color: rgba(226, 192, 107, 0.22);
+  box-shadow:
+    0 34px 120px rgba(0, 0, 0, 0.66),
+    inset 0 1px 0 rgba(226, 192, 107, 0.1);
+}
+
+:root[data-theme="night"] .service-detail-backdrop {
+  background:
+    radial-gradient(circle at 78% 18%, rgba(226, 192, 107, 0.12), transparent 34%),
+    rgba(0, 0, 0, 0.72);
+}
+
+:root[data-theme="night"] .service-edit-form input,
+:root[data-theme="night"] .service-edit-form textarea {
+  background:
+    linear-gradient(135deg, rgba(245, 241, 232, 0.035), rgba(11, 11, 11, 0.22)),
+    var(--input-surface);
+  border-color: var(--line);
+  color: var(--detail-ink);
+}
+
+:root[data-theme="night"] .service-toggle[aria-pressed="true"] {
+  background: var(--selection-bg);
+  border-color: var(--selection-border);
+  box-shadow: var(--selection-shadow);
+}
+
+:root[data-theme="night"] .service-state--live,
+:root[data-theme="night"] .service-state--featured,
+:root[data-theme="night"] .service-state--demo {
+  background: rgba(201, 163, 78, 0.12);
+  border: 1px solid rgba(226, 192, 107, 0.28);
+  color: var(--gold);
+}
+
+:root[data-theme="night"] .service-state--inactive,
+:root[data-theme="night"] .service-state--hidden {
+  background: rgba(245, 241, 232, 0.06);
+  color: var(--ink-soft);
 }
 
 :root[data-theme="night"] .experience-band {
@@ -3579,7 +3947,8 @@ p {
   }
 
   .packages-grid,
-  .packages-confidence__grid {
+  .packages-confidence__grid,
+  .owner-service-grid {
     grid-template-columns: 1fr;
   }
 
@@ -3597,12 +3966,18 @@ p {
   .appointment-detail-pill-grid,
   .appointment-detail-list,
   .appointment-detail-note-grid,
+  .owner-service-card__facts,
+  .service-edit-form,
+  .service-toggle-grid,
   .owner-dashboard-hero,
   .owner-dashboard-alert {
     grid-template-columns: 1fr;
   }
 
-  .appointment-controls--detail .appointment-controls__notes {
+  .appointment-controls--detail .appointment-controls__notes,
+  .service-edit-form__wide,
+  .service-toggle-grid,
+  .service-detail-drawer__actions {
     grid-column: auto;
   }
 
@@ -3635,6 +4010,34 @@ p {
   .site-footer {
     grid-template-columns: 1fr;
     margin-bottom: 18px;
+  }
+
+  .service-detail-backdrop {
+    padding: 10px;
+  }
+
+  .service-detail-drawer {
+    border-radius: 14px;
+    padding: 18px;
+  }
+
+  .owner-service-card,
+  .owner-service-note {
+    padding: 18px;
+  }
+
+  .owner-service-card__topline,
+  .owner-service-card__main,
+  .service-detail-drawer__header,
+  .service-detail-drawer__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .owner-service-card__main .secondary-action,
+  .service-detail-drawer__actions .secondary-action,
+  .service-detail-drawer__actions .primary-action {
+    width: 100%;
   }
 
   .footer-links {

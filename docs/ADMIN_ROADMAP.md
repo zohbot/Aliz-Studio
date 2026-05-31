@@ -6,17 +6,17 @@ It is a planning document only. It does not activate Supabase, real payments, re
 
 ## Current Architecture Snapshot
 
-- Public routes: `/`, `/about`, `/book`, `/checkout`, `/book/confirmation`, and `/services/[serviceId]`.
-- Owner routes: `/owner/login` and `/owner/dashboard`.
+- Public routes: `/`, `/about`, `/packages`, `/book`, `/checkout`, `/book/confirmation`, and `/services/[serviceId]`.
+- Owner routes: `/owner/login`, `/owner/dashboard`, and `/owner/services`.
 - Booking APIs: `/api/booking/availability`, `/api/booking/quote`, and `/api/booking/create`.
 - Checkout/payment APIs: `/api/checkout/complete` and `/api/square/webhook`.
-- Owner APIs: `/api/owner/session`, `/api/owner/auth/login`, `/api/owner/auth/logout`, `/api/owner/appointments`, and `/api/owner/appointments/[appointmentId]`.
-- Data boundary: `lib/repositories` defines an appointment repository interface with `file`, `demo`, and future `supabase` backends.
+- Owner APIs: `/api/owner/session`, `/api/owner/auth/login`, `/api/owner/auth/logout`, `/api/owner/appointments`, `/api/owner/appointments/[appointmentId]`, and `/api/owner/services/[serviceId]`.
+- Data boundary: `lib/repositories` defines appointment and service repository interfaces with `file`, `demo`, and future `supabase` backends.
 - Current runtime backend: `file`, with local JSON storage and Vercel temp storage for demo-safe serverless use.
 - Domain layer: `lib/domain` owns canonical shared types, constants, and Zod schemas.
 - Demo data: `lib/demo` owns deterministic seed collections for future mock repositories and Supabase seeding.
 - Supabase planning: `supabase/migrations/0001_create_aliz_studio_core_schema.sql` and `docs/supabase.md` define the database foundation, but runtime integration is not active.
-- Services: current public services are static in `lib/services.ts`.
+- Services: current public services are seeded from the core catalog and can be edited through the demo-safe file-backed service repository.
 - Payments: Square package and webhook scaffold exist, but checkout remains mock/demo-only.
 - Notifications: current notification behavior is a stub and does not send real email or SMS.
 - Owner auth: custom single-owner signed HttpOnly cookie auth through environment variables.
@@ -33,6 +33,7 @@ It is a planning document only. It does not activate Supabase, real payments, re
 - Mock Square-style checkout and confirmation path.
 - Owner login/logout with signed HttpOnly cookie sessions.
 - Protected owner dashboard with appointment stats, search/filter, status edits, payment-status edits, and owner notes.
+- Protected owner service/menu management for demo-safe package edits.
 - PWA manifest and install CTA.
 - Deterministic demo seed data and a future-ready domain model.
 - Supabase schema plan and repository boundary.
@@ -48,7 +49,7 @@ It is a planning document only. It does not activate Supabase, real payments, re
 
 - Appointment persistence is file-backed and ephemeral on Vercel.
 - Availability uses fixed slots and existing appointment time checks only.
-- Services are static and not owner-editable.
+- Service edits are file-backed and ephemeral on Vercel until Supabase is active.
 - Checkout is mock-only and does not charge cards.
 - Square webhook handling does not reconcile payments.
 - Notifications are not actually sent.
@@ -72,7 +73,7 @@ It is a planning document only. It does not activate Supabase, real payments, re
 
 - Owner appointment detail route or drawer.
 - Richer owner appointment filters and date-range controls.
-- Service management UI backed by demo/file repository adapters.
+- Richer service management UI beyond the current demo-safe page, including image, inclusions, and long-form package copy editing.
 - Availability settings UI backed by deterministic demo data.
 - Owner settings UI with local/demo adapter.
 - Customer list derived from appointment data.
@@ -132,8 +133,8 @@ Target owner capabilities:
 
 Near-term data needs:
 
-- Add `ServiceRepository` with file/demo adapter first.
-- Keep current static `lib/services.ts` exports compatible until the repository is ready.
+- Keep `ServiceRepository` mapped to file/demo adapters until Supabase runtime integration is intentionally enabled.
+- Extend service editing later for images, long-form detail copy, inclusions, and audit events.
 - Supabase table `services` already supports this direction.
 
 ### Availability And Settings

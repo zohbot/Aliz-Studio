@@ -1,16 +1,16 @@
 # Route And API Inventory
 
-This document captures the current Aliz Studio routes before production scheduling work begins. The app currently uses static service data, a local file-backed appointment store, mock checkout behavior, custom owner auth, and placeholder notification/payment integrations.
+This document captures the current Aliz Studio routes before production scheduling work begins. The app currently uses a demo-safe file-backed service repository, a local file-backed appointment store, mock checkout behavior, custom owner auth, and placeholder notification/payment integrations.
 
 ## Public Pages
 
 ### `/`
 
 - Purpose: Public homepage with brand hero, service overview, and booking entry points.
-- Current data source: Static service data from `lib/services.ts` through `components/service-grid.tsx`.
+- Current data source: Service repository helpers from `lib/services.ts` through `components/service-grid.tsx`.
 - Auth requirement: None.
 - Readiness: Demo-ready, not production-complete.
-- Known limitations: Content and service catalog are static; no production CMS/database source.
+- Known limitations: Service edits are demo/file-backed and not durable production data.
 - Future production direction: Keep the public experience, but source active services/pricing from Supabase or a typed service repository with deterministic seed data for local/demo use.
 
 ### `/about`
@@ -25,16 +25,16 @@ This document captures the current Aliz Studio routes before production scheduli
 ### `/packages`
 
 - Purpose: Public package comparison page with richer service descriptions, price, duration, deposit, best-for guidance, inclusions, and booking CTAs.
-- Current data source: Static services from `lib/services.ts` for price/duration/deposit/images plus marketing copy from `lib/package-copy.ts`.
+- Current data source: Service repository helpers from `lib/services.ts` for price/duration/deposit/images plus marketing copy from `lib/package-copy.ts`.
 - Auth requirement: None.
 - Readiness: Demo-ready.
-- Known limitations: Static service catalog and static package copy; deep-linked booking selection uses current `/book?service=` behavior.
+- Known limitations: Package copy remains static; service edits are demo/file-backed and deep-linked booking selection uses current `/book?service=` behavior.
 - Future production direction: Source active services and owner-editable package copy from Supabase or a service repository while preserving deterministic local/demo seed data.
 
 ### `/book`
 
 - Purpose: Customer booking UI for selecting service, date, time, and customer details.
-- Current data source: Static services from `lib/services.ts`; availability from `/api/booking/availability`.
+- Current data source: Active/bookable service repository data from `lib/services.ts`; availability from `/api/booking/availability`.
 - Auth requirement: None.
 - Readiness: Demo-ready, not production-ready.
 - Known limitations: Fixed slots, no real business hours, no owner-managed blocked times/days, no hold expiration, and no timezone model.
@@ -61,10 +61,10 @@ This document captures the current Aliz Studio routes before production scheduli
 ### `/services/[serviceId]`
 
 - Purpose: Service/package detail page with service summary and booking CTA.
-- Current data source: Static services from `lib/services.ts`.
+- Current data source: Public service repository data from `lib/services.ts`.
 - Auth requirement: None.
 - Readiness: Demo-ready.
-- Known limitations: Static service catalog and generated static params.
+- Known limitations: Service edits are demo/file-backed; stable generated params remain tied to the core demo service IDs.
 - Future production direction: Source active services from Supabase or a service repository while preserving deterministic seed data for local/demo.
 
 ## Owner Pages
@@ -87,6 +87,15 @@ This document captures the current Aliz Studio routes before production scheduli
 - Known limitations: No blocked time/day controls, no durable database, no audit events, no real payment reconciliation, and no real notifications.
 - Future production direction: Back dashboard with Supabase repositories for appointments, payments, availability blocks, settings, notification logs, and audit events.
 
+### `/owner/services`
+
+- Purpose: Protected owner service/menu management for demo-safe package edits.
+- Current data source: Service repository helpers from `lib/services.ts` backed by local or Vercel temp JSON storage.
+- Auth requirement: Requires valid owner session cookie.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: Edits are file-backed/ephemeral on Vercel, do not create audit events, and do not support deleting core demo services.
+- Future production direction: Map to the Supabase `services` table through a production service repository with durable audit events and owner permissions.
+
 ## Booking APIs
 
 ### `GET /api/booking/availability`
@@ -101,10 +110,10 @@ This document captures the current Aliz Studio routes before production scheduli
 ### `POST /api/booking/quote`
 
 - Purpose: Validates service/date and returns price, deposit, duration, and amount due later.
-- Current data source: Static services from `lib/services.ts`.
+- Current data source: Active/bookable service repository data from `lib/services.ts`.
 - Auth requirement: None.
 - Readiness: Demo-ready.
-- Known limitations: Service/pricing data is static and not owner-editable.
+- Known limitations: Service/pricing edits are demo-file-backed until Supabase is connected.
 - Future production direction: Source quote data from active Supabase services and enforce server-side pricing at appointment creation.
 
 ### `POST /api/booking/create`
@@ -182,6 +191,15 @@ This document captures the current Aliz Studio routes before production scheduli
 - Readiness: Demo-ready, not production-ready.
 - Known limitations: No audit events, no validation of status transition rules, no refund workflow, no notification side effects, and no durable persistence.
 - Future production direction: Enforce status transitions server-side, update Supabase records transactionally, create audit events, and trigger notifications when needed.
+
+### `PATCH /api/owner/services/[serviceId]`
+
+- Purpose: Updates demo-safe service/menu fields such as name, short description, price, deposit, duration, active/bookable status, featured state, public visibility, and sort order.
+- Current data source: File-backed service repository seeded from the core service catalog.
+- Auth requirement: Requires valid owner session and same-origin request.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: Stable IDs/slugs, images, inclusions, and core routes are intentionally preserved; edits are ephemeral on Vercel until Supabase is active.
+- Future production direction: Update Supabase service records transactionally, add audit events, validate owner permissions, and revalidate public package/booking views.
 
 ## Missing Production Routes Likely Needed
 

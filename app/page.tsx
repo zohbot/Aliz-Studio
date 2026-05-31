@@ -3,6 +3,10 @@ import Image from "next/image";
 import { CalendarClock, CheckCircle2, ShieldCheck } from "lucide-react";
 import { ServiceGrid } from "@/components/service-grid";
 import { PwaInstallCard } from "@/components/pwa-install-card";
+import { listPublicServices } from "@/lib/services";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 const principles = [
   "Appointments paced around the cut, not a waiting room.",
@@ -10,7 +14,9 @@ const principles = [
   "Deposit-ready checkout designed to keep Square visually familiar."
 ];
 
-export default function Home() {
+export default async function Home() {
+  const publicServices = await listPublicServices();
+
   return (
     <>
       <section className="hero-section">
@@ -61,7 +67,7 @@ export default function Home() {
           <p className="section-kicker">Services</p>
           <h2>Choose the package, then reserve the chair.</h2>
         </div>
-        <ServiceGrid />
+        <ServiceGrid services={publicServices} />
       </section>
 
       <section className="experience-band">

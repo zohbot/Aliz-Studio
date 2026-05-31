@@ -49,7 +49,7 @@ When an owner session is already active, `/owner/login` redirects to `/owner/das
 
 For a local-only demo, set `ALIZ_ALLOW_LOCAL_DEMO_AUTH=true` and choose your own local password and session secret. Do not commit real credentials.
 
-Appointments are seeded into `data/appointments.json` on first local dashboard/API access. The dashboard supports list search/filtering, status and mock payment-state updates, owner-only notes, and an appointment detail drawer for customer/service/payment context. On Vercel, the file-backed repository uses ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
+Appointments are seeded into `data/appointments.json` on first local dashboard/API access. The dashboard supports list search/filtering, status and mock payment-state updates, owner-only notes, and an appointment detail drawer for customer/service/payment context. The protected `/owner/services` page lets the owner make demo-safe edits to service names, descriptions, prices, deposits, durations, visibility, featured state, and sort order without changing stable service IDs or routes. On Vercel, the file-backed repositories use ephemeral temp storage so the demo can run on a read-only deployment filesystem. This is not durable storage; keep `ALIZ_DATA_BACKEND=file` and `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase adapter is implemented and intentionally enabled.
 
 ## Security / Operations Notes
 
@@ -110,7 +110,7 @@ Aliz Studio supports the original polished light theme and an optional black-and
 
 ## Public Packages
 
-The public `/packages` route compares all barbering packages with richer customer-facing descriptions, best-for guidance, inclusions, price, duration, deposit, and direct booking CTAs. Price, duration, deposit, service IDs, and images continue to come from `lib/services.ts`; the expanded marketing copy lives in `lib/package-copy.ts`.
+The public `/packages` route compares all barbering packages with richer customer-facing descriptions, best-for guidance, inclusions, price, duration, deposit, and direct booking CTAs. Price, duration, deposit, service IDs, and images flow through the service repository helpers in `lib/services.ts`; the expanded marketing copy lives in `lib/package-copy.ts`.
 
 ## PWA Install
 
@@ -132,4 +132,4 @@ npm run build
 npm run test:e2e
 ```
 
-The Playwright suite covers the landing page, service package routing, security headers, booking validation, mock checkout completion, and owner dashboard status management across desktop and mobile viewports.
+The Playwright suite covers the landing page, service package routing, security headers, booking validation, mock checkout completion, owner dashboard status management, and owner service/menu management across desktop and mobile viewports.
