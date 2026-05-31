@@ -656,6 +656,29 @@ test.describe("Aliz Studio booking foundation", () => {
     const drawerRadius = await detail.evaluate((element) =>
       Number.parseFloat(getComputedStyle(element).borderTopLeftRadius)
     );
+    const headingStyles = await detail.getByRole("heading").evaluate((element) => {
+      const styles = getComputedStyle(element);
+
+      return {
+        color: styles.color,
+        fontWeight: Number.parseFloat(styles.fontWeight),
+        letterSpacing: styles.letterSpacing,
+        lineHeight: Number.parseFloat(styles.lineHeight)
+      };
+    });
+    const statLabelStyles = await detail.locator(".appointment-detail-stat p").first().evaluate((element) => {
+      const styles = getComputedStyle(element);
+
+      return {
+        color: styles.color,
+        fontWeight: Number.parseFloat(styles.fontWeight),
+        letterSpacing: styles.letterSpacing
+      };
+    });
+    const contactValueWeight = await detail
+      .locator(".appointment-detail-list dd")
+      .first()
+      .evaluate((element) => Number.parseFloat(getComputedStyle(element).fontWeight));
     const selectBackgroundImage = await statusSelect.evaluate(
       (element) => getComputedStyle(element).backgroundImage
     );
@@ -689,6 +712,18 @@ test.describe("Aliz Studio booking foundation", () => {
     expect(parseRgbColor(drawerBackground).red, "drawer should not be raw/default white").toBeLessThan(255);
     expect(drawerShadow, "drawer should have a premium shadow").not.toBe("none");
     expect(drawerRadius, "drawer should have a softer premium radius").toBeGreaterThanOrEqual(16);
+    expect(parseRgbColor(headingStyles.color).red, "drawer heading should use softer near-black, not pure black").toBeGreaterThan(25);
+    expect(headingStyles.fontWeight, "drawer heading should stay strong without extra-heavy weight").toBeLessThanOrEqual(730);
+    expect(["normal", "0px"], "drawer heading should avoid crunchy negative tracking").toContain(
+      headingStyles.letterSpacing
+    );
+    expect(headingStyles.lineHeight, "drawer heading should breathe more than a tight display block").toBeGreaterThan(48);
+    expect(statLabelStyles.fontWeight, "drawer labels should use medium/semi-bold weight").toBeLessThanOrEqual(700);
+    expect(["normal", "0px"], "drawer labels should avoid sharp wide tracking").toContain(
+      statLabelStyles.letterSpacing
+    );
+    expect(parseRgbColor(statLabelStyles.color).red, "drawer label color should be softened rather than pure black").toBeGreaterThan(80);
+    expect(contactValueWeight, "drawer contact values should avoid bold-heavy rendering").toBeLessThanOrEqual(650);
     expect(selectBackgroundImage, "detail select should use the custom chevron background").toContain("svg");
     expect(selectHeight, "detail select should have comfortable desktop height").toBeGreaterThanOrEqual(52);
     expect(selectAppearance, "detail select should not use the browser default appearance").toContain("none");

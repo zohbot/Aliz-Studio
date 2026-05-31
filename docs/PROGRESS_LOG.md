@@ -1,5 +1,28 @@
 # Progress Log
 
+## 2026-05-30 - Desktop Typography Smoothness Polish
+
+Scope: focused desktop typography refinement for the owner appointment detail drawer and related theme tokens. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, route, or persistence behavior was changed.
+
+Completed:
+
+- Preserved the existing pure system font stack and antialiased rendering setup.
+- Added drawer-specific light/night typography tokens so the owner detail surface uses softer near-black text instead of harsh dark text in light mode.
+- Reduced heavy 850/900-style drawer weights on headings, price metadata, labels, contact values, note labels, and detail form controls to medium/semi-bold values.
+- Improved drawer line-height and neutralized sharp label tracking while keeping headings strong and readable.
+- Added Playwright computed-style coverage to guard against pure-black, extra-heavy, or overly tracked drawer typography returning.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 80/80 Playwright tests.
+
+Notes:
+
+- This sprint intentionally did not add external fonts, font files, text shadows, blur tricks, or global opacity changes.
+
 ## 2026-05-30 - Desktop Detail Drawer And Footer Premium UI Polish
 
 Scope: desktop owner appointment detail drawer, footer, and system typography polish only. No auth, database, payment behavior, notification, DNS, Vercel setting, secret, env value, route, or persistence behavior was changed.
