@@ -12,7 +12,7 @@
 - Redeploy after changing Vercel env vars; existing deployments do not automatically pick up new values.
 - Keep `ALIZ_DATA_BACKEND=file` until the Supabase adapter is intentionally enabled in a later task.
 - Keep `ALIZ_ENABLE_SUPABASE_REPOSITORY=false` until the Supabase appointment repository is implemented. The current factory falls back to `file` if `ALIZ_DATA_BACKEND=supabase` is entered early.
-- Treat live appointment, service, and availability settings data as temporary while the app remains file-backed on Vercel/serverless; the file backend uses ephemeral temp storage in that environment.
+- Treat live appointment, service, availability settings, and customer profile data as temporary while the app remains file-backed on Vercel/serverless; the file backend uses ephemeral temp storage in that environment.
 - If `/owner/login` redirects straight to `/owner/dashboard`, that means a valid owner session is still active. Use the visible dashboard `Log out` action before testing the credential form again.
 - Re-run public navigation, booking, mock checkout, confirmation, owner login, and owner dashboard checks after the staging owner variables are set.
 
@@ -20,6 +20,7 @@
 
 - Founder-review the new `/owner/services` flow on desktop and mobile, especially the service edit drawer and active/public visibility language.
 - Founder-review the new `/owner/availability` flow on desktop and mobile, especially weekly hours, blocked dates, lead time, and fixed-slot demo language.
+- Founder-review the new `/owner/customers` client book on desktop and mobile, especially customer search, appointment history, owner-only tags/preferences, and privacy/demo-storage language.
 - Continue checking mobile layouts at 320, 375, 390, 414, and 430px before each public demo.
 - Replace the generated brand placeholder files with final production logo/icon exports when they are approved.
 - Decide whether archived source exports in `public/brand/source/` should remain in the repo after production brand review.
@@ -41,7 +42,7 @@
 
 ## Deferred Production Work
 
-- Continue the next admin implementation sprint from `docs/ADMIN_ROADMAP.md`: owner settings, customer summaries, notification/audit previews, or availability conflict-preview polish in demo-safe mode.
+- Continue the next admin implementation sprint from `docs/ADMIN_ROADMAP.md`: owner settings, notification/audit previews, or availability conflict-preview polish in demo-safe mode.
 - Move appointment persistence from the file-backed repository to Supabase only after repository adapters and transactional booking flows are ready.
 - Implement and test the Supabase repository before allowing the runtime factory to select it.
 - Add durable Supabase owner-managed blocked times/days and transaction-safe booking holds before using the booking backend for real customer scheduling.

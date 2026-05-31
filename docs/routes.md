@@ -105,6 +105,15 @@ This document captures the current Aliz Studio routes before production scheduli
 - Known limitations: Uses the current fixed slot list, file-backed settings are ephemeral on Vercel, max appointment settings are demo-safe guardrails, and no audit events are written yet.
 - Future production direction: Map weekly rules and blocked dates to Supabase availability tables, enforce booking holds transactionally, and create audit events for owner changes.
 
+### `/owner/customers`
+
+- Purpose: Protected owner client book with customer records, booking history, customer search, summary metrics, and owner-only notes/preferences.
+- Current data source: Customer records are derived from appointment data in `lib/customers.ts`; owner notes, tags, and preferences are stored through the customer profile repository.
+- Auth requirement: Requires valid owner session cookie.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: Customer records are derived from booking contact fields, customer profile storage is local/ephemeral on Vercel, and there is no customer account system, export/delete workflow, or audit trail yet.
+- Future production direction: Map to Supabase `customers` plus customer preference/profile tables, add RLS, audit events, data export/deletion policy, and durable search/filtering.
+
 ## Booking APIs
 
 ### `GET /api/booking/availability`
@@ -227,6 +236,24 @@ This document captures the current Aliz Studio routes before production scheduli
 - Readiness: Demo-ready, not production-durable.
 - Known limitations: Updates do not write audit events, do not auto-cancel existing appointments, and do not touch Supabase yet.
 - Future production direction: Transactionally update Supabase availability tables, validate conflicts with existing appointments, and create owner audit events.
+
+### `GET /api/owner/customers`
+
+- Purpose: Returns protected owner customer records derived from appointment history.
+- Current data source: `lib/customers.ts` combining appointment repository records with customer profile repository data.
+- Auth requirement: Requires valid owner session.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: No pagination, no durable customer table, and no public/customer self-service access.
+- Future production direction: Query Supabase customer records with appointment/payment aggregates, RLS, pagination, and privacy controls.
+
+### `PATCH /api/owner/customers/[customerId]`
+
+- Purpose: Updates owner-only customer notes, sensitive owner note, preferred cut, preferred time window, and simple customer tags.
+- Current data source: Customer profile repository writing ignored local JSON storage or Vercel temp storage.
+- Auth requirement: Requires valid owner session and same-origin request.
+- Readiness: Demo-ready, not production-durable.
+- Known limitations: Notes/preferences are not audit logged, profile IDs are derived from appointment contact identity, and changes are ephemeral on Vercel until Supabase is active.
+- Future production direction: Persist to Supabase customer/profile tables with audit events, role-aware permissions, and retention/export/deletion controls.
 
 ## Missing Production Routes Likely Needed
 

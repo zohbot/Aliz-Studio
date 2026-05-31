@@ -5,6 +5,9 @@ import type {
   AvailabilitySettingsUpdateInput,
   AppointmentUpdateInput,
   CreateAppointmentInput,
+  CustomerId,
+  CustomerProfile,
+  CustomerProfileUpdateInput,
   PaymentStatus,
   Service,
   ServiceUpdateInput
@@ -40,6 +43,8 @@ export type UpdateAppointmentRepositoryInput = AppointmentUpdateInput;
 export type UpdateServiceRepositoryInput = ServiceUpdateInput;
 
 export type UpdateAvailabilitySettingsRepositoryInput = AvailabilitySettingsUpdateInput;
+
+export type UpdateCustomerProfileRepositoryInput = CustomerProfileUpdateInput;
 
 export type AppointmentRepositoryErrorCode =
   | "invalid_backend"
@@ -95,6 +100,27 @@ export class AvailabilityRepositoryError extends Error {
   }
 }
 
+export type CustomerProfileRepositoryErrorCode =
+  | "invalid_backend"
+  | "not_configured"
+  | "not_implemented"
+  | "invalid_profile";
+
+export class CustomerProfileRepositoryError extends Error {
+  readonly backend?: RepositoryBackend;
+  readonly code: CustomerProfileRepositoryErrorCode;
+
+  constructor(
+    message: string,
+    options: { backend?: RepositoryBackend; code: CustomerProfileRepositoryErrorCode }
+  ) {
+    super(message);
+    this.name = "CustomerProfileRepositoryError";
+    this.backend = options.backend;
+    this.code = options.code;
+  }
+}
+
 export type AppointmentRepository = {
   readonly backend: RepositoryBackend;
   listAppointments(): Promise<Appointment[]>;
@@ -132,4 +158,14 @@ export type AvailabilityRepository = {
   updateAvailabilitySettings(
     input: UpdateAvailabilitySettingsRepositoryInput
   ): Promise<AvailabilitySettings>;
+};
+
+export type CustomerProfileRepository = {
+  readonly backend: RepositoryBackend;
+  listCustomerProfiles(): Promise<CustomerProfile[]>;
+  getCustomerProfile(customerId: CustomerId): Promise<CustomerProfile | null>;
+  updateCustomerProfile(
+    customerId: CustomerId,
+    patch: UpdateCustomerProfileRepositoryInput
+  ): Promise<CustomerProfile>;
 };

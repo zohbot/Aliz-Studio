@@ -15,10 +15,14 @@ Task 7 added a narrow repository boundary around appointment persistence. The ow
 - `lib/repositories/file-availability-repository.ts`: demo-safe weekly-hours, blocked-date, and booking-rule store.
 - `lib/repositories/demo-availability-repository.ts`: deterministic in-memory availability adapter.
 - `lib/repositories/supabase-availability-repository.ts`: Supabase-ready availability skeleton that fails closed if selected directly.
+- `lib/repositories/file-customer-profile-repository.ts`: owner-only customer notes/preferences profile store keyed by derived customer IDs.
+- `lib/repositories/demo-customer-profile-repository.ts`: deterministic in-memory customer profile adapter.
+- `lib/repositories/supabase-customer-profile-repository.ts`: Supabase-ready customer profile skeleton that fails closed if selected directly.
 - `lib/repositories/index.ts`: repository barrel exports.
 - `lib/appointments.ts`: compatibility facade preserving existing public exports.
 - `lib/services.ts`: compatibility facade plus async service repository helpers for public and owner views.
 - `lib/availability.ts`: compatibility facade plus public availability calculation helpers.
+- `lib/customers.ts`: derives owner customer records/history from appointments and merges owner-only customer profile notes/preferences.
 - `lib/service-catalog.ts`: build-safe core service catalog with stable IDs/routes.
 
 ## Current Default Backend
@@ -33,6 +37,7 @@ Allowed `ALIZ_DATA_BACKEND` values:
 
 - `file`: default runtime backend. Uses `data/appointments.json` and `data/services.json` locally, with `/tmp` equivalents on Vercel.
 - Availability settings use `data/availability-settings.json` locally and `/tmp/aliz-studio-availability/settings.json` on Vercel.
+- Customer profile notes/preferences use `data/customer-profiles.json` locally and `/tmp/aliz-studio-customers/profiles.json` on Vercel.
 - `demo`: optional in-memory adapter backed by deterministic seed data.
 - `supabase`: future backend. Currently a skeleton and intentionally falls back to `file`.
 
@@ -85,6 +90,16 @@ The current settings shape includes:
 - max appointments per day
 - cancellation cutoff hours for display/future workflow use
 
+## CustomerProfileRepository Methods
+
+The customer profile interface stores only owner-only annotations for customer records derived from appointments:
+
+- `listCustomerProfiles()`
+- `getCustomerProfile(customerId)`
+- `updateCustomerProfile(customerId, patch)`
+
+Current customer list/history records are not a second customer source of truth. `lib/customers.ts` groups appointment records by normalized customer identity, computes summary metrics and booking history, then merges owner profile fields such as tags, preferred cut, preferred time window, owner notes, and sensitive owner-only reminders.
+
 ## File Backend
 
 The file adapter preserves the existing behavior from `lib/appointments.ts`:
@@ -118,9 +133,18 @@ The availability file adapter:
 
 The public booking availability API now filters fixed slots through these settings. This supports closed days, open-hour windows, optional breaks, blocked dates, lead time, and simple slot/day capacity checks while preserving the current customer-facing slot response shape.
 
+The customer profile file adapter:
+
+- Reads and writes `data/customer-profiles.json` during local development.
+- Uses writable temp storage at `/tmp/aliz-studio-customers/profiles.json` on Vercel.
+- Stores only owner profile metadata keyed by derived customer IDs, not raw payment or credential data.
+- Keeps customer records/history derived from appointments so booking contact fields remain the current demo source of truth.
+
+Vercel temp storage is intentionally ephemeral. It keeps `/owner/customers` usable for staging/demo review, but notes/preferences can reset across deployments, cold starts, or serverless instance changes.
+
 ## Demo Backend
 
-The demo adapters read deterministic seed appointments and services from `lib/demo`, and the availability demo adapter uses deterministic in-memory defaults.
+The demo adapters read deterministic seed appointments and services from `lib/demo`; the availability and customer profile demo adapters use deterministic in-memory defaults.
 
 It returns cloned, API-compatible appointment objects so callers cannot mutate module-level seed constants or leak future-only seed fields into current API responses. Write operations are in-memory only and reset per server process. Runtime-created demo appointment IDs are deterministic process-local IDs such as `apt_demo_runtime_009`.
 
@@ -136,6 +160,7 @@ Expected future mapping:
 
 - `appointments`: appointment time/status/note records.
 - `customers`: customer contact records created or found during booking.
+- customer profile/preferences: owner-only notes, tags, preferred cut/time, and privacy-aware customer metadata.
 - `payments`: Square deposit payment records and provider references.
 - `booking_holds`: pending deposit holds and expiration state.
 - `availability_blocks`: owner-managed blocked times and days used by availability checks.
@@ -163,6 +188,7 @@ This boundary prepares for:
 - No payment repository.
 - No notification repository.
 - No owner settings repository.
+- No durable customer records or production privacy workflow.
 - No Square live checkout.
 - No real notifications.
 - No owner auth replacement.

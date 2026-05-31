@@ -4,6 +4,7 @@ import {
   APPOINTMENT_STATUSES,
   AVAILABILITY_BLOCK_TYPES,
   BOOKING_HOLD_STATUSES,
+  CUSTOMER_TAGS,
   DAILY_TIMES,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_STATUSES,
@@ -57,6 +58,8 @@ export const availabilityBlockTypeSchema = z.enum(AVAILABILITY_BLOCK_TYPES);
 export const bookingHoldStatusSchema = z.enum(BOOKING_HOLD_STATUSES);
 
 export const adminRoleSchema = z.enum(ADMIN_ROLES);
+
+export const customerTagSchema = z.enum(CUSTOMER_TAGS);
 
 export const localTime24Schema = z
   .string()
@@ -273,3 +276,28 @@ export const appointmentSchema = z.object({
 });
 
 export const appointmentListSchema = z.array(appointmentSchema.strict());
+
+export const customerProfileSchema = z
+  .object({
+    id: z.string().trim().min(1).max(120),
+    ownerNotes: z.string().trim().max(1_200).optional(),
+    sensitiveNote: z.string().trim().max(500).optional(),
+    preferredCut: z.string().trim().max(80).optional(),
+    preferredTimeWindow: z.string().trim().max(80).optional(),
+    tags: z.array(customerTagSchema).max(CUSTOMER_TAGS.length),
+    createdAt: z.string(),
+    updatedAt: z.string()
+  })
+  .strict();
+
+export const customerProfileListSchema = z.array(customerProfileSchema);
+
+export const ownerCustomerProfileUpdateSchema = z
+  .object({
+    ownerNotes: z.string().trim().max(1_200).optional(),
+    sensitiveNote: z.string().trim().max(500).optional(),
+    preferredCut: z.string().trim().max(80).optional(),
+    preferredTimeWindow: z.string().trim().max(80).optional(),
+    tags: z.array(customerTagSchema).max(CUSTOMER_TAGS.length).optional()
+  })
+  .strict();

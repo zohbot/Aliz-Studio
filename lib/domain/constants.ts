@@ -22,6 +22,8 @@ export const BOOKING_HOLD_STATUSES = ["active", "expired", "converted", "cancell
 
 export const ADMIN_ROLES = ["owner", "manager"] as const;
 
+export const CUSTOMER_TAGS = ["vip", "regular", "new_client", "prefers_quiet"] as const;
+
 export const DAILY_TIMES: readonly string[] = [
   "10:00 AM",
   "11:00 AM",

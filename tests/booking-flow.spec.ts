@@ -3,6 +3,7 @@ import { readdir, readFile } from "fs/promises";
 import path from "path";
 import { resolveFileAvailabilityStoragePaths } from "../lib/repositories/file-availability-repository";
 import { resolveFileAppointmentStoragePaths } from "../lib/repositories/file-appointment-repository";
+import { resolveFileCustomerProfileStoragePaths } from "../lib/repositories/file-customer-profile-repository";
 import { resolveRepositoryBackend } from "../lib/repositories/factory";
 
 async function listFiles(root: string): Promise<string[]> {
@@ -75,6 +76,13 @@ test.describe("Aliz Studio booking foundation", () => {
 
     expect(vercelAvailabilityPaths.dataDirectory).toBe("/tmp/aliz-studio-availability");
     expect(vercelAvailabilityPaths.availabilityFile).toBe("/tmp/aliz-studio-availability/settings.json");
+
+    expect(resolveFileCustomerProfileStoragePaths({}).dataDirectory).toBe(path.join(process.cwd(), "data"));
+
+    const vercelCustomerPaths = resolveFileCustomerProfileStoragePaths({ VERCEL: "1" });
+
+    expect(vercelCustomerPaths.dataDirectory).toBe("/tmp/aliz-studio-customers");
+    expect(vercelCustomerPaths.customerProfilesFile).toBe("/tmp/aliz-studio-customers/profiles.json");
   });
 
   test("inactive Supabase repository setting falls back to file backend", () => {
@@ -477,6 +485,135 @@ test.describe("Aliz Studio booking foundation", () => {
 
     expect(invalidSettings.status()).toBe(400);
     expect(payload.error).toBe("Invalid availability settings.");
+
+    await request.post("/api/owner/auth/logout", {
+      headers: {
+        "content-type": "application/json"
+      }
+    });
+  });
+
+  test("owner customers page is protected and responsive", async ({ page }) => {
+    await page.goto("/owner/customers");
+    await expect(page).toHaveURL(/\/owner\/login/);
+
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await page.goto("/owner/customers");
+    await expect(page.getByRole("heading", { name: /review customers/i })).toBeVisible();
+    await expect(page.getByRole("region", { name: "Owner customer records" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Services" })).toHaveAttribute("href", "/owner/services");
+    await expect(page.getByRole("link", { name: "Availability" })).toHaveAttribute(
+      "href",
+      "/owner/availability"
+    );
+    await expect(page.getByText("Marcus Reed")).toBeVisible();
+
+    if (test.info().project.name.includes("mobile")) {
+      for (const width of [320, 375, 390, 414, 430]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto("/owner/customers");
+
+        const overflow = await page.evaluate(() => {
+          const documentWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+
+          return documentWidth - window.innerWidth;
+        });
+
+        expect(overflow, `owner customers should not overflow at ${width}px`).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  test("owner can search customer records, view history, and save private notes", async ({ page }) => {
+    test.skip(
+      test.info().project.name.includes("mobile"),
+      "Shared file-backed customer profile mutation is covered in the desktop project."
+    );
+
+    await page.goto("/owner/login");
+    await page.getByLabel("Email").fill(process.env.OWNER_EMAIL || "owner@alizstudio.test");
+    await page.getByLabel("Password", { exact: true }).fill(
+      process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+    );
+    await page.getByRole("button", { name: /sign in/i }).click();
+
+    await expect(page).toHaveURL(/\/owner\/dashboard/);
+    await page.goto("/owner/customers");
+    await expect(page.getByRole("heading", { name: /review customers/i })).toBeVisible();
+
+    await page.getByPlaceholder("Search name, phone, or email").fill("0140131");
+    const customerCard = page.locator(".customer-record-card").filter({ hasText: "Marcus Reed" }).first();
+
+    await expect(customerCard).toBeVisible();
+    await expect(customerCard.getByText("(555) 014-0131")).toBeVisible();
+    await customerCard.getByRole("button", { name: "View history" }).click();
+
+    const detail = page.getByRole("dialog", { name: "Marcus Reed" });
+
+    await expect(detail).toBeVisible();
+    await expect(detail.getByText("marcus@example.com")).toBeVisible();
+    await expect(detail.getByLabel("Appointment history").getByText("Deluxe Cut")).toBeVisible();
+    await expect(detail.getByText("Appointment timeline")).toBeVisible();
+
+    await detail.getByRole("button", { name: "VIP" }).click();
+    await detail.getByLabel("Preferred cut").fill("Low taper with beard balance");
+    await detail.getByLabel("Preferred time window").fill("Late afternoon");
+    await detail.getByLabel("Owner notes").fill("Prefers a quiet chair and a clean beard line.");
+    await detail.getByLabel("Sensitive owner note").fill("Owner-only demo reminder.");
+    await detail.getByRole("button", { name: "Save customer notes" }).click();
+
+    await expect(page.getByText("Marcus Reed saved.")).toBeVisible();
+    await detail.getByRole("button", { name: "Close", exact: true }).click();
+    await customerCard.getByRole("button", { name: "View history" }).click();
+
+    const reopenedDetail = page.getByRole("dialog", { name: "Marcus Reed" });
+
+    await expect(reopenedDetail.getByLabel("Preferred cut")).toHaveValue("Low taper with beard balance");
+    await expect(reopenedDetail.getByLabel("Owner notes")).toHaveValue(
+      "Prefers a quiet chair and a clean beard line."
+    );
+    await expect(reopenedDetail.getByRole("button", { name: "VIP" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    );
+  });
+
+  test("owner customer profile endpoint requires auth and rejects invalid tags", async ({ request }) => {
+    const unauthorized = await request.patch("/api/owner/customers/cus_missing", {
+      data: {
+        ownerNotes: "Not allowed."
+      }
+    });
+
+    expect(unauthorized.status()).toBe(401);
+
+    const login = await request.post("/api/owner/auth/login", {
+      headers: {
+        "content-type": "application/json"
+      },
+      data: {
+        email: process.env.OWNER_EMAIL || "owner@alizstudio.test",
+        password: process.env.OWNER_PASSWORD || "local-owner-password-for-tests"
+      }
+    });
+
+    expect(login.status()).toBe(200);
+
+    const invalidProfile = await request.patch("/api/owner/customers/cus_missing", {
+      data: {
+        tags: ["not_a_real_tag"]
+      }
+    });
+    const payload = await invalidProfile.json();
+
+    expect(invalidProfile.status()).toBe(400);
+    expect(payload.error).toBe("Invalid customer profile update.");
 
     await request.post("/api/owner/auth/logout", {
       headers: {
@@ -1231,11 +1368,13 @@ test.describe("Aliz Studio booking foundation", () => {
     await expect(page).toHaveURL(/\/owner\/dashboard/);
     await expect(page.locator("html")).toHaveAttribute("data-theme", "night");
 
-    const firstAppointmentCard = page.locator(".appointment-card").first();
+    const firstAppointmentCard = page.locator(".appointment-card").filter({ hasText: "Marcus Reed" }).first();
+    const detailButton = firstAppointmentCard.getByRole("button", { name: "View details" });
 
     await expect(firstAppointmentCard).toBeVisible();
-    await firstAppointmentCard.getByRole("button", { name: "View details" }).scrollIntoViewIfNeeded();
-    await firstAppointmentCard.getByRole("button", { name: "View details" }).click();
+    await detailButton.scrollIntoViewIfNeeded();
+    await expect(detailButton).toBeVisible();
+    await detailButton.click({ force: true });
 
     const detail = page.getByRole("dialog");
     const detailStatusBadge = detail.locator(".status-badge").first();

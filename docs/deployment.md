@@ -94,7 +94,7 @@ Only `NEXT_PUBLIC_` values are safe to expose to browser code. Keep Supabase ser
 
 ## Current Staging Limitations
 
-- File-backed appointment, service, and availability settings storage uses ephemeral writable temp storage on Vercel/serverless and is only acceptable for temporary staging/demo validation.
+- File-backed appointment, service, availability settings, and customer profile storage uses ephemeral writable temp storage on Vercel/serverless and is only acceptable for temporary staging/demo validation.
 - Supabase schema exists, but the Supabase runtime adapter is not active yet.
 - Square live payments are not active yet.
 - Notifications are not real yet.
@@ -123,6 +123,7 @@ After deployment, verify:
 - Owner login works with staging credentials.
 - Owner dashboard loads.
 - Owner appointment update works.
+- Owner customer records load and owner-only notes/preferences can be saved for demo validation.
 - No secrets appear in logs.
 - Cloudflare record remains DNS only / gray cloud.
 

@@ -2370,6 +2370,7 @@ p {
 .owner-stat-grid,
 .owner-board,
 .owner-availability-manager,
+.owner-customer-manager,
 .owner-service-manager {
   margin-inline: auto;
   max-width: var(--max-width);
@@ -2465,7 +2466,8 @@ p {
 .appointment-controls label,
 .availability-time-grid label,
 .blocked-date-form label,
-.booking-rule-grid label {
+.booking-rule-grid label,
+.customer-profile-grid label {
   color: var(--ink-soft);
   display: grid;
   font-size: 0.82rem;
@@ -2482,6 +2484,8 @@ p {
 .availability-time-grid input,
 .blocked-date-form input,
 .booking-rule-grid input,
+.customer-profile-grid input,
+.customer-profile-grid textarea,
 .appointment-controls select,
 .appointment-controls textarea {
   background: var(--paper-strong);
@@ -2496,6 +2500,8 @@ p {
 .availability-time-grid input,
 .blocked-date-form input,
 .booking-rule-grid input,
+.customer-profile-grid input,
+.customer-profile-grid textarea,
 .appointment-controls select,
 .appointment-controls textarea {
   min-height: 48px;
@@ -2961,6 +2967,262 @@ p {
 
 .owner-service-preview p {
   margin: 0;
+}
+
+.owner-customer-manager {
+  display: grid;
+  gap: 16px;
+  padding-block: 0 86px;
+}
+
+.customer-summary-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.customer-summary-grid article {
+  background: rgba(255, 253, 248, 0.78);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 18px;
+}
+
+.customer-summary-grid span {
+  color: var(--ink-soft);
+  display: block;
+  font-size: 0.76rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+}
+
+.customer-summary-grid strong {
+  display: block;
+  font-size: 1.45rem;
+  overflow-wrap: anywhere;
+}
+
+.customer-toolbar {
+  margin-bottom: 0;
+}
+
+.customer-record-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.customer-record-card {
+  background:
+    linear-gradient(135deg, rgba(216, 168, 77, 0.12), transparent 36%),
+    rgba(255, 253, 248, 0.84);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: 0 16px 50px rgba(42, 32, 26, 0.08);
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+.customer-record-card__topline,
+.customer-record-card__main {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.customer-record-card__main {
+  align-items: start;
+}
+
+.customer-record-card__main h2 {
+  font-size: clamp(1.9rem, 3vw, 3.2rem);
+  margin-bottom: 4px;
+}
+
+.customer-record-card__main p {
+  margin: 0;
+}
+
+.customer-contact-list {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.customer-contact-list div,
+.customer-stat-strip span,
+.customer-profile-panel,
+.customer-history-panel {
+  background: rgba(255, 253, 248, 0.7);
+  border: 1px solid rgba(222, 211, 198, 0.82);
+  border-radius: var(--radius);
+}
+
+.customer-contact-list div {
+  display: grid;
+  gap: 7px;
+  padding: 12px;
+}
+
+.customer-contact-list dt {
+  align-items: center;
+  color: var(--ink-soft);
+  display: inline-flex;
+  font-size: 0.72rem;
+  font-weight: 760;
+  gap: 6px;
+  text-transform: uppercase;
+}
+
+.customer-contact-list dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.customer-contact-list svg,
+.customer-tag svg,
+.customer-tag-option svg,
+.customer-detail-drawer__icon {
+  color: var(--clay);
+}
+
+.customer-stat-strip {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.customer-stat-strip span {
+  color: var(--ink-soft);
+  display: grid;
+  font-size: 0.72rem;
+  font-weight: 760;
+  gap: 4px;
+  padding: 12px;
+  text-transform: uppercase;
+}
+
+.customer-stat-strip strong {
+  color: var(--ink);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.customer-tag-row,
+.customer-tag-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.customer-tag,
+.customer-tag-option {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 0.74rem;
+  font-weight: 780;
+  gap: 6px;
+  padding: 8px 10px;
+  text-transform: uppercase;
+}
+
+.customer-tag {
+  background: rgba(212, 175, 55, 0.14);
+  color: var(--moss);
+}
+
+.customer-tag--muted {
+  background: rgba(17, 16, 15, 0.08);
+  color: var(--ink-soft);
+}
+
+.customer-detail-drawer__icon {
+  align-items: center;
+  align-self: center;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 253, 248, 0.42));
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 999px;
+  display: inline-flex;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
+}
+
+.customer-profile-form,
+.customer-profile-panel,
+.customer-history-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.customer-profile-panel,
+.customer-history-panel {
+  padding: 16px;
+}
+
+.customer-profile-panel h3,
+.customer-history-panel h3 {
+  font-size: clamp(1.35rem, 2vw, 2rem);
+  margin: 0;
+}
+
+.customer-tag-option {
+  background: rgba(255, 253, 248, 0.62);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  color: var(--detail-ink);
+  cursor: pointer;
+}
+
+.customer-tag-option[aria-pressed="true"] {
+  background:
+    linear-gradient(135deg, rgba(212, 175, 55, 0.18), rgba(255, 253, 248, 0.78)),
+    rgba(255, 253, 248, 0.72);
+  border-color: rgba(212, 175, 55, 0.34);
+}
+
+.customer-profile-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.customer-profile-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.customer-profile-grid textarea {
+  min-height: 94px;
+  resize: vertical;
+  text-transform: none;
+}
+
+.customer-timeline {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.customer-timeline li {
+  align-items: center;
+  background: rgba(255, 253, 248, 0.58);
+  border: 1px solid rgba(34, 28, 20, 0.08);
+  border-radius: 14px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr);
+  padding: 12px;
+}
+
+.customer-timeline p {
+  color: var(--detail-ink-muted);
+  margin: 3px 0 0;
 }
 
 .service-detail-backdrop {
@@ -3725,6 +3987,8 @@ p {
 :root[data-theme="night"] .owner-service-card,
 :root[data-theme="night"] .availability-panel,
 :root[data-theme="night"] .availability-summary-grid article,
+:root[data-theme="night"] .customer-summary-grid article,
+:root[data-theme="night"] .customer-record-card,
 :root[data-theme="night"] .owner-stat-grid article,
 :root[data-theme="night"] .appointment-card,
 :root[data-theme="night"] .appointment-empty-state,
@@ -3743,6 +4007,12 @@ p {
 :root[data-theme="night"] .availability-day-row,
 :root[data-theme="night"] .blocked-date-chip,
 :root[data-theme="night"] .availability-day-toggle,
+:root[data-theme="night"] .customer-contact-list div,
+:root[data-theme="night"] .customer-stat-strip span,
+:root[data-theme="night"] .customer-profile-panel,
+:root[data-theme="night"] .customer-history-panel,
+:root[data-theme="night"] .customer-tag-option,
+:root[data-theme="night"] .customer-timeline li,
 :root[data-theme="night"] .service-detail-drawer__header {
   background:
     linear-gradient(135deg, rgba(226, 192, 107, 0.1), rgba(245, 241, 232, 0.035)),
@@ -3771,7 +4041,9 @@ p {
 :root[data-theme="night"] .service-edit-form textarea,
 :root[data-theme="night"] .availability-time-grid input,
 :root[data-theme="night"] .blocked-date-form input,
-:root[data-theme="night"] .booking-rule-grid input {
+:root[data-theme="night"] .booking-rule-grid input,
+:root[data-theme="night"] .customer-profile-grid input,
+:root[data-theme="night"] .customer-profile-grid textarea {
   background:
     linear-gradient(135deg, rgba(245, 241, 232, 0.035), rgba(11, 11, 11, 0.22)),
     var(--input-surface);
@@ -3809,6 +4081,32 @@ p {
 :root[data-theme="night"] .service-state--hidden {
   background: rgba(245, 241, 232, 0.06);
   color: var(--ink-soft);
+}
+
+:root[data-theme="night"] .customer-tag,
+:root[data-theme="night"] .customer-tag-option[aria-pressed="true"] {
+  background: rgba(201, 163, 78, 0.12);
+  border-color: rgba(226, 192, 107, 0.28);
+  color: var(--gold);
+}
+
+:root[data-theme="night"] .customer-tag--muted,
+:root[data-theme="night"] .customer-tag-option {
+  background: rgba(245, 241, 232, 0.06);
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+
+:root[data-theme="night"] .customer-contact-list svg,
+:root[data-theme="night"] .customer-tag svg,
+:root[data-theme="night"] .customer-tag-option svg,
+:root[data-theme="night"] .customer-detail-drawer__icon {
+  color: var(--gold);
+}
+
+:root[data-theme="night"] .customer-detail-drawer__icon {
+  background: rgba(226, 192, 107, 0.12);
+  border-color: rgba(226, 192, 107, 0.24);
 }
 
 :root[data-theme="night"] .experience-band {
@@ -4177,6 +4475,7 @@ p {
 
   .packages-grid,
   .packages-confidence__grid,
+  .customer-record-grid,
   .owner-service-grid {
     grid-template-columns: 1fr;
   }
@@ -4195,6 +4494,10 @@ p {
   .appointment-detail-pill-grid,
   .appointment-detail-list,
   .appointment-detail-note-grid,
+  .customer-summary-grid,
+  .customer-contact-list,
+  .customer-stat-strip,
+  .customer-profile-grid,
   .owner-service-card__facts,
   .availability-summary-grid,
   .availability-editor,
@@ -4209,6 +4512,7 @@ p {
   }
 
   .appointment-controls--detail .appointment-controls__notes,
+  .customer-profile-grid__wide,
   .service-edit-form__wide,
   .service-toggle-grid,
   .service-detail-drawer__actions {
@@ -4430,6 +4734,10 @@ p {
     padding-inline: 18px;
   }
 
+  .owner-customer-manager {
+    padding-inline: 18px;
+  }
+
   .pwa-install-card {
     margin-top: 28px;
     width: calc(100% - 36px);
@@ -4562,6 +4870,8 @@ p {
   .appointment-card__topline,
   .appointment-card__main,
   .appointment-card__actions,
+  .customer-record-card__topline,
+  .customer-record-card__main,
   .appointment-detail-drawer__header,
   .appointment-detail-drawer__actions {
     align-items: stretch;

@@ -7,17 +7,18 @@ It is a planning document only. It does not activate Supabase, real payments, re
 ## Current Architecture Snapshot
 
 - Public routes: `/`, `/about`, `/packages`, `/book`, `/checkout`, `/book/confirmation`, and `/services/[serviceId]`.
-- Owner routes: `/owner/login`, `/owner/dashboard`, `/owner/services`, and `/owner/availability`.
+- Owner routes: `/owner/login`, `/owner/dashboard`, `/owner/services`, `/owner/availability`, and `/owner/customers`.
 - Booking APIs: `/api/booking/availability`, `/api/booking/quote`, and `/api/booking/create`.
 - Checkout/payment APIs: `/api/checkout/complete` and `/api/square/webhook`.
-- Owner APIs: `/api/owner/session`, `/api/owner/auth/login`, `/api/owner/auth/logout`, `/api/owner/appointments`, `/api/owner/appointments/[appointmentId]`, `/api/owner/services/[serviceId]`, and `/api/owner/availability`.
-- Data boundary: `lib/repositories` defines appointment, service, and availability repository interfaces with `file`, `demo`, and future `supabase` backends.
+- Owner APIs: `/api/owner/session`, `/api/owner/auth/login`, `/api/owner/auth/logout`, `/api/owner/appointments`, `/api/owner/appointments/[appointmentId]`, `/api/owner/services/[serviceId]`, `/api/owner/availability`, `/api/owner/customers`, and `/api/owner/customers/[customerId]`.
+- Data boundary: `lib/repositories` defines appointment, service, availability, and customer profile repository interfaces with `file`, `demo`, and future `supabase` backends.
 - Current runtime backend: `file`, with local JSON storage and Vercel temp storage for demo-safe serverless use.
 - Domain layer: `lib/domain` owns canonical shared types, constants, and Zod schemas.
 - Demo data: `lib/demo` owns deterministic seed collections for future mock repositories and Supabase seeding.
 - Supabase planning: `supabase/migrations/0001_create_aliz_studio_core_schema.sql` and `docs/supabase.md` define the database foundation, but runtime integration is not active.
 - Services: current public services are seeded from the core catalog and can be edited through the demo-safe file-backed service repository.
 - Availability: owner-managed weekly hours, blocked dates, and booking rules are demo-safe through the file-backed availability repository and now filter the public booking availability API.
+- Customers: owner customer records are derived from appointment contact fields, with owner-only notes/tags/preferences stored through a demo-safe customer profile repository.
 - Payments: Square package and webhook scaffold exist, but checkout remains mock/demo-only.
 - Notifications: current notification behavior is a stub and does not send real email or SMS.
 - Owner auth: custom single-owner signed HttpOnly cookie auth through environment variables.
@@ -36,6 +37,7 @@ It is a planning document only. It does not activate Supabase, real payments, re
 - Protected owner dashboard with appointment stats, search/filter, status edits, payment-status edits, and owner notes.
 - Protected owner service/menu management for demo-safe package edits.
 - Protected owner availability management for weekly hours, closed days, optional breaks, blocked dates, lead time, and simple capacity rules.
+- Protected owner customer records with search, booking history, summary metrics, and owner-only notes/tags/preferences.
 - PWA manifest and install CTA.
 - Deterministic demo seed data and a future-ready domain model.
 - Supabase schema plan and repository boundary.
@@ -57,7 +59,7 @@ It is a planning document only. It does not activate Supabase, real payments, re
 - Notifications are not actually sent.
 - Rate limiting is in-memory and not durable across serverless instances.
 - Owner auth is custom and single-owner oriented.
-- Customer records are appointment fields, not durable customer profiles.
+- Customer records are derived from appointment fields, and owner profile notes/preferences are demo-only until Supabase is active.
 - Audit events, settings, availability blocks, and notification logs are not active runtime features yet.
 
 ### Must Be Connected Before Real Customers Use It
@@ -78,7 +80,7 @@ It is a planning document only. It does not activate Supabase, real payments, re
 - Richer service management UI beyond the current demo-safe page, including image, inclusions, and long-form package copy editing.
 - Deeper availability settings such as partial-day blocks, recurring closures, conflict previews, and audit history.
 - Owner settings UI with local/demo adapter.
-- Customer list derived from appointment data.
+- Customer list and client history derived from appointment data.
 - Dashboard metrics from existing appointment/demo repositories.
 - Audit-log UI backed by deterministic demo events.
 - Repository interfaces for services, availability, settings, customers, payments, notifications, and audit events.
@@ -185,9 +187,10 @@ Target owner capabilities:
 
 Near-term data needs:
 
-- Add `CustomerRepository`.
+- Current status: implemented as `/owner/customers` with appointment-derived records and a `CustomerProfileRepository` for owner-only profile notes/preferences.
 - Do not store more PII than needed.
 - Start with records created from bookings; no customer account system is needed for MVP.
+- Supabase should later provide durable customer rows, privacy controls, profile fields, audit events, and export/deletion policy.
 
 ### Notifications Readiness
 
@@ -676,16 +679,16 @@ Risks:
 
 The next single Codex task should be:
 
-**Owner settings/customer/audit preparation, still demo-safe.**
+**Owner settings/audit preparation, still demo-safe.**
 
 Why this is the right next step:
 
-- Appointment detail/status management, service management, and availability management are now in place.
-- The remaining demo-safe owner surfaces are settings, customer summaries, notification/audit history previews, and conflict-preview polish.
+- Appointment detail/status management, service management, availability management, and customer records are now in place.
+- The remaining demo-safe owner surfaces are settings, notification/audit history previews, and conflict-preview polish.
 - These can prepare the Supabase production hookup without touching real credentials, live payments, or durable customer data.
 
 Suggested next prompt:
 
 ```text
-Continue the Aliz Studio admin roadmap with a demo-safe owner settings/customer/audit preparation sprint. Preserve current booking, mock payment, owner auth, file-backed repositories, service management, availability management, and light/night themes. Do not connect Supabase, Square live payments, or real notifications. Add tests and docs.
+Continue the Aliz Studio admin roadmap with a demo-safe owner settings and audit-preparation sprint. Preserve current booking, mock payment, owner auth, file-backed repositories, service management, availability management, customer records, and light/night themes. Do not connect Supabase, Square live payments, or real notifications. Add tests and docs.
 ```

@@ -3,6 +3,7 @@ import type {
   APPOINTMENT_STATUSES,
   AVAILABILITY_BLOCK_TYPES,
   BOOKING_HOLD_STATUSES,
+  CUSTOMER_TAGS,
   NOTIFICATION_CHANNELS,
   NOTIFICATION_STATUSES,
   PAYMENT_PROVIDERS,
@@ -94,6 +95,22 @@ export type NotificationStatus = (typeof NOTIFICATION_STATUSES)[number];
 export type AvailabilityBlockType = (typeof AVAILABILITY_BLOCK_TYPES)[number];
 export type BookingHoldStatus = (typeof BOOKING_HOLD_STATUSES)[number];
 export type AdminRole = (typeof ADMIN_ROLES)[number];
+export type CustomerTag = (typeof CUSTOMER_TAGS)[number];
+
+export type CustomerProfile = {
+  id: CustomerId;
+  ownerNotes?: string;
+  sensitiveNote?: string;
+  preferredCut?: string;
+  preferredTimeWindow?: string;
+  tags: CustomerTag[];
+  createdAt: IsoDateTimeString;
+  updatedAt: IsoDateTimeString;
+};
+
+export type CustomerProfileUpdateInput = Partial<
+  Pick<CustomerProfile, "ownerNotes" | "sensitiveNote" | "preferredCut" | "preferredTimeWindow" | "tags">
+>;
 
 export type Appointment = {
   id: AppointmentId;
@@ -116,6 +133,28 @@ export type Appointment = {
   squareCheckoutUrl?: string;
   createdAt: IsoDateTimeString;
   updatedAt: IsoDateTimeString;
+};
+
+export type CustomerRecordStats = {
+  totalAppointments: number;
+  upcomingAppointments: number;
+  completedAppointments: number;
+  cancelledAppointments: number;
+  noShowAppointments: number;
+  pendingDepositAppointments: number;
+  totalProjectedValue: MoneyCents;
+  totalPaidDeposits: MoneyCents;
+  mostBookedService?: string;
+  lastAppointmentDate?: IsoDateString;
+  nextAppointmentDate?: IsoDateString;
+  latestStatus?: AppointmentStatus;
+};
+
+export type CustomerRecord = CustomerContact & {
+  id: CustomerId;
+  profile: CustomerProfile;
+  appointments: Appointment[];
+  stats: CustomerRecordStats;
 };
 
 export type AppointmentUpdateInput = {

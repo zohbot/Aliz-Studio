@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CalendarClock, Scissors } from "lucide-react";
+import { CalendarClock, Scissors, UsersRound } from "lucide-react";
 import { OwnerAppointmentBoard } from "@/components/owner-appointment-board";
 import { OwnerSessionActions } from "@/components/owner-session-actions";
 import { getOwnerSession } from "@/lib/admin-auth";
@@ -58,6 +58,10 @@ export default async function OwnerDashboardPage() {
             <Link className="secondary-action" href="/owner/services">
               <Scissors size={17} />
               Manage services
+            </Link>
+            <Link className="secondary-action" href="/owner/customers">
+              <UsersRound size={17} />
+              Customers
             </Link>
             <Link className="secondary-action" href="/owner/availability">
               <CalendarClock size={17} />

@@ -1,5 +1,32 @@
 # Progress Log
 
+## 2026-05-30 - Demo-Safe Owner Customer Records
+
+Scope: owner-only customer records and client history, derived from existing appointment data with demo-safe owner profile notes/preferences. No Supabase connection, real payment capture, notifications, auth-provider changes, DNS, Vercel setting, secret, env value, or public booking behavior changes were made.
+
+Completed:
+
+- Added `/owner/customers` as a protected owner client-book route.
+- Added customer records derived from appointment contact/history data, including search, contact info, appointment totals, upcoming/completed counts, last/next appointment dates, latest status, most-booked service, and projected historical value.
+- Added a customer detail drawer with booking timeline, contact context, owner-only notes, sensitive owner note, preferred cut, preferred time window, and simple owner tags.
+- Added `GET /api/owner/customers` and `PATCH /api/owner/customers/[customerId]` with owner-session auth, same-origin protection for mutation, server-side validation, safe errors, and path revalidation.
+- Added a customer profile repository interface with file, demo, and Supabase-ready skeleton adapters.
+- Added dashboard navigation to Customers alongside Services and Availability.
+- Added Playwright coverage for protected customer access, customer search/detail/history, note/tag persistence, invalid customer mutation rejection, mobile overflow, and local/Vercel customer profile storage paths.
+
+Validation:
+
+- `npm run lint` passed.
+- `npm run build` passed.
+- `npm test` was not run because `package.json` does not define a `test` script.
+- `npm run test:e2e -- --reporter=line` passed with 94/96 Playwright tests and 2 intentional mobile-project skips for shared file-backed mutation paths.
+
+Notes:
+
+- Customer records remain derived from appointments, not a durable customer account system.
+- Owner profile notes/preferences persist to `data/customer-profiles.json` locally and `/tmp/aliz-studio-customers/profiles.json` on Vercel. This remains demo-safe and ephemeral, not production durable.
+- Supabase is still required before real customer records are trusted for production retention, privacy, search, export/delete, or audit workflows.
+
 ## 2026-05-30 - Demo-Safe Owner Availability Management
 
 Scope: owner-only availability and booking-rule management, file/demo availability repository support, public availability filtering, tests, and docs. No Supabase connection, real payment capture, notifications, auth-provider changes, DNS, Vercel setting, secret, env value, or route slug changes were made.
